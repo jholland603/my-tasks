@@ -175,14 +175,25 @@
   }
 
   /* editable text cells */
-  .cell-text { padding: 9px 8px 9px 0; }
+  .cell-text { padding: 9px 8px 9px 0; display: flex; align-items: center; gap: 0; overflow: hidden; }
   .cell-editable {
-    outline: none; cursor: text; display: block;
+    outline: none; cursor: text; flex: 1; min-width: 0;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     font-size: 12px; line-height: 1;
   }
   .cell-editable:empty::before { content: attr(data-ph); color: var(--line); pointer-events: none; }
   .cell-editable:focus { background: #fffef9; text-overflow: clip; overflow: visible; position: relative; z-index: 2; }
+
+  /* type dot — inline with text */
+  .type-dot {
+    width: 7px; height: 7px; min-width: 7px;
+    border-radius: 50%; margin-right: 6px; flex-shrink: 0;
+    cursor: pointer; transition: opacity 0.15s;
+    display: inline-block; align-self: center;
+  }
+  .type-dot:hover { opacity: 0.7; }
+  .type-dot.work     { background: var(--week-c); }
+  .type-dot.personal { background: var(--back-c); }
 
   /* company dropdown */
   .cell-company { padding: 0; }
@@ -462,7 +473,13 @@
     transition: all 0.15s;
   }
   .filter-btn:hover { border-color: var(--ink); color: var(--ink); }
-  .filter-btn.active { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+  .filter-btn.active                        { background: var(--ink);    border-color: var(--ink);    color: var(--bg); }
+  .filter-btn[data-filter="work"]           { color: var(--week-c);      border-color: var(--week-c); }
+  .filter-btn[data-filter="work"]:hover     { background: #eef2fc; }
+  .filter-btn[data-filter="work"].active    { background: var(--week-c); border-color: var(--week-c); color: var(--bg); }
+  .filter-btn[data-filter="personal"]       { color: var(--back-c);      border-color: var(--back-c); }
+  .filter-btn[data-filter="personal"]:hover { background: #edf5ed; }
+  .filter-btn[data-filter="personal"].active{ background: var(--back-c); border-color: var(--back-c); color: var(--bg); }
   .search-wrap {
     flex: 1; position: relative;
   }
@@ -490,14 +507,6 @@
   }
 
   /* type indicator */
-  .type-dot {
-    display: inline-block; width: 7px; height: 7px;
-    border-radius: 50%; margin-right: 5px; flex-shrink: 0;
-    vertical-align: middle; position: relative; top: -1px;
-  }
-  .type-dot.work     { background: var(--week-c); }
-  .type-dot.personal { background: var(--back-c); }
-
   /* clean completed button */
   .clean-bar {
     padding: 8px 14px;
@@ -631,7 +640,7 @@
 
 </div>
 
-<p class="hint">drag rows between sections &nbsp;·&nbsp; click any cell to edit &nbsp;·&nbsp; overdue dates appear in red &nbsp;·&nbsp; syncs to GitHub<br>v1.17</p>
+<p class="hint">drag rows between sections &nbsp;·&nbsp; click any cell to edit &nbsp;·&nbsp; overdue dates appear in red &nbsp;·&nbsp; syncs to GitHub<br>v1.19</p>
 
 <!-- NOTES MODAL -->
 <div id="notes-modal" class="hidden">
