@@ -132,6 +132,7 @@
   .task-row:last-child { border-bottom: none; }
   .task-row:hover { background: var(--row-hover); }
   .task-row.dragging { opacity: 0.35; cursor: grabbing; }
+  .task-row.drop-above { box-shadow: inset 0 2px 0 0 var(--ink); }
   .task-row.done .cell-editable { text-decoration: line-through; color: var(--muted); }
 
   td { padding: 0; vertical-align: middle; overflow: hidden; }
@@ -544,18 +545,87 @@
   }
 
   // ── DRAG & DROP ──
+  let dragOverId = null; // id of task being hovered over
+
+  function sortSection(tasks) {
+    return [...tasks].sort((a, b) => {
+      const da = a.due || '9999-99-99';
+      const db = b.due || '9999-99-99';
+      if (da !== db) return da < db ? -1 : 1;
+      const ca = a.created || '';
+      const cb = b.created || '';
+      return ca < cb ? -1 : ca > cb ? 1 : 0;
+    });
+  }
+
   function setupDrag(tr, section, taskId) {
     tr.draggable = true;
-    tr.addEventListener('dragstart', e => { dragSrc = { section, id: taskId }; tr.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; });
-    tr.addEventListener('dragend',   () => { tr.classList.remove('dragging'); document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over')); });
+
+    tr.addEventListener('dragstart', e => {
+      dragSrc = { section, id: taskId };
+      tr.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+
+    tr.addEventListener('dragend', () => {
+      tr.classList.remove('dragging');
+      dragOverId = null;
+      document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+      document.querySelectorAll('.drop-above').forEach(el => el.classList.remove('drop-above'));
+    });
+
+    // within-section row reordering
+    tr.addEventListener('dragover', e => {
+      e.preventDefault();
+      if (!dragSrc) return;
+      if (dragSrc.id === taskId) return;
+      if (dragOverId !== taskId) {
+        document.querySelectorAll('.drop-above').forEach(el => el.classList.remove('drop-above'));
+        dragOverId = taskId;
+        tr.classList.add('drop-above');
+      }
+    });
+
+    tr.addEventListener('drop', e => {
+      e.preventDefault(); e.stopPropagation();
+      tr.classList.remove('drop-above');
+      if (!dragSrc || dragSrc.id === taskId) return;
+
+      if (dragSrc.section === section) {
+        // reorder within same section
+        const arr = state[section];
+        const fromIdx = arr.findIndex(t => t.id === dragSrc.id);
+        const toIdx   = arr.findIndex(t => t.id === taskId);
+        if (fromIdx === -1 || toIdx === -1) return;
+        const [moved] = arr.splice(fromIdx, 1);
+        arr.splice(toIdx, 0, moved);
+      } else {
+        // move between sections
+        const task = state[dragSrc.section].find(t => t.id === dragSrc.id);
+        if (!task) return;
+        state[dragSrc.section] = state[dragSrc.section].filter(t => t.id !== dragSrc.id);
+        task.done = false;
+        const toIdx = state[section].findIndex(t => t.id === taskId);
+        state[section].splice(toIdx, 0, task);
+      }
+      dragSrc = null; scheduleSave(); render();
+    });
   }
 
   function setupDropZone(secEl, sectionName) {
-    secEl.addEventListener('dragover',  e => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; secEl.classList.add('drag-over'); });
-    secEl.addEventListener('dragleave', e => { if (!secEl.contains(e.relatedTarget)) secEl.classList.remove('drag-over'); });
+    secEl.addEventListener('dragover', e => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      secEl.classList.add('drag-over');
+    });
+    secEl.addEventListener('dragleave', e => {
+      if (!secEl.contains(e.relatedTarget)) secEl.classList.remove('drag-over');
+    });
     secEl.addEventListener('drop', e => {
       e.preventDefault(); secEl.classList.remove('drag-over');
+      // only handle drops onto the section itself (not onto a row — rows handle their own)
       if (!dragSrc || dragSrc.section === sectionName) return;
+      if (e.target.closest('tr.task-row')) return;
       const task = state[dragSrc.section].find(t => t.id === dragSrc.id); if (!task) return;
       state[dragSrc.section] = state[dragSrc.section].filter(t => t.id !== dragSrc.id);
       task.done = false; state[sectionName].push(task);
@@ -582,7 +652,8 @@
       const tbody = document.getElementById('list-' + sec);
       tbody.innerHTML = '';
 
-      state[sec].forEach(task => {
+      const tasks = sortSection(state[sec]);
+      tasks.forEach(task => {
         const tr = document.createElement('tr');
         tr.className = 'task-row';
         tr.dataset.taskId = task.id;
