@@ -214,6 +214,13 @@
 
   /* date cells */
   .cell-date { text-align: center; padding: 0 4px; }
+  .due-wrap { display: flex; align-items: center; justify-content: center; gap: 5px; }
+  .due-dot {
+    width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+  }
+  .due-dot.dot-overdue { background: #c8392b; }
+  .due-dot.dot-today   { background: #2e9e4f; }
+  .due-dot.dot-soon    { background: #e8a020; }
   .date-input {
     background: none; border: none;
     font-family: 'DM Mono', monospace; font-size: 11px;
@@ -426,6 +433,19 @@
 
   function todayISO() { return new Date().toISOString().slice(0,10); }
   function isOverdue(iso) { return !!iso && iso < todayISO(); }
+
+  function dueDotClass(iso) {
+    if (!iso) return '';
+    const today = todayISO();
+    if (iso < today) return 'dot-overdue';
+    if (iso === today) return 'dot-today';
+    // within 2 days
+    const due  = new Date(iso + 'T00:00:00');
+    const now  = new Date(today + 'T00:00:00');
+    const diff = (due - now) / (1000 * 60 * 60 * 24);
+    if (diff <= 2) return 'dot-soon';
+    return '';
+  }
   function escHtml(s) {
     return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
@@ -467,6 +487,22 @@
     } catch(e) { return { ok: false, status: 'network', message: e.message }; }
   }
 
+  // ── AUTO-PROMOTE DUE TODAY ──
+  function promoteTodayTasks() {
+    const today = todayISO();
+    let changed = false;
+    ['week', 'back'].forEach(sec => {
+      const promote = state[sec].filter(t => t.due === today && !t.done);
+      if (promote.length === 0) return;
+      promote.forEach(t => {
+        state[sec] = state[sec].filter(x => x.id !== t.id);
+        state.today.push(t);
+      });
+      changed = true;
+    });
+    if (changed) scheduleSave();
+  }
+
   // ── GITHUB SYNC ──
   async function loadFromGitHub() {
     const token = getToken();
@@ -491,6 +527,7 @@
         throw new Error('Could not parse tasks.json — file may be corrupted');
       }
       state = { today: decoded.today||[], week: decoded.week||[], back: decoded.back||[], completed: decoded.completed||[] };
+      promoteTodayTasks();
       setSyncState('saved','synced'); render();
     } catch(e) {
       setSyncState('error', e.message || 'load error');
@@ -778,7 +815,12 @@
             </div>
           </td>
           <td class="cell-date"><input class="date-input" type="date" value="${escHtml(task.created||todayISO())}"></td>
-          <td class="cell-date"><input class="date-input${isOverdue(task.due) ? ' overdue' : ''}" type="date" value="${escHtml(task.due||'')}"></td>
+          <td class="cell-date">
+            <div class="due-wrap">
+              ${task.due && dueDotClass(task.due) ? `<span class="due-dot ${dueDotClass(task.due)}"></span>` : ''}
+              <input class="date-input${isOverdue(task.due) ? ' overdue' : ''}" type="date" value="${escHtml(task.due||'')}">
+            </div>
+          </td>
           <td class="cell-notes"><button class="notes-btn${task.notes ? ' has-note' : ''}" title="${task.notes ? 'Has notes — click to edit' : 'Add notes'}">✎</button></td>
           <td class="cell-del"><button class="delete-btn" title="remove">×</button></td>
         `;
@@ -864,6 +906,18 @@
     dateInputs[0].addEventListener('change', () => updateField(sec, task.id, 'created', dateInputs[0].value));
     dateInputs[1].addEventListener('change', () => {
       updateField(sec, task.id, 'due', dateInputs[1].value);
+      // refresh dot
+      const wrap = dateInputs[1].closest('.due-wrap');
+      if (wrap) {
+        const existing = wrap.querySelector('.due-dot');
+        if (existing) existing.remove();
+        const cls = dueDotClass(dateInputs[1].value);
+        if (cls) {
+          const dot = document.createElement('span');
+          dot.className = 'due-dot ' + cls;
+          wrap.insertBefore(dot, dateInputs[1]);
+        }
+      }
       dateInputs[1].classList.toggle('overdue', isOverdue(dateInputs[1].value));
     });
   }
