@@ -44,56 +44,6 @@
       "created": "2026-04-30",
       "due": "",
       "done": false
-    },
-    {
-      "id": "1777588838251-3070",
-      "company": "",
-      "description": "",
-      "url": "",
-      "created": "2026-04-30",
-      "due": "2026-05-07",
-      "done": false,
-      "type": "work"
-    },
-    {
-      "id": "1777588882128-4963",
-      "company": "",
-      "description": "",
-      "url": "",
-      "created": "2026-04-30",
-      "due": "2026-05-07",
-      "done": false,
-      "type": "work"
-    },
-    {
-      "id": "1777588899391-2942",
-      "company": "",
-      "description": "",
-      "url": "",
-      "created": "2026-04-30",
-      "due": "2026-05-07",
-      "done": false,
-      "type": "work"
-    },
-    {
-      "id": "1777588901117-1038",
-      "company": "",
-      "description": "",
-      "url": "",
-      "created": "2026-04-30",
-      "due": "2026-05-07",
-      "done": false,
-      "type": "work"
-    },
-    {
-      "id": "1777590613680-6920",
-      "company": "",
-      "description": "",
-      "url": "",
-      "created": "2026-04-30",
-      "due": "2026-05-07",
-      "done": false,
-      "type": "work"
     }
   ],
   "week": [],
