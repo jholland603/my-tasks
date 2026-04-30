@@ -28,7 +28,17 @@
       "done": false
     }
   ],
-  "week": [],
+  "week": [
+    {
+      "id": "1777556915532-8513",
+      "company": "",
+      "description": "",
+      "url": "",
+      "created": "2026-04-30",
+      "due": "",
+      "done": false
+    }
+  ],
   "back": [],
   "completed": [
     {
