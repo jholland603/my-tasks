@@ -446,6 +446,87 @@
     .mobile-action-btn.danger:active { color: var(--today-c); border-color: var(--today-c); }
   }
 
+  /* ── SEARCH BAR ── */
+  .search-bar {
+    max-width: 1400px; margin: 0 auto 20px;
+    display: flex; align-items: center; gap: 10px;
+    flex-wrap: wrap;
+  }
+  .filter-btns { display: flex; gap: 4px; flex-shrink: 0; }
+  .filter-btn {
+    background: none; border: 1px solid var(--line);
+    border-radius: 20px; padding: 5px 12px;
+    font-family: 'DM Mono', monospace; font-size: 10px;
+    letter-spacing: 0.05em; text-transform: uppercase;
+    color: var(--muted); cursor: pointer;
+    transition: all 0.15s;
+  }
+  .filter-btn:hover { border-color: var(--ink); color: var(--ink); }
+  .filter-btn.active { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+  .search-wrap {
+    flex: 1; position: relative;
+  }
+  .search-input {
+    width: 100%; background: var(--card);
+    border: 1px solid var(--line); border-radius: 2px;
+    padding: 8px 32px 8px 12px;
+    font-family: 'DM Mono', monospace; font-size: 12px;
+    color: var(--ink); outline: none;
+    transition: border-color 0.15s;
+  }
+  .search-input:focus { border-color: var(--ink); }
+  .search-input::placeholder { color: var(--muted); }
+  .search-clear {
+    position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+    background: none; border: none; color: var(--muted);
+    cursor: pointer; font-size: 14px; padding: 0;
+    display: none; transition: color 0.15s;
+  }
+  .search-clear.visible { display: block; }
+  .search-clear:hover { color: var(--ink); }
+  .search-count {
+    font-size: 11px; color: var(--muted);
+    white-space: nowrap;
+  }
+
+  /* type indicator */
+  .type-dot {
+    display: inline-block; width: 7px; height: 7px;
+    border-radius: 50%; margin-right: 5px; flex-shrink: 0;
+    vertical-align: middle; position: relative; top: -1px;
+  }
+  .type-dot.work     { background: var(--week-c); }
+  .type-dot.personal { background: var(--back-c); }
+
+  /* clean completed button */
+  .clean-bar {
+    padding: 8px 14px;
+    border-top: 1px dashed var(--line);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .clean-input {
+    background: var(--bg); border: 1px solid var(--line);
+    border-radius: 2px; padding: 4px 8px;
+    font-family: 'DM Mono', monospace; font-size: 11px;
+    color: var(--ink); outline: none; width: 52px;
+    text-align: center;
+  }
+  .clean-input:focus { border-color: var(--ink); }
+  .clean-label { font-size: 11px; color: var(--muted); }
+  .clean-btn {
+    background: none; border: 1px solid var(--line);
+    border-radius: 2px; padding: 4px 10px;
+    font-family: 'DM Mono', monospace; font-size: 11px;
+    color: var(--muted); cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+    margin-left: auto;
+  }
+  .clean-btn:hover { color: var(--today-c); border-color: var(--today-c); }
+
+  @media (max-width: 900px) {
+    .search-bar { margin: 0 0 16px; }
+  }
+
   .hint { max-width: 1400px; margin: 28px auto 0; color: var(--muted); font-size: 10px; text-align: center; letter-spacing: 0.03em; line-height: 1.8; }
 
   @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
@@ -479,6 +560,19 @@
     <button class="settings-btn" onclick="showSetup()" title="Settings">⚙</button>
   </div>
 </header>
+
+<div class="search-bar">
+  <div class="filter-btns">
+    <button class="filter-btn active" data-filter="all"  onclick="setFilter('all')">All</button>
+    <button class="filter-btn"        data-filter="work" onclick="setFilter('work')">Work</button>
+    <button class="filter-btn"        data-filter="personal" onclick="setFilter('personal')">Personal</button>
+  </div>
+  <div class="search-wrap">
+    <input class="search-input" id="search-input" type="text" placeholder="Search company, description, notes, URL…">
+    <button class="search-clear" id="search-clear" onclick="clearSearch()">×</button>
+  </div>
+  <span class="search-count" id="search-count"></span>
+</div>
 
 <div class="board">
 
@@ -527,11 +621,17 @@
       <tbody id="list-completed"></tbody>
     </table>
     <div class="mobile-list" id="mobile-completed"></div>
+    <div class="clean-bar">
+      <span class="clean-label">Delete completed older than</span>
+      <input class="clean-input" id="clean-days" type="number" min="1" value="30">
+      <span class="clean-label">days</span>
+      <button class="clean-btn" onclick="cleanCompleted()">Clean up</button>
+    </div>
   </div>
 
 </div>
 
-<p class="hint">drag rows between sections &nbsp;·&nbsp; click any cell to edit &nbsp;·&nbsp; overdue dates appear in red &nbsp;·&nbsp; syncs to GitHub<br>v1.14</p>
+<p class="hint">drag rows between sections &nbsp;·&nbsp; click any cell to edit &nbsp;·&nbsp; overdue dates appear in red &nbsp;·&nbsp; syncs to GitHub<br>v1.17</p>
 
 <!-- NOTES MODAL -->
 <div id="notes-modal" class="hidden">
@@ -743,7 +843,11 @@
   // ── TASK OPS ──
   function addTask(section) {
     const id = Date.now() + '-' + Math.floor(Math.random() * 9999);
-    state[section].push({ id, company:'', description:'', url:'', created: todayISO(), due:'', done: false });
+    const created = todayISO();
+    const due = new Date();
+    due.setDate(due.getDate() + 7);
+    const dueISO = due.toISOString().slice(0, 10);
+    state[section].push({ id, company:'', description:'', url:'', created, due: dueISO, done: false, type: 'work' });
     scheduleSave(); render();
     setTimeout(() => {
       const row = document.querySelector(`[data-task-id="${id}"]`);
@@ -985,13 +1089,16 @@
 
   function render() {
     updateDatalist();
+    let totalMatches = 0;
     ['today','week','back'].forEach(sec => {
       renderHeaders(sec);
       const tbody = document.getElementById('list-' + sec);
       tbody.innerHTML = '';
 
       const tasks = sortSection(state[sec], sec);
-      tasks.forEach(task => {
+      const filtered = tasks.filter(t => taskMatchesSearch(t, searchQuery));
+      totalMatches += filtered.length;
+      filtered.forEach(task => {
         const tr = document.createElement('tr');
         tr.className = 'task-row';
         tr.dataset.taskId = task.id;
@@ -1001,7 +1108,7 @@
           <td class="cell-drag" title="drag to move">⠿</td>
           <td class="cell-check"><input type="checkbox"></td>
           <td class="cell-company"><input class="company-input" type="text" list="company-list" value="${escHtml(task.company||'')}" placeholder="—"></td>
-          <td class="cell-text"><span class="cell-editable" contenteditable="true" data-id="${task.id}" data-ph="description" title="${escHtml(task.description||'')}">${escHtml(task.description||'')}</span></td>
+          <td class="cell-text"><span class="type-dot ${(task.type||'work')}" title="Click to toggle work/personal"></span><span class="cell-editable" contenteditable="true" data-id="${task.id}" data-ph="description" title="${escHtml(task.description||'')}">${highlightText(task.description, searchQuery)}</span></td>
           <td class="cell-url">
             <div class="url-display${hasUrl ? '' : ' hidden'}">
               ${hasUrl ? `<a class="url-link" href="${escHtml(task.url)}" target="_blank" rel="noopener" title="${escHtml(task.url)}">${escHtml(task.url)}</a>` : ''}
@@ -1029,6 +1136,17 @@
         const descSpan = tr.querySelector('[contenteditable]');
         descSpan.addEventListener('input',   () => { updateField(sec, task.id, 'description', descSpan.textContent); descSpan.title = descSpan.textContent; });
         descSpan.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addTask(sec); } });
+
+        // type dot toggle
+        const typeDot = tr.querySelector('.type-dot');
+        typeDot.addEventListener('click', () => {
+          const t = state[sec].find(t => t.id === task.id);
+          if (!t) return;
+          t.type = (t.type || 'work') === 'work' ? 'personal' : 'work';
+          typeDot.className = `type-dot ${t.type}`;
+          typeDot.title = `Click to toggle work/personal (currently ${t.type})`;
+          scheduleSave();
+        });
         wireUrl(tr, sec, task);
         wireDates(tr, sec, task);
         tr.querySelector('.delete-btn').addEventListener('click', () => deleteTask(sec, task.id));
@@ -1047,7 +1165,9 @@
     // completed section
     const ctbody = document.getElementById('list-completed');
     ctbody.innerHTML = '';
-    state.completed.forEach(task => {
+    const filteredCompleted = state.completed.filter(t => taskMatchesSearch(t, searchQuery));
+    totalMatches += filteredCompleted.length;
+    filteredCompleted.forEach(task => {
       const tr = document.createElement('tr');
       tr.className = 'task-row completed-row';
       tr.dataset.taskId = task.id;
@@ -1069,6 +1189,8 @@
       ctbody.appendChild(tr);
     });
     document.getElementById('count-completed').textContent = state.completed.length;
+    const countEl = document.getElementById('search-count');
+    countEl.textContent = searchQuery ? `${totalMatches} result${totalMatches !== 1 ? 's' : ''}` : '';
     renderMobile();
   }
 
@@ -1095,7 +1217,8 @@
       container.innerHTML = '';
 
       const tasks = isCompleted ? state[key] : sortSection(state[key], key);
-      tasks.forEach(task => {
+      const filtered = tasks.filter(t => taskMatchesSearch(t, searchQuery));
+      filtered.forEach(task => {
         const dotCls = dueDotClass(task.due);
         const item = document.createElement('div');
         item.className = 'mobile-item' + (task.done ? ' done' : '') + (expanded.has(task.id) ? ' expanded' : '');
@@ -1118,6 +1241,7 @@
             ${task.due ? `<div class="mobile-detail-row"><span class="mobile-detail-label">Due</span><span class="mobile-detail-val">${fmtDateShort(task.due)}</span></div>` : ''}
             ${task.created ? `<div class="mobile-detail-row"><span class="mobile-detail-label">Created</span><span class="mobile-detail-val">${fmtDateShort(task.created)}</span></div>` : ''}
             ${task.notes ? `<div class="mobile-detail-row"><span class="mobile-detail-label">Notes</span><span class="mobile-detail-val notes-val">${escHtml(task.notes)}</span></div>` : ''}
+            <div class="mobile-detail-row"><span class="mobile-detail-label">Type</span><span class="mobile-detail-val">${task.type || 'work'}</span></div>
             ${!isCompleted ? `<div class="mobile-detail-actions">
               <button class="mobile-action-btn notes-open-btn">✎ Notes</button>
               <button class="mobile-action-btn danger delete-mobile-btn">× Delete</button>
@@ -1225,11 +1349,75 @@
     render();
   }
 
+  // ── SEARCH & FILTER ──
+  let searchQuery  = '';
+  let activeFilter = 'all';
+
+  function setFilter(f) {
+    activeFilter = f;
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.filter === f);
+    });
+    render();
+  }
+
+  function initSearch() {
+    const input = document.getElementById('search-input');
+    const clear = document.getElementById('search-clear');
+    input.addEventListener('input', () => {
+      searchQuery = input.value.trim().toLowerCase();
+      clear.classList.toggle('visible', searchQuery.length > 0);
+      render();
+    });
+  }
+
+  function clearSearch() {
+    document.getElementById('search-input').value = '';
+    searchQuery = '';
+    document.getElementById('search-clear').classList.remove('visible');
+    document.getElementById('search-count').textContent = '';
+    render();
+  }
+
+  function taskMatchesSearch(task, q) {
+    if (activeFilter !== 'all' && (task.type || 'work') !== activeFilter) return false;
+    if (!q) return true;
+    return (task.company     || '').toLowerCase().includes(q)
+        || (task.description || '').toLowerCase().includes(q)
+        || (task.notes       || '').toLowerCase().includes(q)
+        || (task.url         || '').toLowerCase().includes(q);
+  }
+
+  function highlightText(text, q) {
+    if (!q || !text) return escHtml(text || '');
+    const safe = escHtml(text);
+    const safeQ = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return safe.replace(new RegExp(safeQ, 'gi'), m => `<mark class="search-match">${m}</mark>`);
+  }
+
+  // ── CLEAN COMPLETED ──
+  function cleanCompleted() {
+    const days = parseInt(document.getElementById('clean-days').value, 10);
+    if (isNaN(days) || days < 1) return;
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - days);
+    const cutoffISO = cutoff.toISOString().slice(0, 10);
+    const before = state.completed.length;
+    state.completed = state.completed.filter(t => {
+      const date = t.completedAt || t.created || '';
+      return date > cutoffISO;
+    });
+    const removed = before - state.completed.length;
+    if (removed > 0) { scheduleSave(); render(); }
+    alert(`Removed ${removed} completed task${removed !== 1 ? 's' : ''} older than ${days} days.`);
+  }
+
   // ── INIT ──
   document.getElementById('date-label').textContent =
     new Date().toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
 
   initSortListeners();
+  initSearch();
 
   // notes modal listeners (elements exist now)
   document.getElementById('notes-modal').addEventListener('click', e => {
