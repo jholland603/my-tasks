@@ -19,6 +19,15 @@
       "done": false
     },
     {
+      "id": "1777556202388-7985",
+      "company": "PREPRE",
+      "description": "Data migration",
+      "url": "",
+      "created": "2026-04-30",
+      "due": "",
+      "done": false
+    },
+    {
       "id": "1777556221941-822",
       "company": "SYNRES",
       "description": "Desk Tickets",
@@ -39,16 +48,6 @@
       "done": false
     }
   ],
-  "back": [
-    {
-      "id": "1777556202388-7985",
-      "company": "PREPRE",
-      "description": "Data migration",
-      "url": "",
-      "created": "2026-04-30",
-      "due": "",
-      "done": false
-    }
-  ],
+  "back": [],
   "completed": []
 }
