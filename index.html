@@ -111,7 +111,7 @@
 
   /* ── HEADER ── */
   header {
-    max-width: 680px;
+    max-width: 860px;
     margin: 0 auto 48px;
     display: flex;
     align-items: baseline;
@@ -165,7 +165,7 @@
 
   /* ── BOARD ── */
   .board {
-    max-width: 680px;
+    max-width: 860px;
     margin: 0 auto;
     display: flex;
     flex-direction: column;
@@ -230,6 +230,71 @@
   .task:hover { background: #faf8f4; }
   .task.dragging { opacity: 0.4; cursor: grabbing; }
   .task.done .task-text { text-decoration: line-through; color: var(--muted); }
+
+  /* ── TASK BODY ── */
+  .task-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+  }
+
+  .task-fields {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .task-field {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-width: 0;
+  }
+
+  .field-tag {
+    font-size: 9px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .field-input {
+    background: none;
+    border: none;
+    border-bottom: 1px solid var(--line);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--ink);
+    outline: none;
+    padding: 1px 4px;
+    min-width: 60px;
+    transition: border-color 0.15s;
+  }
+
+  .field-input:focus { border-color: var(--ink); }
+  .field-input::placeholder { color: var(--line); }
+
+  .field-input.url-input { min-width: 140px; }
+
+  .url-link {
+    font-size: 11px;
+    color: var(--week);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.15s;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
+    display: inline-block;
+  }
+
+  .url-link:hover { border-color: var(--week); }
 
   .drag-handle {
     color: var(--line);
@@ -321,7 +386,7 @@
   .drop-indicator.visible { display: block; }
 
   .hint {
-    max-width: 680px;
+    max-width: 860px;
     margin: 40px auto 0;
     color: var(--muted);
     font-size: 11px;
@@ -552,7 +617,7 @@
   // ── TASK OPERATIONS ──
   function addTask(section, text = '') {
     const id = Date.now() + '-' + Math.floor(Math.random() * 9999);
-    state[section].push({ id, text, done: false });
+    state[section].push({ id, text, done: false, company: '', description: '', url: '' });
     scheduleSave();
     render();
     setTimeout(() => {
@@ -574,6 +639,11 @@
   function updateText(section, id, text) {
     const t = state[section].find(t => t.id === id);
     if (t) { t.text = text; scheduleSave(); }
+  }
+
+  function updateField(section, id, field, value) {
+    const t = state[section].find(t => t.id === id);
+    if (t) { t[field] = value; scheduleSave(); }
   }
 
   // ── DRAG & DROP ──
@@ -635,17 +705,61 @@
         li.innerHTML = `
           <span class="drag-handle" title="drag to move">⠿</span>
           <input type="checkbox" ${task.done ? 'checked' : ''}>
-          <span class="task-text" contenteditable="true" data-id="${task.id}" data-placeholder="new task...">${escHtml(task.text)}</span>
+          <div class="task-main">
+            <span class="task-text" contenteditable="true" data-id="${task.id}" data-placeholder="new task...">${escHtml(task.text)}</span>
+            <div class="task-fields">
+              <div class="task-field">
+                <span class="field-tag">co</span>
+                <input class="field-input" type="text" placeholder="company id" value="${escHtml(task.company||'')}">
+              </div>
+              <div class="task-field">
+                <span class="field-tag">desc</span>
+                <input class="field-input" type="text" placeholder="description" value="${escHtml(task.description||'')}">
+              </div>
+              <div class="task-field">
+                <span class="field-tag">url</span>
+                ${task.url ? `<a class="url-link" href="${escHtml(task.url)}" target="_blank" rel="noopener" title="${escHtml(task.url)}">${escHtml(task.url)}</a>` : ''}
+                <input class="field-input url-input" type="text" placeholder="https://…" value="${escHtml(task.url||'')}">
+              </div>
+            </div>
+          </div>
           <button class="delete-btn" title="remove">×</button>
         `;
 
-        li.querySelector('input').addEventListener('change', () => toggleTask(sec, task.id));
+        li.querySelector('input[type="checkbox"]').addEventListener('change', () => toggleTask(sec, task.id));
         li.querySelector('.delete-btn').addEventListener('click', () => deleteTask(sec, task.id));
 
         const span = li.querySelector('.task-text');
         span.addEventListener('input', () => updateText(sec, task.id, span.textContent));
         span.addEventListener('keydown', e => {
           if (e.key === 'Enter') { e.preventDefault(); addTask(sec); }
+        });
+
+        // field inputs
+        const fields = li.querySelectorAll('.task-fields .field-input');
+        const fieldNames = ['company', 'description', 'url'];
+        fields.forEach((input, i) => {
+          input.addEventListener('change', () => updateField(sec, task.id, fieldNames[i], input.value));
+          input.addEventListener('input',  () => updateField(sec, task.id, fieldNames[i], input.value));
+          // URL: show/hide link when url field changes
+          if (fieldNames[i] === 'url') {
+            input.addEventListener('change', () => {
+              const linkEl = li.querySelector('.url-link');
+              if (input.value) {
+                if (linkEl) { linkEl.href = input.value; linkEl.textContent = input.value; linkEl.title = input.value; }
+                else {
+                  const a = document.createElement('a');
+                  a.className = 'url-link';
+                  a.href = input.value;
+                  a.textContent = input.value;
+                  a.title = input.value;
+                  a.target = '_blank';
+                  a.rel = 'noopener';
+                  input.parentNode.insertBefore(a, input);
+                }
+              } else if (linkEl) { linkEl.remove(); }
+            });
+          }
         });
 
         setupDrag(li, sec, task.id);
