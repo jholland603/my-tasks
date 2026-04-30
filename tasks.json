@@ -26,6 +26,15 @@
       "created": "2026-04-29",
       "due": "2026-05-01",
       "done": false
+    },
+    {
+      "id": "1777556202388-7985",
+      "company": "PREPRE",
+      "description": "Data migration",
+      "url": "",
+      "created": "2026-04-30",
+      "due": "",
+      "done": false
     }
   ],
   "week": [
@@ -40,17 +49,5 @@
     }
   ],
   "back": [],
-  "completed": [
-    {
-      "id": "1777556202388-7985",
-      "company": "PREPRE",
-      "description": "Data migration",
-      "url": "",
-      "created": "2026-04-30",
-      "due": "",
-      "done": true,
-      "completedFrom": "today",
-      "completedAt": "2026-04-30"
-    }
-  ]
+  "completed": []
 }
