@@ -1,7 +1,7 @@
 {
   "sortState": {
     "today": {
-      "col": "manual",
+      "col": "due",
       "dir": "asc"
     },
     "week": {
