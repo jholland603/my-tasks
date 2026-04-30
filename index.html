@@ -531,7 +531,7 @@
 
 </div>
 
-<p class="hint">drag rows between sections &nbsp;·&nbsp; click any cell to edit &nbsp;·&nbsp; overdue dates appear in red &nbsp;·&nbsp; syncs to GitHub<br>v1.12</p>
+<p class="hint">drag rows between sections &nbsp;·&nbsp; click any cell to edit &nbsp;·&nbsp; overdue dates appear in red &nbsp;·&nbsp; syncs to GitHub<br>v1.13</p>
 
 <!-- NOTES MODAL -->
 <div id="notes-modal" class="hidden">
@@ -1001,7 +1001,7 @@
           <td class="cell-drag" title="drag to move">⠿</td>
           <td class="cell-check"><input type="checkbox"></td>
           <td class="cell-company"><input class="company-input" type="text" list="company-list" value="${escHtml(task.company||'')}" placeholder="—"></td>
-          <td class="cell-text"><span class="cell-editable" contenteditable="true" data-id="${task.id}" data-ph="description">${escHtml(task.description||'')}</span></td>
+          <td class="cell-text"><span class="cell-editable" contenteditable="true" data-id="${task.id}" data-ph="description" title="${escHtml(task.description||'')}">${escHtml(task.description||'')}</span></td>
           <td class="cell-url">
             <div class="url-display${hasUrl ? '' : ' hidden'}">
               ${hasUrl ? `<a class="url-link" href="${escHtml(task.url)}" target="_blank" rel="noopener" title="${escHtml(task.url)}">${escHtml(task.url)}</a>` : ''}
@@ -1027,7 +1027,7 @@
         companyInput.addEventListener('change', () => { updateField(sec, task.id, 'company', companyInput.value); updateDatalist(); });
         companyInput.addEventListener('input',  () => updateField(sec, task.id, 'company', companyInput.value));
         const descSpan = tr.querySelector('[contenteditable]');
-        descSpan.addEventListener('input',   () => updateField(sec, task.id, 'description', descSpan.textContent));
+        descSpan.addEventListener('input',   () => { updateField(sec, task.id, 'description', descSpan.textContent); descSpan.title = descSpan.textContent; });
         descSpan.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addTask(sec); } });
         wireUrl(tr, sec, task);
         wireDates(tr, sec, task);
