@@ -60,6 +60,15 @@
   .setup-btn:hover { opacity: 0.85; }
   .setup-error { color: var(--today-c); font-size: 11px; margin-top: 10px; display: none; }
 
+  .token-wrap { position: relative; margin-bottom: 20px; }
+  .token-wrap .setup-input { margin-bottom: 0; padding-right: 40px; }
+  .token-toggle {
+    position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+    background: none; border: none; cursor: pointer;
+    font-size: 16px; padding: 0; opacity: 0.5; transition: opacity 0.15s;
+  }
+  .token-toggle:hover { opacity: 1; }
+
   /* ── PAGE HEADER ── */
   header {
     max-width: 1400px; margin: 0 auto 36px;
@@ -346,7 +355,10 @@
     <div class="field-label">Repository name</div>
     <input class="setup-input" id="setup-repo" type="text" placeholder="my-tasks" value="my-tasks">
     <div class="field-label">Personal Access Token</div>
-    <input class="setup-input" id="setup-token" type="password" placeholder="github_pat_…">
+    <div class="token-wrap">
+      <input class="setup-input" id="setup-token" type="password" placeholder="github_pat_…">
+      <button class="token-toggle" type="button" onclick="toggleTokenVisibility()" title="Show/hide token">👁</button>
+    </div>
     <button class="setup-btn" onclick="setupSave()">Save &amp; Connect</button>
     <div class="setup-error" id="setup-error"></div>
   </div>
@@ -461,6 +473,11 @@
     document.getElementById('setup-repo').value  = getRepo();
     document.getElementById('setup-token').value = getToken() || '';
     document.getElementById('setup-overlay').classList.remove('hidden');
+  }
+
+  function toggleTokenVisibility() {
+    const input = document.getElementById('setup-token');
+    input.type = input.type === 'password' ? 'text' : 'password';
   }
 
   async function setupSave() {
