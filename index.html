@@ -127,7 +127,6 @@
   .task-row {
     border-bottom: 1px solid var(--line);
     transition: background 0.12s, opacity 0.2s;
-    cursor: grab;
   }
   .task-row:last-child { border-bottom: none; }
   .task-row:hover { background: var(--row-hover); }
@@ -142,6 +141,7 @@
     cursor: grab; padding-left: 6px; user-select: none; transition: color 0.15s;
   }
   .task-row:hover .cell-drag { color: var(--muted); }
+  .task-row { cursor: default; }
 
   .cell-check { text-align: center; }
   input[type="checkbox"] {
@@ -545,7 +545,7 @@
   }
 
   // ── DRAG & DROP ──
-  let dragOverId = null; // id of task being hovered over
+  let dragOverId = null;
 
   function sortSection(tasks) {
     return [...tasks].sort((a, b) => {
@@ -559,31 +559,42 @@
   }
 
   function setupDrag(tr, section, taskId) {
-    tr.draggable = true;
+    const handle = tr.querySelector('.cell-drag');
+
+    // only enable dragging when mousedown starts on the handle
+    tr.draggable = false;
+    handle.addEventListener('mousedown', () => { tr.draggable = true; });
+    document.addEventListener('mouseup', () => { tr.draggable = false; }, { passive: true });
 
     tr.addEventListener('dragstart', e => {
+      if (!tr.draggable) { e.preventDefault(); return; }
       dragSrc = { section, id: taskId };
       tr.classList.add('dragging');
       e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', taskId);
     });
 
     tr.addEventListener('dragend', () => {
+      tr.draggable = false;
       tr.classList.remove('dragging');
       dragOverId = null;
       document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
       document.querySelectorAll('.drop-above').forEach(el => el.classList.remove('drop-above'));
     });
 
-    // within-section row reordering
     tr.addEventListener('dragover', e => {
       e.preventDefault();
-      if (!dragSrc) return;
-      if (dragSrc.id === taskId) return;
+      if (!dragSrc || dragSrc.id === taskId) return;
       if (dragOverId !== taskId) {
         document.querySelectorAll('.drop-above').forEach(el => el.classList.remove('drop-above'));
         dragOverId = taskId;
         tr.classList.add('drop-above');
       }
+    });
+
+    tr.addEventListener('dragleave', () => {
+      tr.classList.remove('drop-above');
+      if (dragOverId === taskId) dragOverId = null;
     });
 
     tr.addEventListener('drop', e => {
@@ -592,7 +603,7 @@
       if (!dragSrc || dragSrc.id === taskId) return;
 
       if (dragSrc.section === section) {
-        // reorder within same section
+        // reorder within same section — work on state array directly
         const arr = state[section];
         const fromIdx = arr.findIndex(t => t.id === dragSrc.id);
         const toIdx   = arr.findIndex(t => t.id === taskId);
@@ -606,7 +617,7 @@
         state[dragSrc.section] = state[dragSrc.section].filter(t => t.id !== dragSrc.id);
         task.done = false;
         const toIdx = state[section].findIndex(t => t.id === taskId);
-        state[section].splice(toIdx, 0, task);
+        state[section].splice(Math.max(toIdx, 0), 0, task);
       }
       dragSrc = null; scheduleSave(); render();
     });
@@ -623,7 +634,6 @@
     });
     secEl.addEventListener('drop', e => {
       e.preventDefault(); secEl.classList.remove('drag-over');
-      // only handle drops onto the section itself (not onto a row — rows handle their own)
       if (!dragSrc || dragSrc.section === sectionName) return;
       if (e.target.closest('tr.task-row')) return;
       const task = state[dragSrc.section].find(t => t.id === dragSrc.id); if (!task) return;
