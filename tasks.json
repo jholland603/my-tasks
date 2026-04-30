@@ -1,5 +1,16 @@
 {
   "today": [],
-  "week": [],
+  "week": [
+    {
+      "id": "1777553180909-3978",
+      "text": "",
+      "company": "",
+      "description": "",
+      "url": "",
+      "created": "2026-04-30",
+      "due": "",
+      "done": false
+    }
+  ],
   "back": []
 }
