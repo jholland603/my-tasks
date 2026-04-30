@@ -35,11 +35,7 @@
       "created": "2026-04-30",
       "due": "2026-04-30",
       "done": false
-    }
-  ],
-  "week": [],
-  "back": [],
-  "completed": [
+    },
     {
       "id": "1777556211436-2418",
       "company": "VANELE",
@@ -47,10 +43,11 @@
       "url": "",
       "created": "2026-04-30",
       "due": "2026-04-30",
-      "done": true,
-      "notes": "",
-      "completedFrom": "today",
-      "completedAt": "2026-04-30"
+      "done": false,
+      "notes": ""
     }
-  ]
+  ],
+  "week": [],
+  "back": [],
+  "completed": []
 }
