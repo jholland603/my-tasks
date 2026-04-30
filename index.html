@@ -422,11 +422,13 @@
 </div>
 
 <script>
-  const GITHUB_USER = 'jholland603';
-  const DATA_FILE   = 'tasks.json';
-  const LS_TOKEN    = 'mytasks_token';
-  const LS_REPO     = 'mytasks_repo';
-  const LS_SHA      = 'mytasks_sha';
+  const GITHUB_USER   = 'jholland603';
+  const DATA_FILE     = 'tasks.json';
+  const SETTINGS_FILE = 'settings.json';
+  const LS_TOKEN      = 'mytasks_token';
+  const LS_REPO       = 'mytasks_repo';
+  const LS_SHA        = 'mytasks_sha';
+  const LS_SETTINGS_SHA = 'mytasks_settings_sha';
 
   let state = { today: [], week: [], back: [], completed: [] };
   let saveTimer = null;
@@ -529,6 +531,7 @@
       }
       state = { today: decoded.today||[], week: decoded.week||[], back: decoded.back||[], completed: decoded.completed||[] };
       promoteTodayTasks();
+      await loadSettingsFromGitHub(token);
       setSyncState('saved','synced'); render();
     } catch(e) {
       setSyncState('error', e.message || 'load error');
@@ -558,6 +561,49 @@
   }
 
   function scheduleSave() { clearTimeout(saveTimer); saveTimer = setTimeout(saveToGitHub, 1200); }
+
+  async function loadSettingsFromGitHub(token) {
+    try {
+      const r = await fetch(
+        `https://api.github.com/repos/${GITHUB_USER}/${getRepo()}/contents/${SETTINGS_FILE}`,
+        { headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' } }
+      );
+      if (!r.ok) return; // no settings file yet — use defaults
+      const data = await r.json();
+      localStorage.setItem(LS_SETTINGS_SHA, data.sha);
+      const decoded = JSON.parse(atob(data.content.replace(/\n/g,'')));
+      if (decoded.sortState) {
+        Object.assign(sortState, decoded.sortState);
+        saveSortState(); // keep localStorage in sync too
+      }
+    } catch(e) {}
+  }
+
+  let settingsSaveTimer = null;
+  async function saveSettingsToGitHub() {
+    const token = getToken(); if (!token) return;
+    try {
+      const sha = localStorage.getItem(LS_SETTINGS_SHA);
+      const settings = { sortState };
+      const content = btoa(unescape(encodeURIComponent(JSON.stringify(settings, null, 2))));
+      const r = await fetch(
+        `https://api.github.com/repos/${GITHUB_USER}/${getRepo()}/contents/${SETTINGS_FILE}`,
+        {
+          method: 'PUT',
+          headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: 'update settings', content, ...(sha ? { sha } : {}) })
+        }
+      );
+      if (!r.ok) return;
+      const data = await r.json();
+      localStorage.setItem(LS_SETTINGS_SHA, data.content.sha);
+    } catch(e) {}
+  }
+
+  function scheduleSettingsSave() {
+    clearTimeout(settingsSaveTimer);
+    settingsSaveTimer = setTimeout(saveSettingsToGitHub, 1500);
+  }
   function setSyncState(s, label) {
     document.getElementById('sync-dot').className = 'sync-dot ' + s;
     document.getElementById('sync-label').textContent = label;
@@ -641,6 +687,7 @@
       sortState[sec] = { col, dir: 'asc' };
     }
     saveSortState();
+    scheduleSettingsSave();
     render();
   }
 
@@ -758,6 +805,7 @@
         arr.splice(toIdx, 0, moved);
         sortState[section] = { col: 'manual', dir: 'asc' };
         saveSortState();
+        scheduleSettingsSave();
       } else {
         // move between sections
         const task = state[dragSrc.section].find(t => t.id === dragSrc.id);
