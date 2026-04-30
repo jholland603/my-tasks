@@ -456,13 +456,24 @@
         { headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' } }
       );
       if (r.status === 404) { setSyncState('saved','synced'); render(); return; }
-      if (!r.ok) throw new Error();
+      if (!r.ok) {
+        const body = await r.json().catch(() => ({}));
+        throw new Error(`HTTP ${r.status}: ${body.message || 'unknown error'}`);
+      }
       const data = await r.json();
       localStorage.setItem(LS_SHA, data.sha);
-      const decoded = JSON.parse(atob(data.content.replace(/\n/g,'')));
+      let decoded;
+      try {
+        decoded = JSON.parse(atob(data.content.replace(/\n/g,'')));
+      } catch(e) {
+        throw new Error('Could not parse tasks.json — file may be corrupted');
+      }
       state = { today: decoded.today||[], week: decoded.week||[], back: decoded.back||[], completed: decoded.completed||[] };
       setSyncState('saved','synced'); render();
-    } catch { setSyncState('error','load error'); render(); }
+    } catch(e) {
+      setSyncState('error', e.message || 'load error');
+      render();
+    }
   }
 
   async function saveToGitHub() {
@@ -593,6 +604,7 @@
           </td>
           <td class="cell-date"><input class="date-input" type="date" value="${escHtml(task.created||todayISO())}"></td>
           <td class="cell-date"><input class="date-input${isOverdue(task.due) ? ' overdue' : ''}" type="date" value="${escHtml(task.due||'')}"></td>
+          <td class="cell-notes"><button class="notes-btn${task.notes ? ' has-note' : ''}" title="${task.notes ? 'Has notes — click to edit' : 'Add notes'}">✎</button></td>
           <td class="cell-del"><button class="delete-btn" title="remove">×</button></td>
         `;
 
@@ -606,6 +618,7 @@
         wireUrl(tr, sec, task);
         wireDates(tr, sec, task);
         tr.querySelector('.delete-btn').addEventListener('click', () => deleteTask(sec, task.id));
+        tr.querySelector('.notes-btn').addEventListener('click', () => openNotes(sec, task.id));
         setupDrag(tr, sec, task.id);
         tbody.appendChild(tr);
       });
@@ -633,9 +646,11 @@
         <td class="cell-url-ro">${hasUrl ? `<a class="url-link" href="${escHtml(task.url)}" target="_blank" rel="noopener">${escHtml(task.url)}</a>` : ''}</td>
         <td class="cell-date-ro center">${escHtml(task.created||'')}</td>
         <td class="cell-date-ro center">${escHtml(task.due||'')}</td>
+        <td class="cell-notes"><button class="notes-btn${task.notes ? ' has-note' : ''}" title="${task.notes ? 'Has notes' : 'Notes'}">✎</button></td>
         <td class="cell-del"><button class="delete-btn" title="remove">×</button></td>
       `;
       tr.querySelector('input[type="checkbox"]').addEventListener('change', () => toggleTask('completed', task.id));
+      tr.querySelector('.notes-btn').addEventListener('click', () => openNotes('completed', task.id));
       tr.querySelector('.delete-btn').addEventListener('click', () => deleteTask('completed', task.id));
       ctbody.appendChild(tr);
     });
@@ -677,6 +692,43 @@
       dateInputs[1].classList.toggle('overdue', isOverdue(dateInputs[1].value));
     });
   }
+
+  // ── NOTES MODAL ──
+  let notesContext = null; // { section, id }
+
+  function openNotes(section, id) {
+    const task = state[section].find(t => t.id === id);
+    if (!task) return;
+    notesContext = { section, id };
+    document.getElementById('notes-modal-title').textContent = task.description || task.company || 'Notes';
+    document.getElementById('notes-textarea').value = task.notes || '';
+    document.getElementById('notes-modal').classList.remove('hidden');
+    setTimeout(() => document.getElementById('notes-textarea').focus(), 30);
+  }
+
+  function closeNotes() {
+    document.getElementById('notes-modal').classList.add('hidden');
+    notesContext = null;
+  }
+
+  function saveNotes() {
+    if (!notesContext) return;
+    const val = document.getElementById('notes-textarea').value;
+    updateField(notesContext.section, notesContext.id, 'notes', val);
+    closeNotes();
+    render();
+  }
+
+  // close on backdrop click
+  document.getElementById('notes-modal').addEventListener('click', e => {
+    if (e.target === document.getElementById('notes-modal')) closeNotes();
+  });
+
+  // Ctrl+Enter or Escape shortcuts
+  document.getElementById('notes-textarea').addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeNotes();
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') saveNotes();
+  });
 
   // ── INIT ──
   document.getElementById('date-label').textContent =
