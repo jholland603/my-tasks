@@ -165,6 +165,18 @@
   .cell-editable:empty::before { content: attr(data-ph); color: var(--line); pointer-events: none; }
   .cell-editable:focus { background: #fffef9; text-overflow: clip; overflow: visible; position: relative; z-index: 2; }
 
+  /* company dropdown */
+  .cell-company { padding: 0; }
+  .company-input {
+    background: none; border: none;
+    font-family: 'DM Mono', monospace; font-size: 12px;
+    color: var(--ink); outline: none;
+    width: 100%; padding: 9px 8px 9px 0;
+    cursor: pointer;
+  }
+  .company-input::placeholder { color: var(--line); }
+  .company-input:focus { background: #fffef9; }
+
   /* URL cell */
   .cell-url { padding: 9px 8px 9px 0; }
   .url-display { display: flex; align-items: center; gap: 4px; }
@@ -256,30 +268,30 @@
   <div class="section today" id="sec-today">
     <div class="section-title"><div class="dot"></div><span class="section-label">Today</span><span class="count" id="count-today">0 / 3</span></div>
     <table class="task-table">
-      <colgroup><col class="col-drag"><col class="col-check"><col class="col-task"><col class="col-company"><col class="col-desc"><col class="col-url"><col class="col-created"><col class="col-due"><col class="col-del"></colgroup>
-      <thead><tr class="col-headers"><th></th><th></th><th>Task</th><th>Company</th><th>Description</th><th>URL</th><th class="center">Created</th><th class="center">Due</th><th></th></tr></thead>
+      <colgroup><col class="col-drag"><col class="col-check"><col class="col-company"><col class="col-desc"><col class="col-url"><col class="col-created"><col class="col-due"><col class="col-del"></colgroup>
+      <thead><tr class="col-headers"><th></th><th></th><th>Company</th><th>Description</th><th>URL</th><th class="center">Created</th><th class="center">Due</th><th></th></tr></thead>
       <tbody id="list-today"></tbody>
-      <tfoot><tr class="add-row"><td colspan="9"><button class="add-btn" onclick="addTask('today')">+ add task</button></td></tr></tfoot>
+      <tfoot><tr class="add-row"><td colspan="8"><button class="add-btn" onclick="addTask('today')">+ add task</button></td></tr></tfoot>
     </table>
   </div>
 
   <div class="section week" id="sec-week">
     <div class="section-title"><div class="dot"></div><span class="section-label">This Week</span><span class="count" id="count-week">0</span></div>
     <table class="task-table">
-      <colgroup><col class="col-drag"><col class="col-check"><col class="col-task"><col class="col-company"><col class="col-desc"><col class="col-url"><col class="col-created"><col class="col-due"><col class="col-del"></colgroup>
-      <thead><tr class="col-headers"><th></th><th></th><th>Task</th><th>Company</th><th>Description</th><th>URL</th><th class="center">Created</th><th class="center">Due</th><th></th></tr></thead>
+      <colgroup><col class="col-drag"><col class="col-check"><col class="col-company"><col class="col-desc"><col class="col-url"><col class="col-created"><col class="col-due"><col class="col-del"></colgroup>
+      <thead><tr class="col-headers"><th></th><th></th><th>Company</th><th>Description</th><th>URL</th><th class="center">Created</th><th class="center">Due</th><th></th></tr></thead>
       <tbody id="list-week"></tbody>
-      <tfoot><tr class="add-row"><td colspan="9"><button class="add-btn" onclick="addTask('week')">+ add task</button></td></tr></tfoot>
+      <tfoot><tr class="add-row"><td colspan="8"><button class="add-btn" onclick="addTask('week')">+ add task</button></td></tr></tfoot>
     </table>
   </div>
 
   <div class="section back" id="sec-back">
     <div class="section-title"><div class="dot"></div><span class="section-label">Backlog</span><span class="count" id="count-back">0</span></div>
     <table class="task-table">
-      <colgroup><col class="col-drag"><col class="col-check"><col class="col-task"><col class="col-company"><col class="col-desc"><col class="col-url"><col class="col-created"><col class="col-due"><col class="col-del"></colgroup>
-      <thead><tr class="col-headers"><th></th><th></th><th>Task</th><th>Company</th><th>Description</th><th>URL</th><th class="center">Created</th><th class="center">Due</th><th></th></tr></thead>
+      <colgroup><col class="col-drag"><col class="col-check"><col class="col-company"><col class="col-desc"><col class="col-url"><col class="col-created"><col class="col-due"><col class="col-del"></colgroup>
+      <thead><tr class="col-headers"><th></th><th></th><th>Company</th><th>Description</th><th>URL</th><th class="center">Created</th><th class="center">Due</th><th></th></tr></thead>
       <tbody id="list-back"></tbody>
-      <tfoot><tr class="add-row"><td colspan="9"><button class="add-btn" onclick="addTask('back')">+ add task</button></td></tr></tfoot>
+      <tfoot><tr class="add-row"><td colspan="8"><button class="add-btn" onclick="addTask('back')">+ add task</button></td></tr></tfoot>
     </table>
   </div>
 
@@ -294,7 +306,7 @@
   const LS_REPO     = 'mytasks_repo';
   const LS_SHA      = 'mytasks_sha';
 
-  let state = { today: [], week: [], back: [] };
+  let state = { today: [], week: [], back: [], completed: [] };
   let saveTimer = null;
   let dragSrc = null;
 
@@ -354,7 +366,7 @@
       const data = await r.json();
       localStorage.setItem(LS_SHA, data.sha);
       const decoded = JSON.parse(atob(data.content.replace(/\n/g,'')));
-      state = { today: decoded.today||[], week: decoded.week||[], back: decoded.back||[] };
+      state = { today: decoded.today||[], week: decoded.week||[], back: decoded.back||[], completed: decoded.completed||[] };
       setSyncState('saved','synced'); render();
     } catch { setSyncState('error','load error'); render(); }
   }
@@ -389,14 +401,31 @@
   // ── TASK OPS ──
   function addTask(section) {
     const id = Date.now() + '-' + Math.floor(Math.random() * 9999);
-    state[section].push({ id, text:'', company:'', description:'', url:'', created: todayISO(), due:'', done: false });
+    state[section].push({ id, company:'', description:'', url:'', created: todayISO(), due:'', done: false });
     scheduleSave(); render();
-    setTimeout(() => { const el = document.querySelector(`[data-id="${id}"]`); if (el) el.focus(); }, 30);
+    setTimeout(() => {
+      const row = document.querySelector(`[data-task-id="${id}"]`);
+      if (row) row.querySelector('.company-input').focus();
+    }, 30);
   }
 
   function toggleTask(section, id) {
     const t = state[section].find(t => t.id === id);
-    if (t) { t.done = !t.done; scheduleSave(); render(); }
+    if (!t) return;
+    if (section !== 'completed') {
+      // move to completed
+      state[section] = state[section].filter(t => t.id !== id);
+      t.done = true; t.completedFrom = section; t.completedAt = todayISO();
+      state.completed.unshift(t);
+    } else {
+      // restore to original section (or backlog if unknown)
+      state.completed = state.completed.filter(t => t.id !== id);
+      t.done = false;
+      const dest = t.completedFrom || 'back';
+      delete t.completedFrom; delete t.completedAt;
+      state[dest].push(t);
+    }
+    scheduleSave(); render();
   }
 
   function deleteTask(section, id) {
@@ -429,23 +458,36 @@
     });
   }
 
-  // ── RENDER ──
+  // ── COMPANY LIST ──
+  function getCompanies() {
+    const all = [...state.today, ...state.week, ...state.back, ...state.completed];
+    const set = new Set(all.map(t => (t.company||'').trim()).filter(Boolean));
+    return [...set].sort((a,b) => a.localeCompare(b));
+  }
+
+  function updateDatalist() {
+    let dl = document.getElementById('company-list');
+    if (!dl) { dl = document.createElement('datalist'); dl.id = 'company-list'; document.body.appendChild(dl); }
+    dl.innerHTML = getCompanies().map(c => `<option value="${escHtml(c)}">`).join('');
+  }
+
   function render() {
+    updateDatalist();
     ['today','week','back'].forEach(sec => {
       const tbody = document.getElementById('list-' + sec);
       tbody.innerHTML = '';
 
       state[sec].forEach(task => {
         const tr = document.createElement('tr');
-        tr.className = 'task-row' + (task.done ? ' done' : '');
+        tr.className = 'task-row';
+        tr.dataset.taskId = task.id;
 
         const hasUrl = !!task.url;
         tr.innerHTML = `
           <td class="cell-drag" title="drag to move">⠿</td>
-          <td class="cell-check"><input type="checkbox" ${task.done ? 'checked' : ''}></td>
-          <td class="cell-text"><span class="cell-editable" contenteditable="true" data-id="${task.id}" data-ph="task name">${escHtml(task.text)}</span></td>
-          <td class="cell-text"><span class="cell-editable" contenteditable="true" data-ph="—">${escHtml(task.company||'')}</span></td>
-          <td class="cell-text"><span class="cell-editable" contenteditable="true" data-ph="—">${escHtml(task.description||'')}</span></td>
+          <td class="cell-check"><input type="checkbox"></td>
+          <td class="cell-company"><input class="company-input" type="text" list="company-list" value="${escHtml(task.company||'')}" placeholder="—"></td>
+          <td class="cell-text"><span class="cell-editable" contenteditable="true" data-id="${task.id}" data-ph="description">${escHtml(task.description||'')}</span></td>
           <td class="cell-url">
             <div class="url-display${hasUrl ? '' : ' hidden'}">
               ${hasUrl ? `<a class="url-link" href="${escHtml(task.url)}" target="_blank" rel="noopener" title="${escHtml(task.url)}">${escHtml(task.url)}</a>` : ''}
@@ -456,81 +498,91 @@
             </div>
           </td>
           <td class="cell-date"><input class="date-input" type="date" value="${escHtml(task.created||todayISO())}"></td>
-          <td class="cell-date"><input class="date-input${isOverdue(task.due) && !task.done ? ' overdue' : ''}" type="date" value="${escHtml(task.due||'')}"></td>
+          <td class="cell-date"><input class="date-input${isOverdue(task.due) ? ' overdue' : ''}" type="date" value="${escHtml(task.due||'')}"></td>
           <td class="cell-del"><button class="delete-btn" title="remove">×</button></td>
         `;
 
-        // checkbox
         tr.querySelector('input[type="checkbox"]').addEventListener('change', () => toggleTask(sec, task.id));
-
-        // contenteditable
-        const editables = tr.querySelectorAll('[contenteditable]');
-        const fieldMap  = ['text','company','description'];
-        editables.forEach((el, i) => {
-          el.addEventListener('input', () => updateField(sec, task.id, fieldMap[i], el.textContent));
-          if (i === 0) el.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addTask(sec); } });
-        });
-
-        // URL
-        const urlDisplay = tr.querySelector('.url-display');
-        const urlWrap    = tr.querySelector('.url-input-wrap');
-        const urlInput   = tr.querySelector('.url-plain');
-        const urlEditBtn = tr.querySelector('.url-edit-btn');
-
-        function commitUrl() {
-          const val = urlInput.value.trim();
-          updateField(sec, task.id, 'url', val);
-          if (val) {
-            let link = urlDisplay.querySelector('.url-link');
-            if (link) { link.href = val; link.textContent = val; link.title = val; }
-            else {
-              link = document.createElement('a');
-              link.className = 'url-link'; link.href = val; link.textContent = val;
-              link.title = val; link.target = '_blank'; link.rel = 'noopener';
-              urlDisplay.insertBefore(link, urlEditBtn);
-            }
-            urlDisplay.classList.remove('hidden');
-            urlWrap.classList.remove('active');
-          } else {
-            urlDisplay.classList.add('hidden');
-            urlWrap.classList.add('active');
-          }
-        }
-
-        if (urlEditBtn) {
-          urlEditBtn.addEventListener('click', e => {
-            e.stopPropagation();
-            urlDisplay.classList.add('hidden'); urlWrap.classList.add('active');
-            urlInput.focus(); urlInput.select();
-          });
-        }
-        urlInput.addEventListener('blur',    commitUrl);
-        urlInput.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); commitUrl(); } });
-
-        // dates
-        const dateInputs = tr.querySelectorAll('.date-input');
-        dateInputs[0].addEventListener('change', () => updateField(sec, task.id, 'created', dateInputs[0].value));
-        dateInputs[1].addEventListener('change', () => {
-          updateField(sec, task.id, 'due', dateInputs[1].value);
-          dateInputs[1].classList.toggle('overdue', isOverdue(dateInputs[1].value) && !task.done);
-        });
-
-        // delete
+        const companyInput = tr.querySelector('.company-input');
+        companyInput.addEventListener('change', () => { updateField(sec, task.id, 'company', companyInput.value); updateDatalist(); });
+        companyInput.addEventListener('input',  () => updateField(sec, task.id, 'company', companyInput.value));
+        const descSpan = tr.querySelector('[contenteditable]');
+        descSpan.addEventListener('input',   () => updateField(sec, task.id, 'description', descSpan.textContent));
+        descSpan.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addTask(sec); } });
+        wireUrl(tr, sec, task);
+        wireDates(tr, sec, task);
         tr.querySelector('.delete-btn').addEventListener('click', () => deleteTask(sec, task.id));
-
         setupDrag(tr, sec, task.id);
         tbody.appendChild(tr);
       });
 
       setupDropZone(document.getElementById('sec-' + sec), sec);
 
-      // counts
       const total = state[sec].length;
-      const done  = state[sec].filter(t => t.done).length;
       const el    = document.getElementById('count-' + sec);
-      el.textContent = sec === 'today'
-        ? `${done} / ${Math.max(total, 3)}`
-        : total - done > 0 ? `${total - done} remaining` : total > 0 ? 'all done ✓' : '0';
+      el.textContent = sec === 'today' ? `${total} / 3` : `${total}`;
+    });
+
+    // completed section
+    const ctbody = document.getElementById('list-completed');
+    ctbody.innerHTML = '';
+    state.completed.forEach(task => {
+      const tr = document.createElement('tr');
+      tr.className = 'task-row completed-row';
+      tr.dataset.taskId = task.id;
+      const hasUrl = !!task.url;
+      tr.innerHTML = `
+        <td class="cell-drag"></td>
+        <td class="cell-check"><input type="checkbox" checked></td>
+        <td class="cell-company-ro">${escHtml(task.company||'')}</td>
+        <td class="cell-text-ro">${escHtml(task.description||'')}</td>
+        <td class="cell-url-ro">${hasUrl ? `<a class="url-link" href="${escHtml(task.url)}" target="_blank" rel="noopener">${escHtml(task.url)}</a>` : ''}</td>
+        <td class="cell-date-ro center">${escHtml(task.created||'')}</td>
+        <td class="cell-date-ro center">${escHtml(task.due||'')}</td>
+        <td class="cell-del"><button class="delete-btn" title="remove">×</button></td>
+      `;
+      tr.querySelector('input[type="checkbox"]').addEventListener('change', () => toggleTask('completed', task.id));
+      tr.querySelector('.delete-btn').addEventListener('click', () => deleteTask('completed', task.id));
+      ctbody.appendChild(tr);
+    });
+    document.getElementById('count-completed').textContent = state.completed.length;
+  }
+
+  function wireUrl(tr, sec, task) {
+
+  function wireUrl(tr, sec, task) {
+    const urlDisplay = tr.querySelector('.url-display');
+    const urlWrap    = tr.querySelector('.url-input-wrap');
+    const urlInput   = tr.querySelector('.url-plain');
+    const urlEditBtn = tr.querySelector('.url-edit-btn');
+    function commitUrl() {
+      const val = urlInput.value.trim();
+      updateField(sec, task.id, 'url', val);
+      if (val) {
+        let link = urlDisplay.querySelector('.url-link');
+        if (link) { link.href = val; link.textContent = val; link.title = val; }
+        else {
+          link = document.createElement('a');
+          link.className = 'url-link'; link.href = val; link.textContent = val;
+          link.title = val; link.target = '_blank'; link.rel = 'noopener';
+          urlDisplay.insertBefore(link, urlEditBtn);
+        }
+        urlDisplay.classList.remove('hidden'); urlWrap.classList.remove('active');
+      } else {
+        urlDisplay.classList.add('hidden'); urlWrap.classList.add('active');
+      }
+    }
+    if (urlEditBtn) urlEditBtn.addEventListener('click', e => { e.stopPropagation(); urlDisplay.classList.add('hidden'); urlWrap.classList.add('active'); urlInput.focus(); urlInput.select(); });
+    urlInput.addEventListener('blur',    commitUrl);
+    urlInput.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); commitUrl(); } });
+  }
+
+  function wireDates(tr, sec, task) {
+    const dateInputs = tr.querySelectorAll('.date-input');
+    dateInputs[0].addEventListener('change', () => updateField(sec, task.id, 'created', dateInputs[0].value));
+    dateInputs[1].addEventListener('change', () => {
+      updateField(sec, task.id, 'due', dateInputs[1].value);
+      dateInputs[1].classList.toggle('overdue', isOverdue(dateInputs[1].value));
     });
   }
 
