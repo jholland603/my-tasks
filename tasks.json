@@ -35,11 +35,7 @@
       "created": "2026-04-30",
       "due": "2026-04-30",
       "done": false
-    }
-  ],
-  "week": [],
-  "back": [],
-  "completed": [
+    },
     {
       "id": "1777556202388-7985",
       "company": "PREPRE",
@@ -47,9 +43,10 @@
       "url": "",
       "created": "2026-04-30",
       "due": "",
-      "done": true,
-      "completedFrom": "today",
-      "completedAt": "2026-04-30"
+      "done": false
     }
-  ]
+  ],
+  "week": [],
+  "back": [],
+  "completed": []
 }
