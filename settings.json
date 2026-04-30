@@ -2,10 +2,10 @@
   "sortState": {
     "today": {
       "col": "due",
-      "dir": "asc"
+      "dir": "desc"
     },
     "week": {
-      "col": "created",
+      "col": "manual",
       "dir": "asc"
     },
     "back": {
