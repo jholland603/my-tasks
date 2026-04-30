@@ -36,16 +36,6 @@
       "created": "2026-04-30",
       "due": "",
       "done": false
-    },
-    {
-      "id": "1777591552496-5824",
-      "company": "",
-      "description": "Buy dog food",
-      "url": "",
-      "created": "2026-04-30",
-      "due": "2026-05-07",
-      "done": false,
-      "type": "personal"
     }
   ],
   "week": [],
@@ -58,6 +48,16 @@
       "created": "2026-04-30",
       "due": "2026-05-08",
       "done": false
+    },
+    {
+      "id": "1777591552496-5824",
+      "company": "",
+      "description": "Buy dog food",
+      "url": "",
+      "created": "2026-04-30",
+      "due": "2026-05-14",
+      "done": false,
+      "type": "personal"
     }
   ],
   "back": [],
