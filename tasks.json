@@ -36,9 +36,7 @@
       "created": "2026-04-30",
       "due": "",
       "done": false
-    }
-  ],
-  "week": [
+    },
     {
       "id": "1777556915532-8513",
       "company": "RCEMAN",
@@ -49,6 +47,7 @@
       "done": false
     }
   ],
+  "week": [],
   "back": [],
   "completed": []
 }
