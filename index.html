@@ -618,25 +618,35 @@
     const { col, dir } = sortState[sec];
     const icon = dir === 'asc' ? '↑' : '↓';
     const cols = [
-      { key: null,      label: '',          cls: '' },
-      { key: null,      label: '',          cls: '' },
-      { key: 'company', label: 'Company',   cls: '' },
+      { key: null,      label: '',            cls: '' },
+      { key: null,      label: '',            cls: '' },
+      { key: 'company', label: 'Company',     cls: '' },
       { key: null,      label: 'Description', cls: '' },
-      { key: null,      label: 'URL',       cls: '' },
-      { key: 'created', label: 'Created',   cls: 'center' },
-      { key: 'due',     label: 'Due',       cls: 'center' },
-      { key: null,      label: 'Notes',     cls: 'center' },
-      { key: null,      label: '',          cls: '' },
+      { key: null,      label: 'URL',         cls: '' },
+      { key: 'created', label: 'Created',     cls: 'center' },
+      { key: 'due',     label: 'Due',         cls: 'center' },
+      { key: null,      label: 'Notes',       cls: 'center' },
+      { key: null,      label: '',            cls: '' },
     ];
     const tr = thead.querySelector('tr');
     tr.innerHTML = cols.map(c => {
       if (!c.key) return `<th class="${c.cls}">${c.label}</th>`;
       const isActive = col === c.key;
-      const manualTip = isActive && col !== 'manual' ? ` — click again to ${dir === 'asc' ? 'sort descending' : 'restore manual order'}` : '';
-      return `<th class="${c.cls} sortable${isActive ? ' sort-active' : ''}" data-sort="${c.key}" title="Sort by ${c.label}${manualTip}">${c.label}${isActive && col !== 'manual' ? `<span class="sort-icon">${icon}</span>` : ''}</th>`;
+      const tip = `Sort by ${c.label}${isActive ? (dir === 'asc' ? ' — click for descending' : ' — click to restore manual order') : ''}`;
+      return `<th class="${c.cls} sortable${isActive ? ' sort-active' : ''}" data-sort="${c.key}" data-sec="${sec}" title="${tip}">${c.label}${isActive ? `<span class="sort-icon">${icon}</span>` : ''}</th>`;
     }).join('');
-    tr.querySelectorAll('th.sortable').forEach(th => {
-      th.addEventListener('click', () => cycleSort(sec, th.dataset.sort));
+  }
+
+  // one-time click delegation per thead — set up after DOM ready
+  function initSortListeners() {
+    ['today','week','back'].forEach(sec => {
+      const thead = document.getElementById('thead-' + sec);
+      if (!thead) return;
+      thead.addEventListener('click', e => {
+        const th = e.target.closest('th.sortable');
+        if (!th) return;
+        cycleSort(th.dataset.sec, th.dataset.sort);
+      });
     });
   }
 
@@ -888,6 +898,8 @@
   // ── INIT ──
   document.getElementById('date-label').textContent =
     new Date().toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
+
+  initSortListeners();
 
   // notes modal listeners (elements exist now)
   document.getElementById('notes-modal').addEventListener('click', e => {
