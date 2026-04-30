@@ -1,7 +1,7 @@
 {
   "sortState": {
     "today": {
-      "col": "created",
+      "col": "company",
       "dir": "asc"
     },
     "week": {
