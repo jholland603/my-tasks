@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Tasks</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f5f2eb;
+    --ink: #1a1814;
+    --muted: #8a8478;
+    --today: #c8392b;
+    --week: #2b5fc8;
+    --back: #4a7a4a;
+    --line: #d8d4cc;
+    --card: #fff;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    min-height: 100vh;
+    padding: 40px 20px 80px;
+  }
+
+  /* ── SETUP OVERLAY ── */
+  #setup-overlay {
+    position: fixed; inset: 0;
+    background: rgba(245,242,235,0.97);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 100;
+    backdrop-filter: blur(2px);
+  }
+
+  #setup-overlay.hidden { display: none; }
+
+  .setup-box {
+    background: var(--card);
+    border: 1.5px solid var(--ink);
+    border-radius: 2px;
+    padding: 36px 40px;
+    max-width: 460px;
+    width: 100%;
+  }
+
+  .setup-box h2 {
+    font-family: 'Instrument Serif', serif;
+    font-size: 24px;
+    font-weight: 400;
+    margin-bottom: 6px;
+  }
+
+  .setup-box p {
+    color: var(--muted);
+    font-size: 11px;
+    line-height: 1.7;
+    margin-bottom: 24px;
+  }
+
+  .setup-box a { color: var(--today); }
+
+  .field-label {
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+
+  .setup-input {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    padding: 10px 12px;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    color: var(--ink);
+    outline: none;
+    margin-bottom: 20px;
+  }
+
+  .setup-input:focus { border-color: var(--ink); }
+
+  .setup-btn {
+    background: var(--ink);
+    color: var(--bg);
+    border: none;
+    border-radius: 2px;
+    padding: 11px 24px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    cursor: pointer;
+    width: 100%;
+    transition: opacity 0.15s;
+  }
+
+  .setup-btn:hover { opacity: 0.85; }
+
+  .setup-error {
+    color: var(--today);
+    font-size: 11px;
+    margin-top: 10px;
+    display: none;
+  }
+
+  /* ── HEADER ── */
+  header {
+    max-width: 680px;
+    margin: 0 auto 48px;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    border-bottom: 1.5px solid var(--ink);
+    padding-bottom: 12px;
+  }
+
+  h1 {
+    font-family: 'Instrument Serif', serif;
+    font-size: 32px;
+    font-weight: 400;
+    letter-spacing: -0.5px;
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .date { color: var(--muted); font-size: 11px; letter-spacing: 0.05em; text-transform: uppercase; }
+
+  .sync-status {
+    font-size: 10px;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .sync-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--muted);
+    transition: background 0.3s;
+  }
+
+  .sync-dot.saving { background: #e8a020; }
+  .sync-dot.saved  { background: var(--back); }
+  .sync-dot.error  { background: var(--today); }
+
+  .settings-btn {
+    background: none; border: none;
+    color: var(--muted); cursor: pointer;
+    font-size: 14px; padding: 0;
+    transition: color 0.15s;
+  }
+  .settings-btn:hover { color: var(--ink); }
+
+  /* ── BOARD ── */
+  .board {
+    max-width: 680px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+  }
+
+  .section {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    overflow: hidden;
+    transition: box-shadow 0.2s;
+  }
+
+  .section.drag-over {
+    box-shadow: 0 0 0 2px var(--ink);
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .today .dot  { background: var(--today); }
+  .week   .dot { background: var(--week); }
+  .back   .dot { background: var(--back); }
+
+  .section-label {
+    font-family: 'Instrument Serif', serif;
+    font-size: 18px;
+    font-style: italic;
+    flex: 1;
+  }
+
+  .count {
+    font-size: 11px; color: var(--muted);
+    background: var(--bg); border: 1px solid var(--line);
+    border-radius: 20px; padding: 2px 8px;
+  }
+
+  .today .count { color: var(--today); border-color: var(--today); background: #fdf4f3; }
+
+  /* ── TASKS ── */
+  .task-list { list-style: none; min-height: 4px; }
+
+  .task {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 18px;
+    border-bottom: 1px solid var(--line);
+    transition: background 0.15s, opacity 0.2s;
+    cursor: grab;
+    user-select: none;
+  }
+
+  .task:last-child { border-bottom: none; }
+  .task:hover { background: #faf8f4; }
+  .task.dragging { opacity: 0.4; cursor: grabbing; }
+  .task.done .task-text { text-decoration: line-through; color: var(--muted); }
+
+  .drag-handle {
+    color: var(--line);
+    font-size: 12px;
+    margin-top: 2px;
+    cursor: grab;
+    flex-shrink: 0;
+    transition: color 0.15s;
+  }
+
+  .task:hover .drag-handle { color: var(--muted); }
+
+  input[type="checkbox"] {
+    appearance: none;
+    width: 16px; height: 16px;
+    border: 1.5px solid var(--line);
+    border-radius: 2px;
+    cursor: pointer;
+    flex-shrink: 0;
+    margin-top: 1px;
+    position: relative;
+    transition: all 0.15s;
+  }
+
+  .today input[type="checkbox"]:checked  { background: var(--today); border-color: var(--today); }
+  .week   input[type="checkbox"]:checked { background: var(--week);  border-color: var(--week); }
+  .back   input[type="checkbox"]:checked { background: var(--back);  border-color: var(--back); }
+
+  input[type="checkbox"]:checked::after {
+    content: '';
+    position: absolute;
+    left: 4px; top: 1px;
+    width: 5px; height: 9px;
+    border: 1.5px solid white;
+    border-top: none; border-left: none;
+    transform: rotate(45deg);
+  }
+
+  .task-text {
+    flex: 1; line-height: 1.5;
+    outline: none; cursor: text;
+    word-break: break-word;
+  }
+
+  .task-text:empty::before {
+    content: attr(data-placeholder);
+    color: var(--muted);
+    pointer-events: none;
+  }
+
+  .delete-btn {
+    background: none; border: none;
+    color: var(--line); cursor: pointer;
+    font-size: 16px; line-height: 1;
+    padding: 0 2px;
+    opacity: 0;
+    transition: opacity 0.15s, color 0.15s;
+    flex-shrink: 0;
+  }
+
+  .task:hover .delete-btn { opacity: 1; }
+  .delete-btn:hover { color: var(--today); }
+
+  .add-row {
+    padding: 10px 18px;
+    border-top: 1px dashed var(--line);
+  }
+
+  .add-btn {
+    background: none; border: none;
+    color: var(--muted); cursor: pointer;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px; padding: 0;
+    display: flex; align-items: center; gap: 6px;
+    transition: color 0.15s;
+  }
+
+  .add-btn:hover { color: var(--ink); }
+
+  /* ── DROP INDICATOR ── */
+  .drop-indicator {
+    height: 2px;
+    background: var(--ink);
+    margin: 0 18px;
+    border-radius: 1px;
+    display: none;
+  }
+
+  .drop-indicator.visible { display: block; }
+
+  .hint {
+    max-width: 680px;
+    margin: 40px auto 0;
+    color: var(--muted);
+    font-size: 11px;
+    text-align: center;
+    letter-spacing: 0.03em;
+    line-height: 1.8;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .section { animation: fadeIn 0.3s ease both; }
+  .section:nth-child(2) { animation-delay: 0.07s; }
+  .section:nth-child(3) { animation-delay: 0.14s; }
+</style>
+</head>
+<body>
+
+<!-- SETUP OVERLAY -->
+<div id="setup-overlay">
+  <div class="setup-box">
+    <h2>Connect to GitHub</h2>
+    <p>
+      Your tasks will be saved to a file in your GitHub repo and sync across all your devices.<br><br>
+      You'll need a Personal Access Token with <strong>repo</strong> scope.<br>
+      <a href="https://github.com/settings/tokens/new?description=my-tasks&scopes=repo" target="_blank">Create one here →</a>
+    </p>
+    <div class="field-label">Repository name</div>
+    <input class="setup-input" id="setup-repo" type="text" placeholder="my-tasks" value="my-tasks">
+    <div class="field-label">Personal Access Token</div>
+    <input class="setup-input" id="setup-token" type="password" placeholder="ghp_xxxxxxxxxxxx">
+    <button class="setup-btn" onclick="setupSave()">Save &amp; Connect</button>
+    <div class="setup-error" id="setup-error"></div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<header>
+  <h1>My Tasks</h1>
+  <div class="header-right">
+    <div class="sync-status">
+      <div class="sync-dot" id="sync-dot"></div>
+      <span id="sync-label">synced</span>
+    </div>
+    <span class="date" id="date-label"></span>
+    <button class="settings-btn" onclick="showSetup()" title="Settings">⚙</button>
+  </div>
+</header>
+
+<div class="board">
+  <div class="section today" id="sec-today" data-section="today">
+    <div class="section-header">
+      <div class="dot"></div>
+      <span class="section-label">Today</span>
+      <span class="count" id="count-today">0 / 3</span>
+    </div>
+    <ul class="task-list" id="list-today"></ul>
+    <div class="add-row"><button class="add-btn" onclick="addTask('today')">+ add task</button></div>
+  </div>
+
+  <div class="section week" id="sec-week" data-section="week">
+    <div class="section-header">
+      <div class="dot"></div>
+      <span class="section-label">This Week</span>
+      <span class="count" id="count-week">0</span>
+    </div>
+    <ul class="task-list" id="list-week"></ul>
+    <div class="add-row"><button class="add-btn" onclick="addTask('week')">+ add task</button></div>
+  </div>
+
+  <div class="section back" id="sec-back" data-section="back">
+    <div class="section-header">
+      <div class="dot"></div>
+      <span class="section-label">Backlog</span>
+      <span class="count" id="count-back">0</span>
+    </div>
+    <ul class="task-list" id="list-back"></ul>
+    <div class="add-row"><button class="add-btn" onclick="addTask('back')">+ add task</button></div>
+  </div>
+</div>
+
+<p class="hint">drag tasks between sections &nbsp;·&nbsp; click to edit &nbsp;·&nbsp; check to complete &nbsp;·&nbsp; syncs to GitHub</p>
+
+<script>
+  // ── CONFIG ──
+  const GITHUB_USER = 'jholland603';
+  const DATA_FILE   = 'tasks.json';
+  const LS_TOKEN    = 'mytasks_token';
+  const LS_REPO     = 'mytasks_repo';
+  const LS_SHA      = 'mytasks_sha';
+
+  let state = { today: [], week: [], back: [] };
+  let saveTimer = null;
+  let dragSrc = null; // { section, id }
+
+  // ── SETUP ──
+  function getToken() { return localStorage.getItem(LS_TOKEN); }
+  function getRepo()  { return localStorage.getItem(LS_REPO) || 'my-tasks'; }
+
+  function showSetup() {
+    document.getElementById('setup-repo').value = getRepo();
+    document.getElementById('setup-token').value = getToken() || '';
+    document.getElementById('setup-overlay').classList.remove('hidden');
+  }
+
+  async function setupSave() {
+    const token = document.getElementById('setup-token').value.trim();
+    const repo  = document.getElementById('setup-repo').value.trim() || 'my-tasks';
+    const errEl = document.getElementById('setup-error');
+    errEl.style.display = 'none';
+
+    if (!token) { errEl.textContent = 'Please enter a token.'; errEl.style.display = 'block'; return; }
+
+    // test token
+    setSyncState('saving', 'connecting…');
+    const ok = await testToken(token, repo);
+    if (!ok) {
+      errEl.textContent = 'Could not connect. Check your token and repo name.';
+      errEl.style.display = 'block';
+      setSyncState('error', 'error');
+      return;
+    }
+
+    localStorage.setItem(LS_TOKEN, token);
+    localStorage.setItem(LS_REPO, repo);
+    document.getElementById('setup-overlay').classList.add('hidden');
+    await loadFromGitHub();
+  }
+
+  async function testToken(token, repo) {
+    try {
+      const r = await fetch(`https://api.github.com/repos/${GITHUB_USER}/${repo}`, {
+        headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' }
+      });
+      return r.ok;
+    } catch { return false; }
+  }
+
+  // ── GITHUB SYNC ──
+  async function loadFromGitHub() {
+    const token = getToken();
+    if (!token) { showSetup(); return; }
+
+    setSyncState('saving', 'loading…');
+    try {
+      const r = await fetch(
+        `https://api.github.com/repos/${GITHUB_USER}/${getRepo()}/contents/${DATA_FILE}`,
+        { headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' } }
+      );
+
+      if (r.status === 404) {
+        // File doesn't exist yet — start fresh
+        setSyncState('saved', 'synced');
+        render();
+        return;
+      }
+
+      if (!r.ok) throw new Error('Load failed');
+
+      const data = await r.json();
+      localStorage.setItem(LS_SHA, data.sha);
+      const decoded = JSON.parse(atob(data.content.replace(/\n/g, '')));
+      state = { today: decoded.today || [], week: decoded.week || [], back: decoded.back || [] };
+      setSyncState('saved', 'synced');
+      render();
+    } catch(e) {
+      setSyncState('error', 'load error');
+      render();
+    }
+  }
+
+  async function saveToGitHub() {
+    const token = getToken();
+    if (!token) return;
+
+    setSyncState('saving', 'saving…');
+    try {
+      const sha = localStorage.getItem(LS_SHA);
+      const content = btoa(unescape(encodeURIComponent(JSON.stringify(state, null, 2))));
+
+      const body = {
+        message: 'update tasks',
+        content,
+        ...(sha ? { sha } : {})
+      };
+
+      const r = await fetch(
+        `https://api.github.com/repos/${GITHUB_USER}/${getRepo()}/contents/${DATA_FILE}`,
+        {
+          method: 'PUT',
+          headers: {
+            Authorization: `token ${token}`,
+            Accept: 'application/vnd.github.v3+json',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(body)
+        }
+      );
+
+      if (!r.ok) {
+        // SHA conflict — reload and retry
+        if (r.status === 409) { await loadFromGitHub(); return; }
+        throw new Error('Save failed');
+      }
+
+      const data = await r.json();
+      localStorage.setItem(LS_SHA, data.content.sha);
+      setSyncState('saved', 'synced');
+    } catch(e) {
+      setSyncState('error', 'save error');
+    }
+  }
+
+  function scheduleSave() {
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(saveToGitHub, 1200);
+  }
+
+  function setSyncState(state, label) {
+    const dot = document.getElementById('sync-dot');
+    const lbl = document.getElementById('sync-label');
+    dot.className = 'sync-dot ' + state;
+    lbl.textContent = label;
+  }
+
+  // ── TASK OPERATIONS ──
+  function addTask(section, text = '') {
+    const id = Date.now() + '-' + Math.floor(Math.random() * 9999);
+    state[section].push({ id, text, done: false });
+    scheduleSave();
+    render();
+    setTimeout(() => {
+      const el = document.querySelector(`[data-id="${id}"]`);
+      if (el) { el.focus(); placeCaretAtEnd(el); }
+    }, 30);
+  }
+
+  function toggleTask(section, id) {
+    const t = state[section].find(t => t.id === id);
+    if (t) { t.done = !t.done; scheduleSave(); render(); }
+  }
+
+  function deleteTask(section, id) {
+    state[section] = state[section].filter(t => t.id !== id);
+    scheduleSave(); render();
+  }
+
+  function updateText(section, id, text) {
+    const t = state[section].find(t => t.id === id);
+    if (t) { t.text = text; scheduleSave(); }
+  }
+
+  // ── DRAG & DROP ──
+  function setupDrag(li, section, taskId) {
+    li.draggable = true;
+
+    li.addEventListener('dragstart', e => {
+      dragSrc = { section, id: taskId };
+      li.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+
+    li.addEventListener('dragend', () => {
+      li.classList.remove('dragging');
+      document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+    });
+  }
+
+  function setupDropZone(sectionEl, sectionName) {
+    sectionEl.addEventListener('dragover', e => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      sectionEl.classList.add('drag-over');
+    });
+
+    sectionEl.addEventListener('dragleave', e => {
+      if (!sectionEl.contains(e.relatedTarget)) {
+        sectionEl.classList.remove('drag-over');
+      }
+    });
+
+    sectionEl.addEventListener('drop', e => {
+      e.preventDefault();
+      sectionEl.classList.remove('drag-over');
+      if (!dragSrc || dragSrc.section === sectionName) return;
+
+      // move task
+      const task = state[dragSrc.section].find(t => t.id === dragSrc.id);
+      if (!task) return;
+      state[dragSrc.section] = state[dragSrc.section].filter(t => t.id !== dragSrc.id);
+      task.done = false; // reset done when moving
+      state[sectionName].push(task);
+      dragSrc = null;
+      scheduleSave();
+      render();
+    });
+  }
+
+  // ── RENDER ──
+  function render() {
+    ['today','week','back'].forEach(sec => {
+      const list = document.getElementById('list-' + sec);
+      list.innerHTML = '';
+
+      state[sec].forEach(task => {
+        const li = document.createElement('li');
+        li.className = 'task' + (task.done ? ' done' : '');
+
+        li.innerHTML = `
+          <span class="drag-handle" title="drag to move">⠿</span>
+          <input type="checkbox" ${task.done ? 'checked' : ''}>
+          <span class="task-text" contenteditable="true" data-id="${task.id}" data-placeholder="new task...">${escHtml(task.text)}</span>
+          <button class="delete-btn" title="remove">×</button>
+        `;
+
+        li.querySelector('input').addEventListener('change', () => toggleTask(sec, task.id));
+        li.querySelector('.delete-btn').addEventListener('click', () => deleteTask(sec, task.id));
+
+        const span = li.querySelector('.task-text');
+        span.addEventListener('input', () => updateText(sec, task.id, span.textContent));
+        span.addEventListener('keydown', e => {
+          if (e.key === 'Enter') { e.preventDefault(); addTask(sec); }
+        });
+
+        setupDrag(li, sec, task.id);
+        list.appendChild(li);
+      });
+
+      // drop zones
+      const secEl = document.getElementById('sec-' + sec);
+      setupDropZone(secEl, sec);
+
+      // counts
+      const total = state[sec].length;
+      const done  = state[sec].filter(t => t.done).length;
+      const el = document.getElementById('count-' + sec);
+      if (sec === 'today') {
+        el.textContent = `${done} / ${Math.max(total, 3)}`;
+      } else {
+        el.textContent = total - done > 0 ? `${total - done} remaining` : total > 0 ? 'all done ✓' : '0';
+      }
+    });
+  }
+
+  function escHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function placeCaretAtEnd(el) {
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    range.collapse(false);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+  }
+
+  // ── INIT ──
+  document.getElementById('date-label').textContent =
+    new Date().toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
+
+  if (!getToken()) {
+    showSetup();
+    render();
+  } else {
+    document.getElementById('setup-overlay').classList.add('hidden');
+    loadFromGitHub();
+  }
+</script>
+</body>
+</html>
