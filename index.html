@@ -232,6 +232,20 @@
   }
   .add-btn:hover { color: var(--ink); }
 
+  /* completed section */
+  .completed-section { opacity: 0.75; }
+  .completed-section .section-label { color: var(--muted); }
+  .completed-section .dot { background: var(--line) !important; }
+  .completed-row { cursor: default; }
+  .completed-row input[type="checkbox"]:checked { background: var(--line); border-color: var(--line); }
+  .cell-company-ro, .cell-text-ro, .cell-url-ro, .cell-date-ro {
+    font-size: 11px; color: var(--muted); padding: 8px 8px 8px 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    text-decoration: line-through;
+  }
+  .cell-date-ro.center { text-align: center; padding: 8px 4px; }
+  .cell-url-ro a { color: var(--muted); text-decoration: none; }
+
   .hint { max-width: 1060px; margin: 28px auto 0; color: var(--muted); font-size: 10px; text-align: center; letter-spacing: 0.03em; line-height: 1.8; }
 
   @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
@@ -295,6 +309,16 @@
     </table>
   </div>
 
+  <!-- COMPLETED -->
+  <div class="section completed-section" id="sec-completed">
+    <div class="section-title"><div class="dot"></div><span class="section-label">Completed</span><span class="count" id="count-completed">0</span></div>
+    <table class="task-table">
+      <colgroup><col class="col-drag"><col class="col-check"><col class="col-company"><col class="col-desc"><col class="col-url"><col class="col-created"><col class="col-due"><col class="col-del"></colgroup>
+      <thead><tr class="col-headers"><th></th><th></th><th>Company</th><th>Description</th><th>URL</th><th class="center">Created</th><th class="center">Due</th><th></th></tr></thead>
+      <tbody id="list-completed"></tbody>
+    </table>
+  </div>
+
 </div>
 
 <p class="hint">drag rows between sections &nbsp;·&nbsp; click any cell to edit &nbsp;·&nbsp; overdue dates appear in red &nbsp;·&nbsp; syncs to GitHub</p>
@@ -333,8 +357,9 @@
     errEl.style.display = 'none';
     if (!token) { errEl.textContent = 'Please enter a token.'; errEl.style.display = 'block'; return; }
     setSyncState('saving','connecting…');
-    if (!await testToken(token, repo)) {
-      errEl.textContent = 'Could not connect. Check your token and repo name.';
+    const result = await testToken(token, repo);
+    if (!result.ok) {
+      errEl.textContent = `GitHub error ${result.status}: ${result.message}`;
       errEl.style.display = 'block'; setSyncState('error','error'); return;
     }
     localStorage.setItem(LS_TOKEN, token);
@@ -347,8 +372,9 @@
     try {
       const r = await fetch(`https://api.github.com/repos/${GITHUB_USER}/${repo}`,
         { headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' } });
-      return r.ok;
-    } catch { return false; }
+      const body = await r.json();
+      return { ok: r.ok, status: r.status, message: body.message || '' };
+    } catch(e) { return { ok: false, status: 'network', message: e.message }; }
   }
 
   // ── GITHUB SYNC ──
