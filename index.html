@@ -689,6 +689,16 @@
     return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
+  function placeCaretAtEnd(el) {
+    el.focus();
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    range.collapse(false);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+  }
+
   // ── SETUP ──
   function getToken() { return localStorage.getItem(LS_TOKEN); }
   function getRepo()  { return localStorage.getItem(LS_REPO) || 'my-tasks'; }
@@ -861,15 +871,16 @@
     state[section].push({ id, company:'', description:'', url:'', created, due: dueISO, done: false, type });
     scheduleSave(); render();
     setTimeout(() => {
-      const row = document.querySelector(`[data-task-id="${id}"]`);
+      const row = document.querySelector(`tr[data-task-id="${id}"]`);
       if (!row) return;
       if (type === 'personal') {
-        const desc = row.querySelector('[contenteditable]');
-        if (desc) desc.focus();
+        const desc = row.querySelector('.cell-editable');
+        if (desc) { desc.focus(); placeCaretAtEnd(desc); }
       } else {
-        row.querySelector('.company-input').focus();
+        const co = row.querySelector('.company-input');
+        if (co) co.focus();
       }
-    }, 30);
+    }, 50);
   }
 
   function toggleTask(section, id) {
