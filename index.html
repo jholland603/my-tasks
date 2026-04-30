@@ -589,8 +589,8 @@
   <div class="section today" id="sec-today">
     <div class="section-title"><div class="dot"></div><span class="section-label">Today</span><span class="count" id="count-today">0 / 3</span></div>
     <table class="task-table">
-      <colgroup><col class="col-drag"><col class="col-check"><col class="col-company"><col class="col-desc"><col class="col-url"><col class="col-created"><col class="col-due"><col class="col-notes"><col class="col-del"></colgroup>
-      <thead id="thead-today"><tr class="col-headers"><th></th><th></th><th>Company</th><th>Description</th><th>URL</th><th class="center">Created</th><th class="center">Due</th><th class="center">Notes</th><th></th></tr></thead>
+      <colgroup><col class="col-drag"><col class="col-check"><col class="col-company"><col class="col-desc"><col class="col-url"><col class="col-notes"><col class="col-due"><col class="col-created"><col class="col-del"></colgroup>
+      <thead id="thead-today"><tr class="col-headers"><th></th><th></th><th>Company</th><th>Description</th><th>URL</th><th class="center">Notes</th><th class="center">Due</th><th class="center">Created</th><th></th></tr></thead>
       <tbody id="list-today"></tbody>
       <tfoot><tr class="add-row"><td colspan="9"><button class="add-btn" onclick="addTask('today')">+ add task</button></td></tr></tfoot>
     </table>
@@ -601,8 +601,8 @@
   <div class="section week" id="sec-week">
     <div class="section-title"><div class="dot"></div><span class="section-label">This Week</span><span class="count" id="count-week">0</span></div>
     <table class="task-table">
-      <colgroup><col class="col-drag"><col class="col-check"><col class="col-company"><col class="col-desc"><col class="col-url"><col class="col-created"><col class="col-due"><col class="col-notes"><col class="col-del"></colgroup>
-      <thead id="thead-week"><tr class="col-headers"><th></th><th></th><th>Company</th><th>Description</th><th>URL</th><th class="center">Created</th><th class="center">Due</th><th class="center">Notes</th><th></th></tr></thead>
+      <colgroup><col class="col-drag"><col class="col-check"><col class="col-company"><col class="col-desc"><col class="col-url"><col class="col-notes"><col class="col-due"><col class="col-created"><col class="col-del"></colgroup>
+      <thead id="thead-week"><tr class="col-headers"><th></th><th></th><th>Company</th><th>Description</th><th>URL</th><th class="center">Notes</th><th class="center">Due</th><th class="center">Created</th><th></th></tr></thead>
       <tbody id="list-week"></tbody>
       <tfoot><tr class="add-row"><td colspan="9"><button class="add-btn" onclick="addTask('week')">+ add task</button></td></tr></tfoot>
     </table>
@@ -613,8 +613,8 @@
   <div class="section back" id="sec-back">
     <div class="section-title"><div class="dot"></div><span class="section-label">Backlog</span><span class="count" id="count-back">0</span></div>
     <table class="task-table">
-      <colgroup><col class="col-drag"><col class="col-check"><col class="col-company"><col class="col-desc"><col class="col-url"><col class="col-created"><col class="col-due"><col class="col-notes"><col class="col-del"></colgroup>
-      <thead id="thead-back"><tr class="col-headers"><th></th><th></th><th>Company</th><th>Description</th><th>URL</th><th class="center">Created</th><th class="center">Due</th><th class="center">Notes</th><th></th></tr></thead>
+      <colgroup><col class="col-drag"><col class="col-check"><col class="col-company"><col class="col-desc"><col class="col-url"><col class="col-notes"><col class="col-due"><col class="col-created"><col class="col-del"></colgroup>
+      <thead id="thead-back"><tr class="col-headers"><th></th><th></th><th>Company</th><th>Description</th><th>URL</th><th class="center">Notes</th><th class="center">Due</th><th class="center">Created</th><th></th></tr></thead>
       <tbody id="list-back"></tbody>
       <tfoot><tr class="add-row"><td colspan="9"><button class="add-btn" onclick="addTask('back')">+ add task</button></td></tr></tfoot>
     </table>
@@ -626,8 +626,8 @@
   <div class="section completed-section" id="sec-completed">
     <div class="section-title"><div class="dot"></div><span class="section-label">Completed</span><span class="count" id="count-completed">0</span></div>
     <table class="task-table">
-      <colgroup><col class="col-drag"><col class="col-check"><col class="col-company"><col class="col-desc"><col class="col-url"><col class="col-created"><col class="col-due"><col class="col-notes"><col class="col-del"></colgroup>
-      <thead><tr class="col-headers"><th></th><th></th><th>Company</th><th>Description</th><th>URL</th><th class="center">Created</th><th class="center">Due</th><th class="center">Notes</th><th></th></tr></thead>
+      <colgroup><col class="col-drag"><col class="col-check"><col class="col-company"><col class="col-desc"><col class="col-url"><col class="col-notes"><col class="col-due"><col class="col-created"><col class="col-del"></colgroup>
+      <thead><tr class="col-headers"><th></th><th></th><th>Company</th><th>Description</th><th>URL</th><th class="center">Notes</th><th class="center">Due</th><th class="center">Created</th><th></th></tr></thead>
       <tbody id="list-completed"></tbody>
     </table>
     <div class="mobile-list" id="mobile-completed"></div>
@@ -641,7 +641,7 @@
 
 </div>
 
-<p class="hint">drag rows between sections &nbsp;·&nbsp; click any cell to edit &nbsp;·&nbsp; overdue dates appear in red &nbsp;·&nbsp; syncs to GitHub<br>v1.23</p>
+<p class="hint">drag rows between sections &nbsp;·&nbsp; click any cell to edit &nbsp;·&nbsp; overdue dates appear in red &nbsp;·&nbsp; syncs to GitHub<br>v1.24</p>
 
 <!-- NOTES MODAL -->
 <div id="notes-modal" class="hidden">
@@ -987,9 +987,9 @@
       { key: 'company', label: 'Company',     cls: '' },
       { key: null,      label: 'Description', cls: '' },
       { key: null,      label: 'URL',         cls: '' },
-      { key: 'created', label: 'Created',     cls: 'center' },
-      { key: 'due',     label: 'Due',         cls: 'center' },
       { key: null,      label: 'Notes',       cls: 'center' },
+      { key: 'due',     label: 'Due',         cls: 'center' },
+      { key: 'created', label: 'Created',     cls: 'center' },
       { key: null,      label: '',            cls: '' },
     ];
     const tr = thead.querySelector('tr');
@@ -1146,14 +1146,14 @@
               <input class="url-plain" type="text" value="${escHtml(task.url||'')}" placeholder="https://…">
             </div>
           </td>
-          <td class="cell-date"><input class="date-input" type="date" value="${escHtml(task.created||todayISO())}"></td>
+          <td class="cell-notes"><button class="notes-btn${task.notes ? ' has-note' : ''}" title="${task.notes ? 'Has notes — click to edit' : 'Add notes'}">✎</button></td>
           <td class="cell-date">
             <div class="due-wrap">
               ${task.due && dueDotClass(task.due) ? `<span class="due-dot ${dueDotClass(task.due)}"></span>` : ''}
               <input class="date-input${isOverdue(task.due) ? ' overdue' : ''}" type="date" value="${escHtml(task.due||'')}">
             </div>
           </td>
-          <td class="cell-notes"><button class="notes-btn${task.notes ? ' has-note' : ''}" title="${task.notes ? 'Has notes — click to edit' : 'Add notes'}">✎</button></td>
+          <td class="cell-date"><input class="date-input" type="date" value="${escHtml(task.created||todayISO())}"></td>
           <td class="cell-del"><button class="delete-btn" title="remove">×</button></td>
         `;
 
@@ -1209,9 +1209,9 @@
         <td class="cell-company-ro">${escHtml(task.company||'')}</td>
         <td class="cell-text-ro">${escHtml(task.description||'')}</td>
         <td class="cell-url-ro">${hasUrl ? `<a class="url-link" href="${escHtml(task.url)}" target="_blank" rel="noopener">${escHtml(task.url)}</a>` : ''}</td>
-        <td class="cell-date-ro center">${escHtml(task.created||'')}</td>
-        <td class="cell-date-ro center">${escHtml(task.due||'')}</td>
         <td class="cell-notes"><button class="notes-btn${task.notes ? ' has-note' : ''}" title="${task.notes ? 'Has notes' : 'Notes'}">✎</button></td>
+        <td class="cell-date-ro center">${escHtml(task.due||'')}</td>
+        <td class="cell-date-ro center">${escHtml(task.created||'')}</td>
         <td class="cell-del"><button class="delete-btn" title="remove">×</button></td>
       `;
       tr.querySelector('input[type="checkbox"]').addEventListener('change', () => toggleTask('completed', task.id));
@@ -1334,23 +1334,23 @@
 
   function wireDates(tr, sec, task) {
     const dateInputs = tr.querySelectorAll('.date-input');
-    dateInputs[0].addEventListener('change', () => updateField(sec, task.id, 'created', dateInputs[0].value));
-    dateInputs[1].addEventListener('change', () => {
-      updateField(sec, task.id, 'due', dateInputs[1].value);
-      // refresh dot
-      const wrap = dateInputs[1].closest('.due-wrap');
+    // new order: due [0], created [1]
+    dateInputs[0].addEventListener('change', () => {
+      updateField(sec, task.id, 'due', dateInputs[0].value);
+      const wrap = dateInputs[0].closest('.due-wrap');
       if (wrap) {
         const existing = wrap.querySelector('.due-dot');
         if (existing) existing.remove();
-        const cls = dueDotClass(dateInputs[1].value);
+        const cls = dueDotClass(dateInputs[0].value);
         if (cls) {
           const dot = document.createElement('span');
           dot.className = 'due-dot ' + cls;
-          wrap.insertBefore(dot, dateInputs[1]);
+          wrap.insertBefore(dot, dateInputs[0]);
         }
       }
-      dateInputs[1].classList.toggle('overdue', isOverdue(dateInputs[1].value));
+      dateInputs[0].classList.toggle('overdue', isOverdue(dateInputs[0].value));
     });
+    dateInputs[1].addEventListener('change', () => updateField(sec, task.id, 'created', dateInputs[1].value));
   }
 
   // ── NOTES MODAL ──
