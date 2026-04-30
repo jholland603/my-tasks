@@ -339,6 +339,113 @@
   .cell-date-ro.center { text-align: center; padding: 8px 4px; }
   .cell-url-ro a { color: var(--muted); text-decoration: none; }
 
+  /* ── MOBILE ── */
+  @media (max-width: 700px) {
+    body { padding: 16px 12px 80px; font-size: 13px; }
+
+    header { margin-bottom: 20px; }
+    h1 { font-size: 22px; }
+    .date { display: none; }
+
+    .board { gap: 16px; }
+
+    /* hide the desktop table entirely */
+    .task-table { display: none; }
+
+    /* mobile card list */
+    .mobile-list { display: block; }
+    .mobile-add  { display: block; }
+
+    .mobile-add {
+      padding: 10px 14px;
+      border-top: 1px dashed var(--line);
+    }
+    .mobile-add-btn {
+      background: none; border: none; color: var(--muted);
+      font-family: 'DM Mono', monospace; font-size: 12px;
+      cursor: pointer; display: flex; align-items: center; gap: 6px;
+    }
+    .mobile-add-btn:active { color: var(--ink); }
+
+    .mobile-item {
+      border-bottom: 1px solid var(--line);
+      padding: 0;
+    }
+    .mobile-item:last-child { border-bottom: none; }
+
+    .mobile-row {
+      display: flex; align-items: center;
+      gap: 10px; padding: 11px 14px;
+      cursor: pointer; user-select: none;
+    }
+
+    .mobile-check { flex-shrink: 0; }
+    .mobile-check input[type="checkbox"] { width: 18px; height: 18px; }
+
+    .mobile-main { flex: 1; min-width: 0; }
+    .mobile-company {
+      font-size: 10px; color: var(--muted);
+      letter-spacing: 0.04em; text-transform: uppercase;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .mobile-desc {
+      font-size: 13px; color: var(--ink);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      margin-top: 2px;
+    }
+    .mobile-item.done .mobile-desc { text-decoration: line-through; color: var(--muted); }
+    .mobile-item.done .mobile-company { color: var(--line); }
+
+    .mobile-right {
+      display: flex; align-items: center; gap: 6px; flex-shrink: 0;
+    }
+    .mobile-due-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .mobile-due-dot.dot-overdue { background: #c8392b; }
+    .mobile-due-dot.dot-today   { background: #2e9e4f; }
+    .mobile-due-dot.dot-soon    { background: #e8a020; }
+    .mobile-chevron {
+      color: var(--line); font-size: 10px;
+      transition: transform 0.2s;
+    }
+    .mobile-item.expanded .mobile-chevron { transform: rotate(90deg); }
+
+    /* expanded detail panel */
+    .mobile-detail {
+      display: none;
+      padding: 0 14px 12px 42px;
+      font-size: 11px; color: var(--muted);
+      line-height: 1.8;
+    }
+    .mobile-item.expanded .mobile-detail { display: block; }
+
+    .mobile-detail-row { display: flex; gap: 6px; align-items: baseline; flex-wrap: wrap; }
+    .mobile-detail-label {
+      font-size: 9px; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--line);
+      flex-shrink: 0; width: 52px;
+    }
+    .mobile-detail-val { color: var(--ink); word-break: break-all; }
+    .mobile-detail-val a { color: var(--week-c); text-decoration: none; }
+    .mobile-detail-val.notes-val { white-space: pre-wrap; color: var(--muted); font-style: italic; }
+
+    .mobile-detail-actions {
+      display: flex; gap: 8px; margin-top: 10px;
+    }
+    .mobile-action-btn {
+      background: var(--bg); border: 1px solid var(--line);
+      border-radius: 2px; padding: 5px 10px;
+      font-family: 'DM Mono', monospace; font-size: 10px;
+      color: var(--muted); cursor: pointer;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .mobile-action-btn:active { color: var(--ink); border-color: var(--ink); }
+    .mobile-action-btn.danger:active { color: var(--today-c); border-color: var(--today-c); }
+  }
+
+  /* hide mobile list on desktop */
+  .mobile-list { display: none; }
+  .mobile-add  { display: none; }
+
   .hint { max-width: 1400px; margin: 28px auto 0; color: var(--muted); font-size: 10px; text-align: center; letter-spacing: 0.03em; line-height: 1.8; }
 
   @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
@@ -383,6 +490,8 @@
       <tbody id="list-today"></tbody>
       <tfoot><tr class="add-row"><td colspan="9"><button class="add-btn" onclick="addTask('today')">+ add task</button></td></tr></tfoot>
     </table>
+    <div class="mobile-list" id="mobile-today"></div>
+    <div class="mobile-add"><button class="mobile-add-btn" onclick="addTask('today')">+ add task</button></div>
   </div>
 
   <div class="section week" id="sec-week">
@@ -393,6 +502,8 @@
       <tbody id="list-week"></tbody>
       <tfoot><tr class="add-row"><td colspan="9"><button class="add-btn" onclick="addTask('week')">+ add task</button></td></tr></tfoot>
     </table>
+    <div class="mobile-list" id="mobile-week"></div>
+    <div class="mobile-add"><button class="mobile-add-btn" onclick="addTask('week')">+ add task</button></div>
   </div>
 
   <div class="section back" id="sec-back">
@@ -403,6 +514,8 @@
       <tbody id="list-back"></tbody>
       <tfoot><tr class="add-row"><td colspan="9"><button class="add-btn" onclick="addTask('back')">+ add task</button></td></tr></tfoot>
     </table>
+    <div class="mobile-list" id="mobile-back"></div>
+    <div class="mobile-add"><button class="mobile-add-btn" onclick="addTask('back')">+ add task</button></div>
   </div>
 
   <!-- COMPLETED -->
@@ -413,6 +526,7 @@
       <thead><tr class="col-headers"><th></th><th></th><th>Company</th><th>Description</th><th>URL</th><th class="center">Created</th><th class="center">Due</th><th class="center">Notes</th><th></th></tr></thead>
       <tbody id="list-completed"></tbody>
     </table>
+    <div class="mobile-list" id="mobile-completed"></div>
   </div>
 
 </div>
@@ -481,7 +595,7 @@
   }
 
   async function setupSave() {
-    const token = document.getElementById('setup-token').value.trim();
+    const token = document.getElementById('setup-token').value.replace(/\s+/g, '').trim();
     const repo  = document.getElementById('setup-repo').value.trim() || 'my-tasks';
     const errEl = document.getElementById('setup-error');
     errEl.style.display = 'none';
@@ -492,7 +606,7 @@
       errEl.textContent = `GitHub error ${result.status}: ${result.message}`;
       errEl.style.display = 'block'; setSyncState('error','error'); return;
     }
-    localStorage.setItem(LS_TOKEN, token);
+    localStorage.setItem(LS_TOKEN, token.replace(/\s+/g, ''));
     localStorage.setItem(LS_REPO, repo);
     document.getElementById('setup-overlay').classList.add('hidden');
     await loadFromGitHub();
@@ -955,6 +1069,85 @@
       ctbody.appendChild(tr);
     });
     document.getElementById('count-completed').textContent = state.completed.length;
+    renderMobile();
+  }
+
+  // ── MOBILE RENDER ──
+  function fmtDateShort(iso) {
+    if (!iso) return '';
+    const [y, m, d] = iso.split('-');
+    return `${m}/${d}/${y.slice(2)}`;
+  }
+
+  function renderMobile() {
+    const sections = [
+      { key: 'today',     id: 'mobile-today',     completed: false },
+      { key: 'week',      id: 'mobile-week',       completed: false },
+      { key: 'back',      id: 'mobile-back',       completed: false },
+      { key: 'completed', id: 'mobile-completed',  completed: true  },
+    ];
+
+    sections.forEach(({ key, id, completed: isCompleted }) => {
+      const container = document.getElementById(id);
+      if (!container) return;
+      // preserve expanded state
+      const expanded = new Set([...container.querySelectorAll('.mobile-item.expanded')].map(el => el.dataset.taskId));
+      container.innerHTML = '';
+
+      const tasks = isCompleted ? state[key] : sortSection(state[key], key);
+      tasks.forEach(task => {
+        const dotCls = dueDotClass(task.due);
+        const item = document.createElement('div');
+        item.className = 'mobile-item' + (task.done ? ' done' : '') + (expanded.has(task.id) ? ' expanded' : '');
+        item.dataset.taskId = task.id;
+
+        item.innerHTML = `
+          <div class="mobile-row">
+            <div class="mobile-check"><input type="checkbox" ${task.done ? 'checked' : ''}></div>
+            <div class="mobile-main">
+              ${task.company ? `<div class="mobile-company">${escHtml(task.company)}</div>` : ''}
+              <div class="mobile-desc">${escHtml(task.description || '—')}</div>
+            </div>
+            <div class="mobile-right">
+              ${dotCls ? `<span class="mobile-due-dot ${dotCls}"></span>` : ''}
+              <span class="mobile-chevron">›</span>
+            </div>
+          </div>
+          <div class="mobile-detail">
+            ${task.url ? `<div class="mobile-detail-row"><span class="mobile-detail-label">URL</span><span class="mobile-detail-val"><a href="${escHtml(task.url)}" target="_blank" rel="noopener">${escHtml(task.url)}</a></span></div>` : ''}
+            ${task.due ? `<div class="mobile-detail-row"><span class="mobile-detail-label">Due</span><span class="mobile-detail-val">${fmtDateShort(task.due)}</span></div>` : ''}
+            ${task.created ? `<div class="mobile-detail-row"><span class="mobile-detail-label">Created</span><span class="mobile-detail-val">${fmtDateShort(task.created)}</span></div>` : ''}
+            ${task.notes ? `<div class="mobile-detail-row"><span class="mobile-detail-label">Notes</span><span class="mobile-detail-val notes-val">${escHtml(task.notes)}</span></div>` : ''}
+            ${!isCompleted ? `<div class="mobile-detail-actions">
+              <button class="mobile-action-btn notes-open-btn">✎ Notes</button>
+              <button class="mobile-action-btn danger delete-mobile-btn">× Delete</button>
+            </div>` : ''}
+          </div>
+        `;
+
+        // checkbox
+        item.querySelector('input[type="checkbox"]').addEventListener('change', e => {
+          e.stopPropagation();
+          toggleTask(key, task.id);
+        });
+
+        // tap row to expand/collapse
+        item.querySelector('.mobile-row').addEventListener('click', e => {
+          if (e.target.closest('input')) return;
+          item.classList.toggle('expanded');
+        });
+
+        // notes button
+        const notesBtn = item.querySelector('.notes-open-btn');
+        if (notesBtn) notesBtn.addEventListener('click', e => { e.stopPropagation(); openNotes(key, task.id); });
+
+        // delete button
+        const delBtn = item.querySelector('.delete-mobile-btn');
+        if (delBtn) delBtn.addEventListener('click', e => { e.stopPropagation(); deleteTask(key, task.id); });
+
+        container.appendChild(item);
+      });
+    });
   }
 
   function wireUrl(tr, sec, task) {
