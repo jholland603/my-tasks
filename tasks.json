@@ -1,16 +1,5 @@
 {
-  "today": [
-    {
-      "id": "1777553191061-1526",
-      "text": "test1",
-      "company": "",
-      "description": "",
-      "url": "",
-      "created": "2026-04-30",
-      "due": "",
-      "done": false
-    }
-  ],
+  "today": [],
   "week": [
     {
       "id": "1777553180909-3978",
