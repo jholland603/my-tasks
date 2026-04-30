@@ -20,7 +20,17 @@
       "done": false
     }
   ],
-  "week": [],
+  "week": [
+    {
+      "id": "1777555535852-6626",
+      "company": "",
+      "description": "",
+      "url": "",
+      "created": "2026-04-30",
+      "due": "",
+      "done": false
+    }
+  ],
   "back": [],
   "completed": []
 }
