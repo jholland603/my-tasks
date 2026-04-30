@@ -106,10 +106,11 @@
   col.col-drag    { width: 28px; }
   col.col-check   { width: 30px; }
   col.col-company { width: 12%; }
-  col.col-desc    { width: 28%; }
-  col.col-url     { width: 28%; }
+  col.col-desc    { width: 26%; }
+  col.col-url     { width: 26%; }
   col.col-created { width: 100px; }
   col.col-due     { width: 100px; }
+  col.col-notes   { width: 60px; }
   col.col-del     { width: 28px; }
 
   .col-headers { border-bottom: 1px solid var(--line); background: var(--bg); }
@@ -237,6 +238,68 @@
   }
   .add-btn:hover { color: var(--ink); }
 
+  /* notes cell */
+  .cell-notes { text-align: center; }
+  .notes-btn {
+    background: none; border: none; cursor: pointer;
+    font-family: 'DM Mono', monospace; font-size: 10px;
+    padding: 4px 6px; border-radius: 2px;
+    color: var(--line); transition: color 0.15s, background 0.15s;
+  }
+  .notes-btn:hover { color: var(--ink); background: var(--bg); }
+  .notes-btn.has-note { color: var(--week-c); font-weight: 500; background: #eef2fc; border-radius: 3px; }
+  .notes-btn.has-note:hover { background: #dce6f9; }
+
+  /* notes modal */
+  #notes-modal {
+    position: fixed; inset: 0; z-index: 200;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(26,24,20,0.35);
+    backdrop-filter: blur(2px);
+  }
+  #notes-modal.hidden { display: none; }
+  .notes-box {
+    background: var(--card); border: 1.5px solid var(--ink);
+    border-radius: 2px; width: 520px; max-width: 90vw;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+    display: flex; flex-direction: column;
+  }
+  .notes-box-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 16px; border-bottom: 1px solid var(--line);
+  }
+  .notes-box-title {
+    font-family: 'Instrument Serif', serif; font-size: 16px;
+    font-style: italic; color: var(--muted);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    max-width: 380px;
+  }
+  .notes-close {
+    background: none; border: none; color: var(--muted);
+    cursor: pointer; font-size: 18px; line-height: 1; padding: 0 2px;
+    transition: color 0.15s; flex-shrink: 0;
+  }
+  .notes-close:hover { color: var(--ink); }
+  #notes-textarea {
+    width: 100%; min-height: 180px; resize: vertical;
+    background: none; border: none; outline: none;
+    font-family: 'DM Mono', monospace; font-size: 12px;
+    color: var(--ink); line-height: 1.6;
+    padding: 14px 16px;
+  }
+  #notes-textarea::placeholder { color: var(--line); }
+  .notes-footer {
+    padding: 10px 16px; border-top: 1px solid var(--line);
+    display: flex; justify-content: flex-end; gap: 8px;
+  }
+  .notes-save-btn {
+    background: var(--ink); color: var(--bg); border: none;
+    border-radius: 2px; padding: 7px 18px;
+    font-family: 'DM Mono', monospace; font-size: 11px;
+    cursor: pointer; transition: opacity 0.15s;
+  }
+  .notes-save-btn:hover { opacity: 0.82; }
+
   /* completed section */
   .completed-section { opacity: 0.75; }
   .completed-section .section-label { color: var(--muted); }
@@ -287,30 +350,30 @@
   <div class="section today" id="sec-today">
     <div class="section-title"><div class="dot"></div><span class="section-label">Today</span><span class="count" id="count-today">0 / 3</span></div>
     <table class="task-table">
-      <colgroup><col class="col-drag"><col class="col-check"><col class="col-company"><col class="col-desc"><col class="col-url"><col class="col-created"><col class="col-due"><col class="col-del"></colgroup>
-      <thead><tr class="col-headers"><th></th><th></th><th>Company</th><th>Description</th><th>URL</th><th class="center">Created</th><th class="center">Due</th><th></th></tr></thead>
+      <colgroup><col class="col-drag"><col class="col-check"><col class="col-company"><col class="col-desc"><col class="col-url"><col class="col-created"><col class="col-due"><col class="col-notes"><col class="col-del"></colgroup>
+      <thead><tr class="col-headers"><th></th><th></th><th>Company</th><th>Description</th><th>URL</th><th class="center">Created</th><th class="center">Due</th><th class="center">Notes</th><th></th></tr></thead>
       <tbody id="list-today"></tbody>
-      <tfoot><tr class="add-row"><td colspan="8"><button class="add-btn" onclick="addTask('today')">+ add task</button></td></tr></tfoot>
+      <tfoot><tr class="add-row"><td colspan="9"><button class="add-btn" onclick="addTask('today')">+ add task</button></td></tr></tfoot>
     </table>
   </div>
 
   <div class="section week" id="sec-week">
     <div class="section-title"><div class="dot"></div><span class="section-label">This Week</span><span class="count" id="count-week">0</span></div>
     <table class="task-table">
-      <colgroup><col class="col-drag"><col class="col-check"><col class="col-company"><col class="col-desc"><col class="col-url"><col class="col-created"><col class="col-due"><col class="col-del"></colgroup>
-      <thead><tr class="col-headers"><th></th><th></th><th>Company</th><th>Description</th><th>URL</th><th class="center">Created</th><th class="center">Due</th><th></th></tr></thead>
+      <colgroup><col class="col-drag"><col class="col-check"><col class="col-company"><col class="col-desc"><col class="col-url"><col class="col-created"><col class="col-due"><col class="col-notes"><col class="col-del"></colgroup>
+      <thead><tr class="col-headers"><th></th><th></th><th>Company</th><th>Description</th><th>URL</th><th class="center">Created</th><th class="center">Due</th><th class="center">Notes</th><th></th></tr></thead>
       <tbody id="list-week"></tbody>
-      <tfoot><tr class="add-row"><td colspan="8"><button class="add-btn" onclick="addTask('week')">+ add task</button></td></tr></tfoot>
+      <tfoot><tr class="add-row"><td colspan="9"><button class="add-btn" onclick="addTask('week')">+ add task</button></td></tr></tfoot>
     </table>
   </div>
 
   <div class="section back" id="sec-back">
     <div class="section-title"><div class="dot"></div><span class="section-label">Backlog</span><span class="count" id="count-back">0</span></div>
     <table class="task-table">
-      <colgroup><col class="col-drag"><col class="col-check"><col class="col-company"><col class="col-desc"><col class="col-url"><col class="col-created"><col class="col-due"><col class="col-del"></colgroup>
-      <thead><tr class="col-headers"><th></th><th></th><th>Company</th><th>Description</th><th>URL</th><th class="center">Created</th><th class="center">Due</th><th></th></tr></thead>
+      <colgroup><col class="col-drag"><col class="col-check"><col class="col-company"><col class="col-desc"><col class="col-url"><col class="col-created"><col class="col-due"><col class="col-notes"><col class="col-del"></colgroup>
+      <thead><tr class="col-headers"><th></th><th></th><th>Company</th><th>Description</th><th>URL</th><th class="center">Created</th><th class="center">Due</th><th class="center">Notes</th><th></th></tr></thead>
       <tbody id="list-back"></tbody>
-      <tfoot><tr class="add-row"><td colspan="8"><button class="add-btn" onclick="addTask('back')">+ add task</button></td></tr></tfoot>
+      <tfoot><tr class="add-row"><td colspan="9"><button class="add-btn" onclick="addTask('back')">+ add task</button></td></tr></tfoot>
     </table>
   </div>
 
@@ -318,8 +381,8 @@
   <div class="section completed-section" id="sec-completed">
     <div class="section-title"><div class="dot"></div><span class="section-label">Completed</span><span class="count" id="count-completed">0</span></div>
     <table class="task-table">
-      <colgroup><col class="col-drag"><col class="col-check"><col class="col-company"><col class="col-desc"><col class="col-url"><col class="col-created"><col class="col-due"><col class="col-del"></colgroup>
-      <thead><tr class="col-headers"><th></th><th></th><th>Company</th><th>Description</th><th>URL</th><th class="center">Created</th><th class="center">Due</th><th></th></tr></thead>
+      <colgroup><col class="col-drag"><col class="col-check"><col class="col-company"><col class="col-desc"><col class="col-url"><col class="col-created"><col class="col-due"><col class="col-notes"><col class="col-del"></colgroup>
+      <thead><tr class="col-headers"><th></th><th></th><th>Company</th><th>Description</th><th>URL</th><th class="center">Created</th><th class="center">Due</th><th class="center">Notes</th><th></th></tr></thead>
       <tbody id="list-completed"></tbody>
     </table>
   </div>
@@ -622,5 +685,19 @@
   if (!getToken()) { showSetup(); render(); }
   else { document.getElementById('setup-overlay').classList.add('hidden'); loadFromGitHub(); }
 </script>
+<!-- NOTES MODAL -->
+<div id="notes-modal" class="hidden">
+  <div class="notes-box">
+    <div class="notes-box-header">
+      <span class="notes-box-title" id="notes-modal-title">Notes</span>
+      <button class="notes-close" onclick="closeNotes()">×</button>
+    </div>
+    <textarea id="notes-textarea" placeholder="Add notes here…"></textarea>
+    <div class="notes-footer">
+      <button class="notes-save-btn" onclick="saveNotes()">Save</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
