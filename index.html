@@ -206,6 +206,7 @@
   }
   .company-input::placeholder { color: var(--line); }
   .company-input:focus { background: #fffef9; }
+  .company-input.personal-disabled { color: var(--muted); opacity: 0.5; cursor: default; }
 
   /* URL cell */
   .cell-url { padding: 9px 8px 9px 0; }
@@ -640,7 +641,7 @@
 
 </div>
 
-<p class="hint">drag rows between sections &nbsp;·&nbsp; click any cell to edit &nbsp;·&nbsp; overdue dates appear in red &nbsp;·&nbsp; syncs to GitHub<br>v1.19</p>
+<p class="hint">drag rows between sections &nbsp;·&nbsp; click any cell to edit &nbsp;·&nbsp; overdue dates appear in red &nbsp;·&nbsp; syncs to GitHub<br>v1.21</p>
 
 <!-- NOTES MODAL -->
 <div id="notes-modal" class="hidden">
@@ -856,7 +857,8 @@
     const due = new Date();
     due.setDate(due.getDate() + 7);
     const dueISO = due.toISOString().slice(0, 10);
-    state[section].push({ id, company:'', description:'', url:'', created, due: dueISO, done: false, type: 'work' });
+    const type = activeFilter === 'personal' ? 'personal' : 'work';
+    state[section].push({ id, company:'', description:'', url:'', created, due: dueISO, done: false, type });
     scheduleSave(); render();
     setTimeout(() => {
       const row = document.querySelector(`[data-task-id="${id}"]`);
@@ -1116,7 +1118,7 @@
         tr.innerHTML = `
           <td class="cell-drag" title="drag to move">⠿</td>
           <td class="cell-check"><input type="checkbox"></td>
-          <td class="cell-company"><input class="company-input" type="text" list="company-list" value="${escHtml(task.company||'')}" placeholder="—"></td>
+          <td class="cell-company"><input class="company-input${(task.type||'work')==='personal' ? ' personal-disabled' : ''}" type="text" list="company-list" value="${escHtml(task.company||'')}" placeholder="—" ${(task.type||'work')==='personal' ? 'disabled' : ''}></td>
           <td class="cell-text"><span class="type-dot ${(task.type||'work')}" title="Click to toggle work/personal"></span><span class="cell-editable" contenteditable="true" data-id="${task.id}" data-ph="description" title="${escHtml(task.description||'')}">${highlightText(task.description, searchQuery)}</span></td>
           <td class="cell-url">
             <div class="url-display${hasUrl ? '' : ' hidden'}">
@@ -1148,12 +1150,16 @@
 
         // type dot toggle
         const typeDot = tr.querySelector('.type-dot');
+        const companyInput = tr.querySelector('.company-input');
         typeDot.addEventListener('click', () => {
           const t = state[sec].find(t => t.id === task.id);
           if (!t) return;
           t.type = (t.type || 'work') === 'work' ? 'personal' : 'work';
           typeDot.className = `type-dot ${t.type}`;
           typeDot.title = `Click to toggle work/personal (currently ${t.type})`;
+          const isPersonal = t.type === 'personal';
+          companyInput.disabled = isPersonal;
+          companyInput.classList.toggle('personal-disabled', isPersonal);
           scheduleSave();
         });
         wireUrl(tr, sec, task);
