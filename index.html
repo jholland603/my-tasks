@@ -103,9 +103,10 @@
     padding: 12px 14px; border-bottom: 1px solid var(--line);
   }
   .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-  .today .dot { background: var(--today-c); }
-  .week  .dot { background: var(--week-c); }
-  .back  .dot { background: var(--back-c); }
+  .today .dot    { background: var(--today-c); }
+  .week  .dot    { background: var(--week-c); }
+  .nextweek .dot { background: #7b4fc4; }
+  .back  .dot    { background: var(--back-c); }
   .section-label { font-family: 'Instrument Serif', serif; font-size: 17px; font-style: italic; flex: 1; }
   .count { font-size: 10px; color: var(--muted); background: var(--bg); border: 1px solid var(--line); border-radius: 20px; padding: 2px 8px; }
   .today .count { color: var(--today-c); border-color: var(--today-c); background: #fdf4f3; }
@@ -610,6 +611,18 @@
     <div class="mobile-add"><button class="mobile-add-btn" onclick="addTask('week')">+ add task</button></div>
   </div>
 
+  <div class="section nextweek" id="sec-nextweek">
+    <div class="section-title"><div class="dot"></div><span class="section-label">Next Week</span><span class="count" id="count-nextweek">0</span></div>
+    <table class="task-table">
+      <colgroup><col class="col-drag"><col class="col-check"><col class="col-company"><col class="col-desc"><col class="col-url"><col class="col-notes"><col class="col-due"><col class="col-created"><col class="col-del"></colgroup>
+      <thead id="thead-nextweek"><tr class="col-headers"><th></th><th></th><th>Company</th><th>Description</th><th>URL</th><th class="center">Notes</th><th class="center">Due</th><th class="center">Created</th><th></th></tr></thead>
+      <tbody id="list-nextweek"></tbody>
+      <tfoot><tr class="add-row"><td colspan="9"><button class="add-btn" onclick="addTask('nextweek')">+ add task</button></td></tr></tfoot>
+    </table>
+    <div class="mobile-list" id="mobile-nextweek"></div>
+    <div class="mobile-add"><button class="mobile-add-btn" onclick="addTask('nextweek')">+ add task</button></div>
+  </div>
+
   <div class="section back" id="sec-back">
     <div class="section-title"><div class="dot"></div><span class="section-label">Backlog</span><span class="count" id="count-back">0</span></div>
     <table class="task-table">
@@ -641,7 +654,7 @@
 
 </div>
 
-<p class="hint">drag rows between sections &nbsp;·&nbsp; click any cell to edit &nbsp;·&nbsp; overdue dates appear in red &nbsp;·&nbsp; syncs to GitHub<br>v1.24</p>
+<p class="hint">drag rows between sections &nbsp;·&nbsp; click any cell to edit &nbsp;·&nbsp; overdue dates appear in red &nbsp;·&nbsp; syncs to GitHub<br>v1.25</p>
 
 <!-- NOTES MODAL -->
 <div id="notes-modal" class="hidden">
@@ -666,7 +679,7 @@
   const LS_SHA        = 'mytasks_sha';
   const LS_SETTINGS_SHA = 'mytasks_settings_sha';
 
-  let state = { today: [], week: [], back: [], completed: [] };
+  let state = { today: [], week: [], nextweek: [], back: [], completed: [] };
   let saveTimer = null;
   let dragSrc = null;
 
@@ -741,13 +754,26 @@
     } catch(e) { return { ok: false, status: 'network', message: e.message }; }
   }
 
-  // ── AUTO-PROMOTE DUE TODAY ──
+  // ── AUTO-PLACE BY DUE DATE ──
+  function sectionForDue(due) {
+    if (!due) return null; // no due date — don't auto-move
+    const today  = todayISO();
+    const d      = new Date(due + 'T00:00:00');
+    const now    = new Date(today + 'T00:00:00');
+    const diff   = Math.round((d - now) / (1000 * 60 * 60 * 24));
+    if (diff <= 0)  return 'today';
+    if (diff <= 7)  return 'week';
+    if (diff <= 14) return 'nextweek';
+    return 'back';
+  }
+
   function promoteTodayTasks() {
+    // called on load — only move tasks whose due date has passed their current section
     const today = todayISO();
     let changed = false;
-    ['week', 'back'].forEach(sec => {
+    ['week', 'nextweek', 'back'].forEach(sec => {
       const promote = state[sec].filter(t => t.due === today && !t.done);
-      if (promote.length === 0) return;
+      if (!promote.length) return;
       promote.forEach(t => {
         state[sec] = state[sec].filter(x => x.id !== t.id);
         state.today.push(t);
@@ -755,6 +781,18 @@
       changed = true;
     });
     if (changed) scheduleSave();
+  }
+
+  function autoPlaceTask(task) {
+    // called when due date changes — move task to correct section
+    const dest = sectionForDue(task.due);
+    if (!dest) return; // no due date, leave it where it is
+    // find which section it's currently in
+    const current = ['today','week','nextweek','back'].find(s => state[s].some(t => t.id === task.id));
+    if (!current || current === dest) return;
+    state[current] = state[current].filter(t => t.id !== task.id);
+    state[dest].push(task);
+    scheduleSave();
   }
 
   // ── GITHUB SYNC ──
@@ -780,7 +818,7 @@
       } catch(e) {
         throw new Error('Could not parse tasks.json — file may be corrupted');
       }
-      state = { today: decoded.today||[], week: decoded.week||[], back: decoded.back||[], completed: decoded.completed||[] };
+      state = { today: decoded.today||[], week: decoded.week||[], nextweek: decoded.nextweek||[], back: decoded.back||[], completed: decoded.completed||[] };
       promoteTodayTasks();
       await loadSettingsFromGitHub(token);
       setSyncState('saved','synced'); render();
@@ -868,7 +906,9 @@
     due.setDate(due.getDate() + 7);
     const dueISO = due.toISOString().slice(0, 10);
     const type = activeFilter === 'personal' ? 'personal' : 'work';
-    state[section].push({ id, company:'', description:'', url:'', created, due: dueISO, done: false, type });
+    const task = { id, company:'', description:'', url:'', created, due: dueISO, done: false, type };
+    const dest = sectionForDue(dueISO) || section;
+    state[dest].push(task);
     scheduleSave(); render();
     setTimeout(() => {
       const row = document.querySelector(`tr[data-task-id="${id}"]`);
@@ -919,9 +959,10 @@
   const LS_SORT = 'mytasks_sort';
 
   const _defaultSort = {
-    today: { col: 'due', dir: 'asc' },
-    week:  { col: 'due', dir: 'asc' },
-    back:  { col: 'due', dir: 'asc' }
+    today:    { col: 'due', dir: 'asc' },
+    week:     { col: 'due', dir: 'asc' },
+    nextweek: { col: 'due', dir: 'asc' },
+    back:     { col: 'due', dir: 'asc' }
   };
 
   function loadSortState() {
@@ -1003,7 +1044,7 @@
 
   // one-time click delegation per thead — set up after DOM ready
   function initSortListeners() {
-    ['today','week','back'].forEach(sec => {
+    ['today','week','nextweek','back'].forEach(sec => {
       const thead = document.getElementById('thead-' + sec);
       if (!thead) return;
       thead.addEventListener('click', e => {
@@ -1104,7 +1145,7 @@
 
   // ── COMPANY LIST ──
   function getCompanies() {
-    const all = [...state.today, ...state.week, ...state.back, ...state.completed];
+    const all = [...state.today, ...state.week, ...state.nextweek, ...state.back, ...state.completed];
     const set = new Set(all.map(t => (t.company||'').trim()).filter(Boolean));
     return [...set].sort((a,b) => a.localeCompare(b));
   }
@@ -1118,7 +1159,7 @@
   function render() {
     updateDatalist();
     let totalMatches = 0;
-    ['today','week','back'].forEach(sec => {
+    ['today','week','nextweek','back'].forEach(sec => {
       renderHeaders(sec);
       const tbody = document.getElementById('list-' + sec);
       tbody.innerHTML = '';
@@ -1236,6 +1277,7 @@
     const sections = [
       { key: 'today',     id: 'mobile-today',     completed: false },
       { key: 'week',      id: 'mobile-week',       completed: false },
+      { key: 'nextweek',  id: 'mobile-nextweek',   completed: false },
       { key: 'back',      id: 'mobile-back',       completed: false },
       { key: 'completed', id: 'mobile-completed',  completed: true  },
     ];
@@ -1349,6 +1391,9 @@
         }
       }
       dateInputs[0].classList.toggle('overdue', isOverdue(dateInputs[0].value));
+      // auto-place into correct section
+      const t = state[sec].find(t => t.id === task.id);
+      if (t) { t.due = dateInputs[0].value; autoPlaceTask(t); render(); }
     });
     dateInputs[1].addEventListener('change', () => updateField(sec, task.id, 'created', dateInputs[1].value));
   }
