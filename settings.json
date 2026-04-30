@@ -1,0 +1,16 @@
+{
+  "sortState": {
+    "today": {
+      "col": "due",
+      "dir": "asc"
+    },
+    "week": {
+      "col": "due",
+      "dir": "asc"
+    },
+    "back": {
+      "col": "due",
+      "dir": "asc"
+    }
+  }
+}
