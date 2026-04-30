@@ -1,16 +1,6 @@
 {
   "today": [
     {
-      "id": "1777556211436-2418",
-      "company": "VANELE",
-      "description": "Finish Upgrade",
-      "url": "",
-      "created": "2026-04-30",
-      "due": "2026-04-30",
-      "done": false,
-      "notes": ""
-    },
-    {
       "id": "1777556191564-6673",
       "company": "AERINC",
       "description": "Data migration",
@@ -49,5 +39,18 @@
   ],
   "week": [],
   "back": [],
-  "completed": []
+  "completed": [
+    {
+      "id": "1777556211436-2418",
+      "company": "VANELE",
+      "description": "Finish Upgrade",
+      "url": "",
+      "created": "2026-04-30",
+      "due": "2026-04-30",
+      "done": true,
+      "notes": "",
+      "completedFrom": "today",
+      "completedAt": "2026-04-30"
+    }
+  ]
 }
