@@ -607,12 +607,27 @@
   let dragOverId = null;
 
   // ── SORT STATE ──
-  // sortState[sec] = { col: 'due'|'created'|'company'|'manual', dir: 'asc'|'desc' }
-  const sortState = {
+  const LS_SORT = 'mytasks_sort';
+
+  const _defaultSort = {
     today: { col: 'due', dir: 'asc' },
     week:  { col: 'due', dir: 'asc' },
     back:  { col: 'due', dir: 'asc' }
   };
+
+  function loadSortState() {
+    try {
+      const saved = localStorage.getItem(LS_SORT);
+      if (saved) return JSON.parse(saved);
+    } catch(e) {}
+    return _defaultSort;
+  }
+
+  function saveSortState() {
+    localStorage.setItem(LS_SORT, JSON.stringify(sortState));
+  }
+
+  const sortState = loadSortState();
 
   function cycleSort(sec, col) {
     const cur = sortState[sec];
@@ -625,6 +640,7 @@
     } else {
       sortState[sec] = { col, dir: 'asc' };
     }
+    saveSortState();
     render();
   }
 
@@ -741,6 +757,7 @@
         const [moved] = arr.splice(fromIdx, 1);
         arr.splice(toIdx, 0, moved);
         sortState[section] = { col: 'manual', dir: 'asc' };
+        saveSortState();
       } else {
         // move between sections
         const task = state[dragSrc.section].find(t => t.id === dragSrc.id);
