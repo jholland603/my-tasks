@@ -5,7 +5,7 @@
       "dir": "asc"
     },
     "week": {
-      "col": "due",
+      "col": "created",
       "dir": "asc"
     },
     "back": {
