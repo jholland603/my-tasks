@@ -122,6 +122,13 @@
   }
   .col-headers th:first-child { padding-left: 8px; }
   .col-headers th.center { text-align: center; }
+  .col-headers th.sortable {
+    cursor: pointer; user-select: none;
+    transition: color 0.15s;
+  }
+  .col-headers th.sortable:hover { color: var(--ink); }
+  .col-headers th.sort-active { color: var(--ink); }
+  .sort-icon { margin-left: 3px; font-style: normal; opacity: 0.6; }
 
   /* rows */
   .task-row {
@@ -352,7 +359,7 @@
     <div class="section-title"><div class="dot"></div><span class="section-label">Today</span><span class="count" id="count-today">0 / 3</span></div>
     <table class="task-table">
       <colgroup><col class="col-drag"><col class="col-check"><col class="col-company"><col class="col-desc"><col class="col-url"><col class="col-created"><col class="col-due"><col class="col-notes"><col class="col-del"></colgroup>
-      <thead><tr class="col-headers"><th></th><th></th><th>Company</th><th>Description</th><th>URL</th><th class="center">Created</th><th class="center">Due</th><th class="center">Notes</th><th></th></tr></thead>
+      <thead id="thead-today"><tr class="col-headers"><th></th><th></th><th>Company</th><th>Description</th><th>URL</th><th class="center">Created</th><th class="center">Due</th><th class="center">Notes</th><th></th></tr></thead>
       <tbody id="list-today"></tbody>
       <tfoot><tr class="add-row"><td colspan="9"><button class="add-btn" onclick="addTask('today')">+ add task</button></td></tr></tfoot>
     </table>
@@ -362,7 +369,7 @@
     <div class="section-title"><div class="dot"></div><span class="section-label">This Week</span><span class="count" id="count-week">0</span></div>
     <table class="task-table">
       <colgroup><col class="col-drag"><col class="col-check"><col class="col-company"><col class="col-desc"><col class="col-url"><col class="col-created"><col class="col-due"><col class="col-notes"><col class="col-del"></colgroup>
-      <thead><tr class="col-headers"><th></th><th></th><th>Company</th><th>Description</th><th>URL</th><th class="center">Created</th><th class="center">Due</th><th class="center">Notes</th><th></th></tr></thead>
+      <thead id="thead-week"><tr class="col-headers"><th></th><th></th><th>Company</th><th>Description</th><th>URL</th><th class="center">Created</th><th class="center">Due</th><th class="center">Notes</th><th></th></tr></thead>
       <tbody id="list-week"></tbody>
       <tfoot><tr class="add-row"><td colspan="9"><button class="add-btn" onclick="addTask('week')">+ add task</button></td></tr></tfoot>
     </table>
@@ -372,7 +379,7 @@
     <div class="section-title"><div class="dot"></div><span class="section-label">Backlog</span><span class="count" id="count-back">0</span></div>
     <table class="task-table">
       <colgroup><col class="col-drag"><col class="col-check"><col class="col-company"><col class="col-desc"><col class="col-url"><col class="col-created"><col class="col-due"><col class="col-notes"><col class="col-del"></colgroup>
-      <thead><tr class="col-headers"><th></th><th></th><th>Company</th><th>Description</th><th>URL</th><th class="center">Created</th><th class="center">Due</th><th class="center">Notes</th><th></th></tr></thead>
+      <thead id="thead-back"><tr class="col-headers"><th></th><th></th><th>Company</th><th>Description</th><th>URL</th><th class="center">Created</th><th class="center">Due</th><th class="center">Notes</th><th></th></tr></thead>
       <tbody id="list-back"></tbody>
       <tfoot><tr class="add-row"><td colspan="9"><button class="add-btn" onclick="addTask('back')">+ add task</button></td></tr></tfoot>
     </table>
@@ -391,6 +398,20 @@
 </div>
 
 <p class="hint">drag rows between sections &nbsp;·&nbsp; click any cell to edit &nbsp;·&nbsp; overdue dates appear in red &nbsp;·&nbsp; syncs to GitHub</p>
+
+<!-- NOTES MODAL -->
+<div id="notes-modal" class="hidden">
+  <div class="notes-box">
+    <div class="notes-box-header">
+      <span class="notes-box-title" id="notes-modal-title">Notes</span>
+      <button class="notes-close" onclick="closeNotes()">×</button>
+    </div>
+    <textarea id="notes-textarea" placeholder="Add notes here…"></textarea>
+    <div class="notes-footer">
+      <button class="notes-save-btn" onclick="saveNotes()">Save</button>
+    </div>
+  </div>
+</div>
 
 <script>
   const GITHUB_USER = 'jholland603';
@@ -547,14 +568,75 @@
   // ── DRAG & DROP ──
   let dragOverId = null;
 
-  function sortSection(tasks) {
+  // ── SORT STATE ──
+  // sortState[sec] = { col: 'due'|'created'|'company'|'manual', dir: 'asc'|'desc' }
+  const sortState = {
+    today: { col: 'due', dir: 'asc' },
+    week:  { col: 'due', dir: 'asc' },
+    back:  { col: 'due', dir: 'asc' }
+  };
+
+  function cycleSort(sec, col) {
+    const cur = sortState[sec];
+    if (cur.col !== col) {
+      sortState[sec] = { col, dir: 'asc' };
+    } else if (cur.dir === 'asc') {
+      sortState[sec] = { col, dir: 'desc' };
+    } else if (cur.dir === 'desc') {
+      sortState[sec] = { col: 'manual', dir: 'asc' };
+    } else {
+      sortState[sec] = { col, dir: 'asc' };
+    }
+    render();
+  }
+
+  function sortSection(tasks, sec) {
+    const { col, dir } = sortState[sec] || { col: 'manual', dir: 'asc' };
+    if (col === 'manual') return [...tasks];
+    const mult = dir === 'asc' ? 1 : -1;
     return [...tasks].sort((a, b) => {
-      const da = a.due || '9999-99-99';
-      const db = b.due || '9999-99-99';
-      if (da !== db) return da < db ? -1 : 1;
-      const ca = a.created || '';
-      const cb = b.created || '';
-      return ca < cb ? -1 : ca > cb ? 1 : 0;
+      let va, vb;
+      if (col === 'due') {
+        va = a.due || '9999-99-99';
+        vb = b.due || '9999-99-99';
+      } else if (col === 'created') {
+        va = a.created || '';
+        vb = b.created || '';
+      } else if (col === 'company') {
+        va = (a.company || '').toLowerCase();
+        vb = (b.company || '').toLowerCase();
+      }
+      if (va < vb) return -1 * mult;
+      if (va > vb) return  1 * mult;
+      return 0;
+    });
+  }
+
+  function renderHeaders(sec) {
+    const thead = document.getElementById('thead-' + sec);
+    if (!thead) return;
+    const { col, dir } = sortState[sec];
+    const icon = dir === 'asc' ? '↑' : '↓';
+    const cols = [
+      { key: null,      label: '',          cls: '' },
+      { key: null,      label: '',          cls: '' },
+      { key: 'company', label: 'Company',   cls: '' },
+      { key: null,      label: 'Description', cls: '' },
+      { key: null,      label: 'URL',       cls: '' },
+      { key: 'created', label: 'Created',   cls: 'center' },
+      { key: 'due',     label: 'Due',       cls: 'center' },
+      { key: null,      label: 'Notes',     cls: 'center' },
+      { key: null,      label: '',          cls: '' },
+    ];
+    const tr = thead.querySelector('tr');
+    tr.innerHTML = cols.map(c => {
+      if (!c.key) return `<th class="${c.cls}">${c.label}</th>`;
+      const isActive = col === c.key;
+      const manualTip = isActive && col !== 'manual' ? ` — click again to ${dir === 'asc' ? 'sort descending' : 'restore manual order'}` : '';
+      return `<th class="${c.cls} sortable${isActive ? ' sort-active' : ''}" data-sort="${c.key}" title="Sort by ${c.label}${manualTip}">${c.label}${isActive && col !== 'manual' ? `<span class="sort-icon">${icon}</span>` : ''}</th>`;
+    }).join('');
+    tr.querySelectorAll('th.sortable').forEach(th => {
+      th.addEventListener('click', () => cycleSort(sec, th.dataset.sort));
     });
   }
 
@@ -610,6 +692,7 @@
         if (fromIdx === -1 || toIdx === -1) return;
         const [moved] = arr.splice(fromIdx, 1);
         arr.splice(toIdx, 0, moved);
+        sortState[section] = { col: 'manual', dir: 'asc' };
       } else {
         // move between sections
         const task = state[dragSrc.section].find(t => t.id === dragSrc.id);
@@ -659,10 +742,11 @@
   function render() {
     updateDatalist();
     ['today','week','back'].forEach(sec => {
+      renderHeaders(sec);
       const tbody = document.getElementById('list-' + sec);
       tbody.innerHTML = '';
 
-      const tasks = sortSection(state[sec]);
+      const tasks = sortSection(state[sec], sec);
       tasks.forEach(task => {
         const tr = document.createElement('tr');
         tr.className = 'task-row';
@@ -775,7 +859,8 @@
   }
 
   // ── NOTES MODAL ──
-  let notesContext = null; // { section, id }
+  // ── NOTES MODAL ──
+  let notesContext = null;
 
   function openNotes(section, id) {
     const task = state[section].find(t => t.id === id);
@@ -800,37 +885,20 @@
     render();
   }
 
-  // close on backdrop click
-  document.getElementById('notes-modal').addEventListener('click', e => {
-    if (e.target === document.getElementById('notes-modal')) closeNotes();
-  });
-
-  // Ctrl+Enter or Escape shortcuts
-  document.getElementById('notes-textarea').addEventListener('keydown', e => {
-    if (e.key === 'Escape') closeNotes();
-    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') saveNotes();
-  });
-
   // ── INIT ──
   document.getElementById('date-label').textContent =
     new Date().toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
 
+  // notes modal listeners (elements exist now)
+  document.getElementById('notes-modal').addEventListener('click', e => {
+    if (e.target === document.getElementById('notes-modal')) closeNotes();
+  });
+  document.getElementById('notes-textarea').addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeNotes();
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') saveNotes();
+  });
   if (!getToken()) { showSetup(); render(); }
   else { document.getElementById('setup-overlay').classList.add('hidden'); loadFromGitHub(); }
 </script>
-<!-- NOTES MODAL -->
-<div id="notes-modal" class="hidden">
-  <div class="notes-box">
-    <div class="notes-box-header">
-      <span class="notes-box-title" id="notes-modal-title">Notes</span>
-      <button class="notes-close" onclick="closeNotes()">×</button>
-    </div>
-    <textarea id="notes-textarea" placeholder="Add notes here…"></textarea>
-    <div class="notes-footer">
-      <button class="notes-save-btn" onclick="saveNotes()">Save</button>
-    </div>
-  </div>
-</div>
-
 </body>
 </html>
