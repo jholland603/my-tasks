@@ -61,7 +61,7 @@
 
   /* ── PAGE HEADER ── */
   header {
-    max-width: 1060px; margin: 0 auto 36px;
+    max-width: 1400px; margin: 0 auto 36px;
     display: flex; align-items: baseline; justify-content: space-between;
     border-bottom: 1.5px solid var(--ink); padding-bottom: 12px;
   }
@@ -77,7 +77,7 @@
   .settings-btn:hover { color: var(--ink); }
 
   /* ── BOARD ── */
-  .board { max-width: 1060px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+  .board { max-width: 1400px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
 
   .section {
     background: var(--card); border: 1px solid var(--line); border-radius: 2px;
@@ -105,11 +105,11 @@
 
   col.col-drag    { width: 28px; }
   col.col-check   { width: 30px; }
-  col.col-company { width: 13%; }
-  col.col-desc    { width: 36%; }
-  col.col-url     { width: 20%; }
-  col.col-created { width: 82px; }
-  col.col-due     { width: 82px; }
+  col.col-company { width: 12%; }
+  col.col-desc    { width: 28%; }
+  col.col-url     { width: 28%; }
+  col.col-created { width: 100px; }
+  col.col-due     { width: 100px; }
   col.col-del     { width: 28px; }
 
   .col-headers { border-bottom: 1px solid var(--line); background: var(--bg); }
@@ -184,7 +184,7 @@
   .url-link {
     color: var(--week-c); text-decoration: none; font-size: 11px;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    max-width: 130px; display: inline-block; transition: opacity 0.15s;
+    max-width: 320px; display: inline-block; transition: opacity 0.15s;
   }
   .url-link:hover { opacity: 0.7; }
   .url-edit-btn {
@@ -211,7 +211,12 @@
     color: var(--ink); outline: none; width: 100%;
     text-align: center; cursor: pointer; padding: 9px 2px;
   }
-  .date-input::-webkit-calendar-picker-indicator { opacity: 0; width: 0; padding: 0; margin: 0; }
+  .date-input::-webkit-calendar-picker-indicator {
+    opacity: 0.4; cursor: pointer; font-size: 11px;
+    filter: invert(0.4);
+    transition: opacity 0.15s;
+  }
+  .date-input:hover::-webkit-calendar-picker-indicator { opacity: 0.8; }
   .date-input:hover { color: var(--week-c); }
   .date-input.overdue { color: var(--today-c); font-weight: 500; }
 
@@ -246,7 +251,7 @@
   .cell-date-ro.center { text-align: center; padding: 8px 4px; }
   .cell-url-ro a { color: var(--muted); text-decoration: none; }
 
-  .hint { max-width: 1060px; margin: 28px auto 0; color: var(--muted); font-size: 10px; text-align: center; letter-spacing: 0.03em; line-height: 1.8; }
+  .hint { max-width: 1400px; margin: 28px auto 0; color: var(--muted); font-size: 10px; text-align: center; letter-spacing: 0.03em; line-height: 1.8; }
 
   @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 </style>
