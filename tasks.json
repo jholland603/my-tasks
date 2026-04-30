@@ -9,10 +9,7 @@
       "due": "",
       "done": false,
       "notes": "Testing to see if this works."
-    }
-  ],
-  "week": [],
-  "back": [
+    },
     {
       "id": "1777555192205-6541",
       "company": "VANELE",
@@ -23,5 +20,7 @@
       "done": false
     }
   ],
+  "week": [],
+  "back": [],
   "completed": []
 }
