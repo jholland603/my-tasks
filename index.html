@@ -340,6 +340,10 @@
   .cell-url-ro a { color: var(--muted); text-decoration: none; }
 
   /* ── MOBILE ── */
+  /* hide mobile list on desktop — must come BEFORE the media query */
+  .mobile-list { display: none; }
+  .mobile-add  { display: none; }
+
   @media (max-width: 900px) {
     body { padding: 16px 12px 80px; font-size: 13px; }
 
@@ -352,7 +356,7 @@
     /* hide the desktop table entirely */
     .task-table { display: none; }
 
-    /* mobile card list */
+    /* show mobile list */
     .mobile-list { display: block; }
     .mobile-add  { display: block; }
 
@@ -442,10 +446,6 @@
     .mobile-action-btn.danger:active { color: var(--today-c); border-color: var(--today-c); }
   }
 
-  /* hide mobile list on desktop */
-  .mobile-list { display: none; }
-  .mobile-add  { display: none; }
-
   .hint { max-width: 1400px; margin: 28px auto 0; color: var(--muted); font-size: 10px; text-align: center; letter-spacing: 0.03em; line-height: 1.8; }
 
   @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
@@ -531,7 +531,7 @@
 
 </div>
 
-<p class="hint">drag rows between sections &nbsp;·&nbsp; click any cell to edit &nbsp;·&nbsp; overdue dates appear in red &nbsp;·&nbsp; syncs to GitHub</p>
+<p class="hint">drag rows between sections &nbsp;·&nbsp; click any cell to edit &nbsp;·&nbsp; overdue dates appear in red &nbsp;·&nbsp; syncs to GitHub<br>v1.12</p>
 
 <!-- NOTES MODAL -->
 <div id="notes-modal" class="hidden">
