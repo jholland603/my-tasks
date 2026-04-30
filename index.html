@@ -12,20 +12,21 @@
     --bg: #f5f2eb;
     --ink: #1a1814;
     --muted: #8a8478;
-    --today: #c8392b;
-    --week: #2b5fc8;
-    --back: #4a7a4a;
+    --today-c: #c8392b;
+    --week-c:  #2b5fc8;
+    --back-c:  #4a7a4a;
     --line: #d8d4cc;
     --card: #fff;
+    --row-hover: #faf8f4;
   }
 
   body {
     background: var(--bg);
     color: var(--ink);
     font-family: 'DM Mono', monospace;
-    font-size: 13px;
+    font-size: 12px;
     min-height: 100vh;
-    padding: 40px 20px 80px;
+    padding: 36px 24px 80px;
   }
 
   /* ── SETUP OVERLAY ── */
@@ -33,447 +34,261 @@
     position: fixed; inset: 0;
     background: rgba(245,242,235,0.97);
     display: flex; align-items: center; justify-content: center;
-    z-index: 100;
-    backdrop-filter: blur(2px);
+    z-index: 100; backdrop-filter: blur(2px);
   }
-
   #setup-overlay.hidden { display: none; }
-
   .setup-box {
-    background: var(--card);
-    border: 1.5px solid var(--ink);
-    border-radius: 2px;
-    padding: 36px 40px;
-    max-width: 460px;
-    width: 100%;
+    background: var(--card); border: 1.5px solid var(--ink);
+    border-radius: 2px; padding: 36px 40px; max-width: 460px; width: 100%;
   }
-
-  .setup-box h2 {
-    font-family: 'Instrument Serif', serif;
-    font-size: 24px;
-    font-weight: 400;
-    margin-bottom: 6px;
+  .setup-box h2 { font-family: 'Instrument Serif', serif; font-size: 24px; font-weight: 400; margin-bottom: 6px; }
+  .setup-box p  { color: var(--muted); font-size: 11px; line-height: 1.7; margin-bottom: 24px; }
+  .setup-box a  { color: var(--today-c); }
+  .field-label  { font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+  .setup-input  {
+    width: 100%; background: var(--bg); border: 1px solid var(--line); border-radius: 2px;
+    padding: 10px 12px; font-family: 'DM Mono', monospace; font-size: 13px;
+    color: var(--ink); outline: none; margin-bottom: 20px;
   }
-
-  .setup-box p {
-    color: var(--muted);
-    font-size: 11px;
-    line-height: 1.7;
-    margin-bottom: 24px;
-  }
-
-  .setup-box a { color: var(--today); }
-
-  .field-label {
-    font-size: 10px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 6px;
-  }
-
-  .setup-input {
-    width: 100%;
-    background: var(--bg);
-    border: 1px solid var(--line);
-    border-radius: 2px;
-    padding: 10px 12px;
-    font-family: 'DM Mono', monospace;
-    font-size: 13px;
-    color: var(--ink);
-    outline: none;
-    margin-bottom: 20px;
-  }
-
   .setup-input:focus { border-color: var(--ink); }
-
   .setup-btn {
-    background: var(--ink);
-    color: var(--bg);
-    border: none;
-    border-radius: 2px;
-    padding: 11px 24px;
-    font-family: 'DM Mono', monospace;
-    font-size: 12px;
-    cursor: pointer;
-    width: 100%;
-    transition: opacity 0.15s;
+    background: var(--ink); color: var(--bg); border: none; border-radius: 2px;
+    padding: 11px 24px; font-family: 'DM Mono', monospace; font-size: 12px;
+    cursor: pointer; width: 100%; transition: opacity 0.15s;
   }
-
   .setup-btn:hover { opacity: 0.85; }
+  .setup-error { color: var(--today-c); font-size: 11px; margin-top: 10px; display: none; }
 
-  .setup-error {
-    color: var(--today);
-    font-size: 11px;
-    margin-top: 10px;
-    display: none;
-  }
-
-  /* ── HEADER ── */
+  /* ── PAGE HEADER ── */
   header {
-    max-width: 860px;
-    margin: 0 auto 48px;
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    border-bottom: 1.5px solid var(--ink);
-    padding-bottom: 12px;
+    max-width: 1060px; margin: 0 auto 36px;
+    display: flex; align-items: baseline; justify-content: space-between;
+    border-bottom: 1.5px solid var(--ink); padding-bottom: 12px;
   }
-
-  h1 {
-    font-family: 'Instrument Serif', serif;
-    font-size: 32px;
-    font-weight: 400;
-    letter-spacing: -0.5px;
-  }
-
-  .header-right {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-  }
-
+  h1 { font-family: 'Instrument Serif', serif; font-size: 30px; font-weight: 400; letter-spacing: -0.5px; }
+  .header-right { display: flex; align-items: center; gap: 16px; }
   .date { color: var(--muted); font-size: 11px; letter-spacing: 0.05em; text-transform: uppercase; }
-
-  .sync-status {
-    font-size: 10px;
-    letter-spacing: 0.04em;
-    color: var(--muted);
-    display: flex;
-    align-items: center;
-    gap: 5px;
-  }
-
-  .sync-dot {
-    width: 6px; height: 6px;
-    border-radius: 50%;
-    background: var(--muted);
-    transition: background 0.3s;
-  }
-
+  .sync-status { font-size: 10px; letter-spacing: 0.04em; color: var(--muted); display: flex; align-items: center; gap: 5px; }
+  .sync-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); transition: background 0.3s; }
   .sync-dot.saving { background: #e8a020; }
-  .sync-dot.saved  { background: var(--back); }
-  .sync-dot.error  { background: var(--today); }
-
-  .settings-btn {
-    background: none; border: none;
-    color: var(--muted); cursor: pointer;
-    font-size: 14px; padding: 0;
-    transition: color 0.15s;
-  }
+  .sync-dot.saved  { background: var(--back-c); }
+  .sync-dot.error  { background: var(--today-c); }
+  .settings-btn { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 14px; padding: 0; transition: color 0.15s; }
   .settings-btn:hover { color: var(--ink); }
 
   /* ── BOARD ── */
-  .board {
-    max-width: 860px;
-    margin: 0 auto;
-    display: flex;
-    flex-direction: column;
-    gap: 32px;
-  }
+  .board { max-width: 1060px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
 
   .section {
-    background: var(--card);
-    border: 1px solid var(--line);
-    border-radius: 2px;
-    overflow: hidden;
-    transition: box-shadow 0.2s;
+    background: var(--card); border: 1px solid var(--line); border-radius: 2px;
+    overflow: hidden; transition: box-shadow 0.2s;
+    animation: fadeIn 0.3s ease both;
   }
-
-  .section.drag-over {
-    box-shadow: 0 0 0 2px var(--ink);
-  }
-
-  .section-header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 14px 18px;
-    border-bottom: 1px solid var(--line);
-  }
-
-  .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-  .today .dot  { background: var(--today); }
-  .week   .dot { background: var(--week); }
-  .back   .dot { background: var(--back); }
-
-  .section-label {
-    font-family: 'Instrument Serif', serif;
-    font-size: 18px;
-    font-style: italic;
-    flex: 1;
-  }
-
-  .count {
-    font-size: 11px; color: var(--muted);
-    background: var(--bg); border: 1px solid var(--line);
-    border-radius: 20px; padding: 2px 8px;
-  }
-
-  .today .count { color: var(--today); border-color: var(--today); background: #fdf4f3; }
-
-  /* ── TASKS ── */
-  .task-list { list-style: none; min-height: 4px; }
-
-  .task {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    padding: 12px 18px;
-    border-bottom: 1px solid var(--line);
-    transition: background 0.15s, opacity 0.2s;
-    cursor: grab;
-    user-select: none;
-  }
-
-  .task:last-child { border-bottom: none; }
-  .task:hover { background: #faf8f4; }
-  .task.dragging { opacity: 0.4; cursor: grabbing; }
-  .task.done .task-text { text-decoration: line-through; color: var(--muted); }
-
-  /* ── TASK BODY ── */
-  .task-main {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    min-width: 0;
-  }
-
-  .task-fields {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    align-items: center;
-  }
-
-  .task-field {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    min-width: 0;
-  }
-
-  .field-tag {
-    font-size: 9px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--muted);
-    white-space: nowrap;
-    flex-shrink: 0;
-  }
-
-  .field-input {
-    background: none;
-    border: none;
-    border-bottom: 1px solid var(--line);
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    color: var(--ink);
-    outline: none;
-    padding: 1px 4px;
-    min-width: 60px;
-    transition: border-color 0.15s;
-  }
-
-  .field-input:focus { border-color: var(--ink); }
-  .field-input::placeholder { color: var(--line); }
-
-  .field-input.url-input { min-width: 140px; }
-
-  .url-link {
-    font-size: 11px;
-    color: var(--week);
-    text-decoration: none;
-    border-bottom: 1px solid transparent;
-    transition: border-color 0.15s;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 200px;
-    display: inline-block;
-  }
-
-  .url-link:hover { border-color: var(--week); }
-
-  .drag-handle {
-    color: var(--line);
-    font-size: 12px;
-    margin-top: 2px;
-    cursor: grab;
-    flex-shrink: 0;
-    transition: color 0.15s;
-  }
-
-  .task:hover .drag-handle { color: var(--muted); }
-
-  input[type="checkbox"] {
-    appearance: none;
-    width: 16px; height: 16px;
-    border: 1.5px solid var(--line);
-    border-radius: 2px;
-    cursor: pointer;
-    flex-shrink: 0;
-    margin-top: 1px;
-    position: relative;
-    transition: all 0.15s;
-  }
-
-  .today input[type="checkbox"]:checked  { background: var(--today); border-color: var(--today); }
-  .week   input[type="checkbox"]:checked { background: var(--week);  border-color: var(--week); }
-  .back   input[type="checkbox"]:checked { background: var(--back);  border-color: var(--back); }
-
-  input[type="checkbox"]:checked::after {
-    content: '';
-    position: absolute;
-    left: 4px; top: 1px;
-    width: 5px; height: 9px;
-    border: 1.5px solid white;
-    border-top: none; border-left: none;
-    transform: rotate(45deg);
-  }
-
-  .task-text {
-    flex: 1; line-height: 1.5;
-    outline: none; cursor: text;
-    word-break: break-word;
-  }
-
-  .task-text:empty::before {
-    content: attr(data-placeholder);
-    color: var(--muted);
-    pointer-events: none;
-  }
-
-  .delete-btn {
-    background: none; border: none;
-    color: var(--line); cursor: pointer;
-    font-size: 16px; line-height: 1;
-    padding: 0 2px;
-    opacity: 0;
-    transition: opacity 0.15s, color 0.15s;
-    flex-shrink: 0;
-  }
-
-  .task:hover .delete-btn { opacity: 1; }
-  .delete-btn:hover { color: var(--today); }
-
-  .add-row {
-    padding: 10px 18px;
-    border-top: 1px dashed var(--line);
-  }
-
-  .add-btn {
-    background: none; border: none;
-    color: var(--muted); cursor: pointer;
-    font-family: 'DM Mono', monospace;
-    font-size: 12px; padding: 0;
-    display: flex; align-items: center; gap: 6px;
-    transition: color 0.15s;
-  }
-
-  .add-btn:hover { color: var(--ink); }
-
-  /* ── DROP INDICATOR ── */
-  .drop-indicator {
-    height: 2px;
-    background: var(--ink);
-    margin: 0 18px;
-    border-radius: 1px;
-    display: none;
-  }
-
-  .drop-indicator.visible { display: block; }
-
-  .hint {
-    max-width: 860px;
-    margin: 40px auto 0;
-    color: var(--muted);
-    font-size: 11px;
-    text-align: center;
-    letter-spacing: 0.03em;
-    line-height: 1.8;
-  }
-
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(6px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-
-  .section { animation: fadeIn 0.3s ease both; }
   .section:nth-child(2) { animation-delay: 0.07s; }
   .section:nth-child(3) { animation-delay: 0.14s; }
+  .section.drag-over { box-shadow: 0 0 0 2px var(--ink); }
+
+  .section-title {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 14px; border-bottom: 1px solid var(--line);
+  }
+  .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .today .dot { background: var(--today-c); }
+  .week  .dot { background: var(--week-c); }
+  .back  .dot { background: var(--back-c); }
+  .section-label { font-family: 'Instrument Serif', serif; font-size: 17px; font-style: italic; flex: 1; }
+  .count { font-size: 10px; color: var(--muted); background: var(--bg); border: 1px solid var(--line); border-radius: 20px; padding: 2px 8px; }
+  .today .count { color: var(--today-c); border-color: var(--today-c); background: #fdf4f3; }
+
+  /* ── TABLE ── */
+  .task-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+
+  col.col-drag    { width: 28px; }
+  col.col-check   { width: 30px; }
+  col.col-task    { width: 22%; }
+  col.col-company { width: 11%; }
+  col.col-desc    { width: 22%; }
+  col.col-url     { width: 18%; }
+  col.col-created { width: 82px; }
+  col.col-due     { width: 82px; }
+  col.col-del     { width: 28px; }
+
+  .col-headers { border-bottom: 1px solid var(--line); background: var(--bg); }
+  .col-headers th {
+    font-size: 9px; font-weight: 500; letter-spacing: 0.09em;
+    text-transform: uppercase; color: var(--muted);
+    text-align: left; padding: 6px 8px 6px 0;
+    white-space: nowrap; overflow: hidden;
+  }
+  .col-headers th:first-child { padding-left: 8px; }
+  .col-headers th.center { text-align: center; }
+
+  /* rows */
+  .task-row {
+    border-bottom: 1px solid var(--line);
+    transition: background 0.12s, opacity 0.2s;
+    cursor: grab;
+  }
+  .task-row:last-child { border-bottom: none; }
+  .task-row:hover { background: var(--row-hover); }
+  .task-row.dragging { opacity: 0.35; cursor: grabbing; }
+  .task-row.done .cell-editable { text-decoration: line-through; color: var(--muted); }
+
+  td { padding: 0; vertical-align: middle; overflow: hidden; }
+
+  .cell-drag {
+    text-align: center; color: var(--line); font-size: 11px;
+    cursor: grab; padding-left: 6px; user-select: none; transition: color 0.15s;
+  }
+  .task-row:hover .cell-drag { color: var(--muted); }
+
+  .cell-check { text-align: center; }
+  input[type="checkbox"] {
+    appearance: none; width: 14px; height: 14px;
+    border: 1.5px solid var(--line); border-radius: 2px;
+    cursor: pointer; position: relative; transition: all 0.15s; vertical-align: middle;
+  }
+  .today input[type="checkbox"]:checked { background: var(--today-c); border-color: var(--today-c); }
+  .week  input[type="checkbox"]:checked { background: var(--week-c);  border-color: var(--week-c); }
+  .back  input[type="checkbox"]:checked { background: var(--back-c);  border-color: var(--back-c); }
+  input[type="checkbox"]:checked::after {
+    content: ''; position: absolute; left: 3px; top: 0px; width: 5px; height: 8px;
+    border: 1.5px solid white; border-top: none; border-left: none; transform: rotate(45deg);
+  }
+
+  /* editable text cells */
+  .cell-text { padding: 9px 8px 9px 0; }
+  .cell-editable {
+    outline: none; cursor: text; display: block;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    font-size: 12px; line-height: 1;
+  }
+  .cell-editable:empty::before { content: attr(data-ph); color: var(--line); pointer-events: none; }
+  .cell-editable:focus { background: #fffef9; text-overflow: clip; overflow: visible; position: relative; z-index: 2; }
+
+  /* URL cell */
+  .cell-url { padding: 9px 8px 9px 0; }
+  .url-display { display: flex; align-items: center; gap: 4px; }
+  .url-display.hidden { display: none; }
+  .url-link {
+    color: var(--week-c); text-decoration: none; font-size: 11px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    max-width: 130px; display: inline-block; transition: opacity 0.15s;
+  }
+  .url-link:hover { opacity: 0.7; }
+  .url-edit-btn {
+    background: none; border: none; color: var(--muted);
+    cursor: pointer; font-size: 10px; padding: 0 2px;
+    opacity: 0; transition: color 0.15s, opacity 0.15s; flex-shrink: 0;
+  }
+  .task-row:hover .url-edit-btn { opacity: 1; }
+  .url-edit-btn:hover { color: var(--ink); }
+  .url-input-wrap { display: none; }
+  .url-input-wrap.active { display: block; }
+  .url-plain {
+    background: none; border: none;
+    font-family: 'DM Mono', monospace; font-size: 11px;
+    color: var(--ink); outline: none; width: 100%; padding: 0;
+  }
+  .url-plain::placeholder { color: var(--line); }
+
+  /* date cells */
+  .cell-date { text-align: center; padding: 0 4px; }
+  .date-input {
+    background: none; border: none;
+    font-family: 'DM Mono', monospace; font-size: 11px;
+    color: var(--ink); outline: none; width: 100%;
+    text-align: center; cursor: pointer; padding: 9px 2px;
+  }
+  .date-input::-webkit-calendar-picker-indicator { opacity: 0; width: 0; padding: 0; margin: 0; }
+  .date-input:hover { color: var(--week-c); }
+  .date-input.overdue { color: var(--today-c); font-weight: 500; }
+
+  .cell-del { text-align: center; }
+  .delete-btn {
+    background: none; border: none; color: var(--line);
+    cursor: pointer; font-size: 15px; line-height: 1; padding: 0 4px;
+    opacity: 0; transition: opacity 0.15s, color 0.15s;
+  }
+  .task-row:hover .delete-btn { opacity: 1; }
+  .delete-btn:hover { color: var(--today-c); }
+
+  .add-row td { padding: 8px 0 8px 10px; border-top: 1px dashed var(--line); }
+  .add-btn {
+    background: none; border: none; color: var(--muted);
+    cursor: pointer; font-family: 'DM Mono', monospace; font-size: 11px;
+    padding: 0; display: flex; align-items: center; gap: 5px; transition: color 0.15s;
+  }
+  .add-btn:hover { color: var(--ink); }
+
+  .hint { max-width: 1060px; margin: 28px auto 0; color: var(--muted); font-size: 10px; text-align: center; letter-spacing: 0.03em; line-height: 1.8; }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 </style>
 </head>
 <body>
 
-<!-- SETUP OVERLAY -->
 <div id="setup-overlay">
   <div class="setup-box">
     <h2>Connect to GitHub</h2>
-    <p>
-      Your tasks will be saved to a file in your GitHub repo and sync across all your devices.<br><br>
-      You'll need a Personal Access Token with <strong>repo</strong> scope.<br>
-      <a href="https://github.com/settings/tokens/new?description=my-tasks&scopes=repo" target="_blank">Create one here →</a>
-    </p>
+    <p>Tasks are saved to your GitHub repo and sync across all devices.<br><br>
+       Create a fine-grained token with <strong>Contents → Read and write</strong>.<br>
+       <a href="https://github.com/settings/personal-access-tokens/new" target="_blank">Create token →</a></p>
     <div class="field-label">Repository name</div>
     <input class="setup-input" id="setup-repo" type="text" placeholder="my-tasks" value="my-tasks">
     <div class="field-label">Personal Access Token</div>
-    <input class="setup-input" id="setup-token" type="password" placeholder="ghp_xxxxxxxxxxxx">
+    <input class="setup-input" id="setup-token" type="password" placeholder="github_pat_…">
     <button class="setup-btn" onclick="setupSave()">Save &amp; Connect</button>
     <div class="setup-error" id="setup-error"></div>
   </div>
 </div>
 
-<!-- MAIN APP -->
 <header>
   <h1>My Tasks</h1>
   <div class="header-right">
-    <div class="sync-status">
-      <div class="sync-dot" id="sync-dot"></div>
-      <span id="sync-label">synced</span>
-    </div>
+    <div class="sync-status"><div class="sync-dot" id="sync-dot"></div><span id="sync-label">synced</span></div>
     <span class="date" id="date-label"></span>
     <button class="settings-btn" onclick="showSetup()" title="Settings">⚙</button>
   </div>
 </header>
 
 <div class="board">
-  <div class="section today" id="sec-today" data-section="today">
-    <div class="section-header">
-      <div class="dot"></div>
-      <span class="section-label">Today</span>
-      <span class="count" id="count-today">0 / 3</span>
-    </div>
-    <ul class="task-list" id="list-today"></ul>
-    <div class="add-row"><button class="add-btn" onclick="addTask('today')">+ add task</button></div>
+
+  <div class="section today" id="sec-today">
+    <div class="section-title"><div class="dot"></div><span class="section-label">Today</span><span class="count" id="count-today">0 / 3</span></div>
+    <table class="task-table">
+      <colgroup><col class="col-drag"><col class="col-check"><col class="col-task"><col class="col-company"><col class="col-desc"><col class="col-url"><col class="col-created"><col class="col-due"><col class="col-del"></colgroup>
+      <thead><tr class="col-headers"><th></th><th></th><th>Task</th><th>Company</th><th>Description</th><th>URL</th><th class="center">Created</th><th class="center">Due</th><th></th></tr></thead>
+      <tbody id="list-today"></tbody>
+      <tfoot><tr class="add-row"><td colspan="9"><button class="add-btn" onclick="addTask('today')">+ add task</button></td></tr></tfoot>
+    </table>
   </div>
 
-  <div class="section week" id="sec-week" data-section="week">
-    <div class="section-header">
-      <div class="dot"></div>
-      <span class="section-label">This Week</span>
-      <span class="count" id="count-week">0</span>
-    </div>
-    <ul class="task-list" id="list-week"></ul>
-    <div class="add-row"><button class="add-btn" onclick="addTask('week')">+ add task</button></div>
+  <div class="section week" id="sec-week">
+    <div class="section-title"><div class="dot"></div><span class="section-label">This Week</span><span class="count" id="count-week">0</span></div>
+    <table class="task-table">
+      <colgroup><col class="col-drag"><col class="col-check"><col class="col-task"><col class="col-company"><col class="col-desc"><col class="col-url"><col class="col-created"><col class="col-due"><col class="col-del"></colgroup>
+      <thead><tr class="col-headers"><th></th><th></th><th>Task</th><th>Company</th><th>Description</th><th>URL</th><th class="center">Created</th><th class="center">Due</th><th></th></tr></thead>
+      <tbody id="list-week"></tbody>
+      <tfoot><tr class="add-row"><td colspan="9"><button class="add-btn" onclick="addTask('week')">+ add task</button></td></tr></tfoot>
+    </table>
   </div>
 
-  <div class="section back" id="sec-back" data-section="back">
-    <div class="section-header">
-      <div class="dot"></div>
-      <span class="section-label">Backlog</span>
-      <span class="count" id="count-back">0</span>
-    </div>
-    <ul class="task-list" id="list-back"></ul>
-    <div class="add-row"><button class="add-btn" onclick="addTask('back')">+ add task</button></div>
+  <div class="section back" id="sec-back">
+    <div class="section-title"><div class="dot"></div><span class="section-label">Backlog</span><span class="count" id="count-back">0</span></div>
+    <table class="task-table">
+      <colgroup><col class="col-drag"><col class="col-check"><col class="col-task"><col class="col-company"><col class="col-desc"><col class="col-url"><col class="col-created"><col class="col-due"><col class="col-del"></colgroup>
+      <thead><tr class="col-headers"><th></th><th></th><th>Task</th><th>Company</th><th>Description</th><th>URL</th><th class="center">Created</th><th class="center">Due</th><th></th></tr></thead>
+      <tbody id="list-back"></tbody>
+      <tfoot><tr class="add-row"><td colspan="9"><button class="add-btn" onclick="addTask('back')">+ add task</button></td></tr></tfoot>
+    </table>
   </div>
+
 </div>
 
-<p class="hint">drag tasks between sections &nbsp;·&nbsp; click to edit &nbsp;·&nbsp; check to complete &nbsp;·&nbsp; syncs to GitHub</p>
+<p class="hint">drag rows between sections &nbsp;·&nbsp; click any cell to edit &nbsp;·&nbsp; overdue dates appear in red &nbsp;·&nbsp; syncs to GitHub</p>
 
 <script>
-  // ── CONFIG ──
   const GITHUB_USER = 'jholland603';
   const DATA_FILE   = 'tasks.json';
   const LS_TOKEN    = 'mytasks_token';
@@ -482,14 +297,20 @@
 
   let state = { today: [], week: [], back: [] };
   let saveTimer = null;
-  let dragSrc = null; // { section, id }
+  let dragSrc = null;
+
+  function todayISO() { return new Date().toISOString().slice(0,10); }
+  function isOverdue(iso) { return !!iso && iso < todayISO(); }
+  function escHtml(s) {
+    return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
 
   // ── SETUP ──
   function getToken() { return localStorage.getItem(LS_TOKEN); }
   function getRepo()  { return localStorage.getItem(LS_REPO) || 'my-tasks'; }
 
   function showSetup() {
-    document.getElementById('setup-repo').value = getRepo();
+    document.getElementById('setup-repo').value  = getRepo();
     document.getElementById('setup-token').value = getToken() || '';
     document.getElementById('setup-overlay').classList.remove('hidden');
   }
@@ -499,19 +320,12 @@
     const repo  = document.getElementById('setup-repo').value.trim() || 'my-tasks';
     const errEl = document.getElementById('setup-error');
     errEl.style.display = 'none';
-
     if (!token) { errEl.textContent = 'Please enter a token.'; errEl.style.display = 'block'; return; }
-
-    // test token
-    setSyncState('saving', 'connecting…');
-    const ok = await testToken(token, repo);
-    if (!ok) {
+    setSyncState('saving','connecting…');
+    if (!await testToken(token, repo)) {
       errEl.textContent = 'Could not connect. Check your token and repo name.';
-      errEl.style.display = 'block';
-      setSyncState('error', 'error');
-      return;
+      errEl.style.display = 'block'; setSyncState('error','error'); return;
     }
-
     localStorage.setItem(LS_TOKEN, token);
     localStorage.setItem(LS_REPO, repo);
     document.getElementById('setup-overlay').classList.add('hidden');
@@ -520,9 +334,8 @@
 
   async function testToken(token, repo) {
     try {
-      const r = await fetch(`https://api.github.com/repos/${GITHUB_USER}/${repo}`, {
-        headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' }
-      });
+      const r = await fetch(`https://api.github.com/repos/${GITHUB_USER}/${repo}`,
+        { headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' } });
       return r.ok;
     } catch { return false; }
   }
@@ -531,99 +344,55 @@
   async function loadFromGitHub() {
     const token = getToken();
     if (!token) { showSetup(); return; }
-
-    setSyncState('saving', 'loading…');
+    setSyncState('saving','loading…');
     try {
       const r = await fetch(
         `https://api.github.com/repos/${GITHUB_USER}/${getRepo()}/contents/${DATA_FILE}`,
         { headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' } }
       );
-
-      if (r.status === 404) {
-        // File doesn't exist yet — start fresh
-        setSyncState('saved', 'synced');
-        render();
-        return;
-      }
-
-      if (!r.ok) throw new Error('Load failed');
-
+      if (r.status === 404) { setSyncState('saved','synced'); render(); return; }
+      if (!r.ok) throw new Error();
       const data = await r.json();
       localStorage.setItem(LS_SHA, data.sha);
-      const decoded = JSON.parse(atob(data.content.replace(/\n/g, '')));
-      state = { today: decoded.today || [], week: decoded.week || [], back: decoded.back || [] };
-      setSyncState('saved', 'synced');
-      render();
-    } catch(e) {
-      setSyncState('error', 'load error');
-      render();
-    }
+      const decoded = JSON.parse(atob(data.content.replace(/\n/g,'')));
+      state = { today: decoded.today||[], week: decoded.week||[], back: decoded.back||[] };
+      setSyncState('saved','synced'); render();
+    } catch { setSyncState('error','load error'); render(); }
   }
 
   async function saveToGitHub() {
-    const token = getToken();
-    if (!token) return;
-
-    setSyncState('saving', 'saving…');
+    const token = getToken(); if (!token) return;
+    setSyncState('saving','saving…');
     try {
       const sha = localStorage.getItem(LS_SHA);
       const content = btoa(unescape(encodeURIComponent(JSON.stringify(state, null, 2))));
-
-      const body = {
-        message: 'update tasks',
-        content,
-        ...(sha ? { sha } : {})
-      };
-
       const r = await fetch(
         `https://api.github.com/repos/${GITHUB_USER}/${getRepo()}/contents/${DATA_FILE}`,
         {
           method: 'PUT',
-          headers: {
-            Authorization: `token ${token}`,
-            Accept: 'application/vnd.github.v3+json',
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(body)
+          headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: 'update tasks', content, ...(sha ? { sha } : {}) })
         }
       );
-
-      if (!r.ok) {
-        // SHA conflict — reload and retry
-        if (r.status === 409) { await loadFromGitHub(); return; }
-        throw new Error('Save failed');
-      }
-
+      if (!r.ok) { if (r.status === 409) { await loadFromGitHub(); return; } throw new Error(); }
       const data = await r.json();
       localStorage.setItem(LS_SHA, data.content.sha);
-      setSyncState('saved', 'synced');
-    } catch(e) {
-      setSyncState('error', 'save error');
-    }
+      setSyncState('saved','synced');
+    } catch { setSyncState('error','save error'); }
   }
 
-  function scheduleSave() {
-    clearTimeout(saveTimer);
-    saveTimer = setTimeout(saveToGitHub, 1200);
+  function scheduleSave() { clearTimeout(saveTimer); saveTimer = setTimeout(saveToGitHub, 1200); }
+  function setSyncState(s, label) {
+    document.getElementById('sync-dot').className = 'sync-dot ' + s;
+    document.getElementById('sync-label').textContent = label;
   }
 
-  function setSyncState(state, label) {
-    const dot = document.getElementById('sync-dot');
-    const lbl = document.getElementById('sync-label');
-    dot.className = 'sync-dot ' + state;
-    lbl.textContent = label;
-  }
-
-  // ── TASK OPERATIONS ──
-  function addTask(section, text = '') {
+  // ── TASK OPS ──
+  function addTask(section) {
     const id = Date.now() + '-' + Math.floor(Math.random() * 9999);
-    state[section].push({ id, text, done: false, company: '', description: '', url: '' });
-    scheduleSave();
-    render();
-    setTimeout(() => {
-      const el = document.querySelector(`[data-id="${id}"]`);
-      if (el) { el.focus(); placeCaretAtEnd(el); }
-    }, 30);
+    state[section].push({ id, text:'', company:'', description:'', url:'', created: todayISO(), due:'', done: false });
+    scheduleSave(); render();
+    setTimeout(() => { const el = document.querySelector(`[data-id="${id}"]`); if (el) el.focus(); }, 30);
   }
 
   function toggleTask(section, id) {
@@ -636,176 +405,142 @@
     scheduleSave(); render();
   }
 
-  function updateText(section, id, text) {
-    const t = state[section].find(t => t.id === id);
-    if (t) { t.text = text; scheduleSave(); }
-  }
-
   function updateField(section, id, field, value) {
     const t = state[section].find(t => t.id === id);
     if (t) { t[field] = value; scheduleSave(); }
   }
 
   // ── DRAG & DROP ──
-  function setupDrag(li, section, taskId) {
-    li.draggable = true;
-
-    li.addEventListener('dragstart', e => {
-      dragSrc = { section, id: taskId };
-      li.classList.add('dragging');
-      e.dataTransfer.effectAllowed = 'move';
-    });
-
-    li.addEventListener('dragend', () => {
-      li.classList.remove('dragging');
-      document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
-    });
+  function setupDrag(tr, section, taskId) {
+    tr.draggable = true;
+    tr.addEventListener('dragstart', e => { dragSrc = { section, id: taskId }; tr.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; });
+    tr.addEventListener('dragend',   () => { tr.classList.remove('dragging'); document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over')); });
   }
 
-  function setupDropZone(sectionEl, sectionName) {
-    sectionEl.addEventListener('dragover', e => {
-      e.preventDefault();
-      e.dataTransfer.dropEffect = 'move';
-      sectionEl.classList.add('drag-over');
-    });
-
-    sectionEl.addEventListener('dragleave', e => {
-      if (!sectionEl.contains(e.relatedTarget)) {
-        sectionEl.classList.remove('drag-over');
-      }
-    });
-
-    sectionEl.addEventListener('drop', e => {
-      e.preventDefault();
-      sectionEl.classList.remove('drag-over');
+  function setupDropZone(secEl, sectionName) {
+    secEl.addEventListener('dragover',  e => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; secEl.classList.add('drag-over'); });
+    secEl.addEventListener('dragleave', e => { if (!secEl.contains(e.relatedTarget)) secEl.classList.remove('drag-over'); });
+    secEl.addEventListener('drop', e => {
+      e.preventDefault(); secEl.classList.remove('drag-over');
       if (!dragSrc || dragSrc.section === sectionName) return;
-
-      // move task
-      const task = state[dragSrc.section].find(t => t.id === dragSrc.id);
-      if (!task) return;
+      const task = state[dragSrc.section].find(t => t.id === dragSrc.id); if (!task) return;
       state[dragSrc.section] = state[dragSrc.section].filter(t => t.id !== dragSrc.id);
-      task.done = false; // reset done when moving
-      state[sectionName].push(task);
-      dragSrc = null;
-      scheduleSave();
-      render();
+      task.done = false; state[sectionName].push(task);
+      dragSrc = null; scheduleSave(); render();
     });
   }
 
   // ── RENDER ──
   function render() {
     ['today','week','back'].forEach(sec => {
-      const list = document.getElementById('list-' + sec);
-      list.innerHTML = '';
+      const tbody = document.getElementById('list-' + sec);
+      tbody.innerHTML = '';
 
       state[sec].forEach(task => {
-        const li = document.createElement('li');
-        li.className = 'task' + (task.done ? ' done' : '');
+        const tr = document.createElement('tr');
+        tr.className = 'task-row' + (task.done ? ' done' : '');
 
-        li.innerHTML = `
-          <span class="drag-handle" title="drag to move">⠿</span>
-          <input type="checkbox" ${task.done ? 'checked' : ''}>
-          <div class="task-main">
-            <span class="task-text" contenteditable="true" data-id="${task.id}" data-placeholder="new task...">${escHtml(task.text)}</span>
-            <div class="task-fields">
-              <div class="task-field">
-                <span class="field-tag">co</span>
-                <input class="field-input" type="text" placeholder="company id" value="${escHtml(task.company||'')}">
-              </div>
-              <div class="task-field">
-                <span class="field-tag">desc</span>
-                <input class="field-input" type="text" placeholder="description" value="${escHtml(task.description||'')}">
-              </div>
-              <div class="task-field">
-                <span class="field-tag">url</span>
-                ${task.url ? `<a class="url-link" href="${escHtml(task.url)}" target="_blank" rel="noopener" title="${escHtml(task.url)}">${escHtml(task.url)}</a>` : ''}
-                <input class="field-input url-input" type="text" placeholder="https://…" value="${escHtml(task.url||'')}">
-              </div>
+        const hasUrl = !!task.url;
+        tr.innerHTML = `
+          <td class="cell-drag" title="drag to move">⠿</td>
+          <td class="cell-check"><input type="checkbox" ${task.done ? 'checked' : ''}></td>
+          <td class="cell-text"><span class="cell-editable" contenteditable="true" data-id="${task.id}" data-ph="task name">${escHtml(task.text)}</span></td>
+          <td class="cell-text"><span class="cell-editable" contenteditable="true" data-ph="—">${escHtml(task.company||'')}</span></td>
+          <td class="cell-text"><span class="cell-editable" contenteditable="true" data-ph="—">${escHtml(task.description||'')}</span></td>
+          <td class="cell-url">
+            <div class="url-display${hasUrl ? '' : ' hidden'}">
+              ${hasUrl ? `<a class="url-link" href="${escHtml(task.url)}" target="_blank" rel="noopener" title="${escHtml(task.url)}">${escHtml(task.url)}</a>` : ''}
+              <button class="url-edit-btn" title="edit URL">✎</button>
             </div>
-          </div>
-          <button class="delete-btn" title="remove">×</button>
+            <div class="url-input-wrap${hasUrl ? '' : ' active'}">
+              <input class="url-plain" type="text" value="${escHtml(task.url||'')}" placeholder="https://…">
+            </div>
+          </td>
+          <td class="cell-date"><input class="date-input" type="date" value="${escHtml(task.created||todayISO())}"></td>
+          <td class="cell-date"><input class="date-input${isOverdue(task.due) && !task.done ? ' overdue' : ''}" type="date" value="${escHtml(task.due||'')}"></td>
+          <td class="cell-del"><button class="delete-btn" title="remove">×</button></td>
         `;
 
-        li.querySelector('input[type="checkbox"]').addEventListener('change', () => toggleTask(sec, task.id));
-        li.querySelector('.delete-btn').addEventListener('click', () => deleteTask(sec, task.id));
+        // checkbox
+        tr.querySelector('input[type="checkbox"]').addEventListener('change', () => toggleTask(sec, task.id));
 
-        const span = li.querySelector('.task-text');
-        span.addEventListener('input', () => updateText(sec, task.id, span.textContent));
-        span.addEventListener('keydown', e => {
-          if (e.key === 'Enter') { e.preventDefault(); addTask(sec); }
+        // contenteditable
+        const editables = tr.querySelectorAll('[contenteditable]');
+        const fieldMap  = ['text','company','description'];
+        editables.forEach((el, i) => {
+          el.addEventListener('input', () => updateField(sec, task.id, fieldMap[i], el.textContent));
+          if (i === 0) el.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addTask(sec); } });
         });
 
-        // field inputs
-        const fields = li.querySelectorAll('.task-fields .field-input');
-        const fieldNames = ['company', 'description', 'url'];
-        fields.forEach((input, i) => {
-          input.addEventListener('change', () => updateField(sec, task.id, fieldNames[i], input.value));
-          input.addEventListener('input',  () => updateField(sec, task.id, fieldNames[i], input.value));
-          // URL: show/hide link when url field changes
-          if (fieldNames[i] === 'url') {
-            input.addEventListener('change', () => {
-              const linkEl = li.querySelector('.url-link');
-              if (input.value) {
-                if (linkEl) { linkEl.href = input.value; linkEl.textContent = input.value; linkEl.title = input.value; }
-                else {
-                  const a = document.createElement('a');
-                  a.className = 'url-link';
-                  a.href = input.value;
-                  a.textContent = input.value;
-                  a.title = input.value;
-                  a.target = '_blank';
-                  a.rel = 'noopener';
-                  input.parentNode.insertBefore(a, input);
-                }
-              } else if (linkEl) { linkEl.remove(); }
-            });
+        // URL
+        const urlDisplay = tr.querySelector('.url-display');
+        const urlWrap    = tr.querySelector('.url-input-wrap');
+        const urlInput   = tr.querySelector('.url-plain');
+        const urlEditBtn = tr.querySelector('.url-edit-btn');
+
+        function commitUrl() {
+          const val = urlInput.value.trim();
+          updateField(sec, task.id, 'url', val);
+          if (val) {
+            let link = urlDisplay.querySelector('.url-link');
+            if (link) { link.href = val; link.textContent = val; link.title = val; }
+            else {
+              link = document.createElement('a');
+              link.className = 'url-link'; link.href = val; link.textContent = val;
+              link.title = val; link.target = '_blank'; link.rel = 'noopener';
+              urlDisplay.insertBefore(link, urlEditBtn);
+            }
+            urlDisplay.classList.remove('hidden');
+            urlWrap.classList.remove('active');
+          } else {
+            urlDisplay.classList.add('hidden');
+            urlWrap.classList.add('active');
           }
+        }
+
+        if (urlEditBtn) {
+          urlEditBtn.addEventListener('click', e => {
+            e.stopPropagation();
+            urlDisplay.classList.add('hidden'); urlWrap.classList.add('active');
+            urlInput.focus(); urlInput.select();
+          });
+        }
+        urlInput.addEventListener('blur',    commitUrl);
+        urlInput.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); commitUrl(); } });
+
+        // dates
+        const dateInputs = tr.querySelectorAll('.date-input');
+        dateInputs[0].addEventListener('change', () => updateField(sec, task.id, 'created', dateInputs[0].value));
+        dateInputs[1].addEventListener('change', () => {
+          updateField(sec, task.id, 'due', dateInputs[1].value);
+          dateInputs[1].classList.toggle('overdue', isOverdue(dateInputs[1].value) && !task.done);
         });
 
-        setupDrag(li, sec, task.id);
-        list.appendChild(li);
+        // delete
+        tr.querySelector('.delete-btn').addEventListener('click', () => deleteTask(sec, task.id));
+
+        setupDrag(tr, sec, task.id);
+        tbody.appendChild(tr);
       });
 
-      // drop zones
-      const secEl = document.getElementById('sec-' + sec);
-      setupDropZone(secEl, sec);
+      setupDropZone(document.getElementById('sec-' + sec), sec);
 
       // counts
       const total = state[sec].length;
       const done  = state[sec].filter(t => t.done).length;
-      const el = document.getElementById('count-' + sec);
-      if (sec === 'today') {
-        el.textContent = `${done} / ${Math.max(total, 3)}`;
-      } else {
-        el.textContent = total - done > 0 ? `${total - done} remaining` : total > 0 ? 'all done ✓' : '0';
-      }
+      const el    = document.getElementById('count-' + sec);
+      el.textContent = sec === 'today'
+        ? `${done} / ${Math.max(total, 3)}`
+        : total - done > 0 ? `${total - done} remaining` : total > 0 ? 'all done ✓' : '0';
     });
-  }
-
-  function escHtml(s) {
-    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  }
-
-  function placeCaretAtEnd(el) {
-    const range = document.createRange();
-    range.selectNodeContents(el);
-    range.collapse(false);
-    const sel = window.getSelection();
-    sel.removeAllRanges();
-    sel.addRange(range);
   }
 
   // ── INIT ──
   document.getElementById('date-label').textContent =
     new Date().toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
 
-  if (!getToken()) {
-    showSetup();
-    render();
-  } else {
-    document.getElementById('setup-overlay').classList.add('hidden');
-    loadFromGitHub();
-  }
+  if (!getToken()) { showSetup(); render(); }
+  else { document.getElementById('setup-overlay').classList.add('hidden'); loadFromGitHub(); }
 </script>
 </body>
 </html>
