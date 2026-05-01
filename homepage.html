@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Homepage</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0e0f11;
+    --bg2: #16181c;
+    --bg3: #1e2128;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.13);
+    --text: #f0f0ee;
+    --text2: #8a8d96;
+    --text3: #565a63;
+    --accent: #d4a853;
+    --accent2: #b8893a;
+    --blue: #5b9cf6;
+    --red: #e05c5c;
+    --green: #5bc47a;
+    --font-serif: 'DM Serif Display', Georgia, serif;
+    --font-sans: 'DM Sans', system-ui, sans-serif;
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.5;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 50% at 10% 10%, rgba(212,168,83,0.06) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 90% 80%, rgba(91,156,246,0.05) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .page {
+    position: relative;
+    z-index: 1;
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 32px 24px 48px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto auto;
+    gap: 16px;
+  }
+
+  /* ─── CARDS ─── */
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 22px 24px;
+    transition: border-color 0.2s;
+  }
+  .card:hover { border-color: var(--border2); }
+  .card-label {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-bottom: 14px;
+  }
+
+  /* ─── CLOCK ─── */
+  #clock-card { grid-column: 1; }
+  #clock-time {
+    font-family: var(--font-serif);
+    font-size: 56px;
+    color: var(--text);
+    line-height: 1;
+    letter-spacing: -1px;
+  }
+  #clock-ampm {
+    font-family: var(--font-sans);
+    font-size: 20px;
+    color: var(--accent);
+    margin-left: 6px;
+    font-weight: 300;
+  }
+  #clock-date {
+    font-size: 13px;
+    color: var(--text2);
+    margin-top: 8px;
+    font-weight: 300;
+  }
+
+  /* ─── WEATHER ─── */
+  #weather-card { grid-column: 2; }
+  .weather-now { display: flex; align-items: flex-start; gap: 16px; }
+  .weather-icon { font-size: 42px; line-height: 1; }
+  .weather-temp {
+    font-family: var(--font-serif);
+    font-size: 42px;
+    line-height: 1;
+    color: var(--text);
+  }
+  .weather-desc { font-size: 13px; color: var(--text2); margin-top: 4px; }
+  .weather-loc { font-size: 11px; color: var(--text3); margin-top: 2px; }
+  .forecast {
+    display: flex;
+    gap: 6px;
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+  }
+  .fc-day {
+    flex: 1;
+    text-align: center;
+    padding: 8px 4px;
+    border-radius: var(--radius-sm);
+    background: var(--bg3);
+    border: 1px solid var(--border);
+  }
+  .fc-name { font-size: 10px; color: var(--text3); font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; }
+  .fc-icon { font-size: 18px; margin: 4px 0; }
+  .fc-hi { font-size: 13px; font-weight: 500; color: var(--text); }
+  .fc-rain { font-size: 10px; color: var(--blue); margin-top: 2px; }
+  #weather-status { font-size: 13px; color: var(--text2); }
+
+  /* ─── LINKS ─── */
+  #links-card { grid-column: 1 / -1; }
+  .links-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .links-header .card-label { margin-bottom: 0; }
+  .btn-add {
+    font-size: 12px;
+    font-family: var(--font-sans);
+    color: var(--text2);
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius-sm);
+    padding: 5px 12px;
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .btn-add:hover { color: var(--text); border-color: var(--accent); }
+
+  .links-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 8px;
+  }
+  .link-tile {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    color: var(--text);
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+    position: relative;
+  }
+  .link-tile:hover { border-color: var(--border2); background: #222530; }
+  .link-tile img { width: 16px; height: 16px; border-radius: 3px; flex-shrink: 0; }
+  .link-tile .fallback-icon {
+    width: 16px; height: 16px; border-radius: 3px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px; font-weight: 500; color: #fff;
+    flex-shrink: 0;
+  }
+  .link-name { font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .link-remove {
+    position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+    font-size: 14px; color: var(--text3); display: none; cursor: pointer;
+    line-height: 1; padding: 2px 4px;
+  }
+  .link-tile:hover .link-remove { display: block; }
+  .link-remove:hover { color: var(--red); }
+
+  /* ─── GMAIL ─── */
+  #gmail-card { grid-column: 1 / -1; }
+  .gmail-topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .gmail-topbar .card-label { margin-bottom: 0; }
+  .gmail-actions { display: flex; gap: 8px; align-items: center; }
+  .btn-gmail {
+    font-size: 12px;
+    font-family: var(--font-sans);
+    padding: 5px 14px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    border: 1px solid;
+    transition: opacity 0.15s;
+  }
+  .btn-gmail:hover { opacity: 0.8; }
+  .btn-connect { background: var(--accent); color: #111; border-color: var(--accent); font-weight: 500; }
+  .btn-signout { background: transparent; color: var(--text2); border-color: var(--border2); }
+
+  .gmail-setup {
+    padding: 24px;
+    text-align: center;
+    border: 1px dashed var(--border2);
+    border-radius: var(--radius-sm);
+  }
+  .gmail-setup p { color: var(--text2); font-size: 13px; line-height: 1.8; max-width: 480px; margin: 0 auto 16px; }
+  .gmail-setup code {
+    font-family: monospace;
+    font-size: 12px;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: var(--accent);
+  }
+
+  .email-list { display: flex; flex-direction: column; }
+  .email-row {
+    display: grid;
+    grid-template-columns: 10px 160px 1fr 70px;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 8px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: background 0.1s;
+    border-radius: var(--radius-sm);
+  }
+  .email-row:last-child { border-bottom: none; }
+  .email-row:hover { background: var(--bg3); }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--blue); }
+  .dot.read { background: transparent; }
+  .email-from { font-size: 13px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .email-from.read { font-weight: 400; color: var(--text2); }
+  .email-snippet { font-size: 13px; color: var(--text2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .email-snippet b { color: var(--text); font-weight: 500; }
+  .email-time { font-size: 11px; color: var(--text3); text-align: right; }
+  .gmail-footer { margin-top: 10px; text-align: center; font-size: 12px; color: var(--text3); }
+  .gmail-footer a { color: var(--blue); cursor: pointer; text-decoration: none; }
+
+  #gmail-loading { color: var(--text2); font-size: 13px; padding: 16px 0; text-align: center; }
+
+  /* ─── MODAL ─── */
+  .modal-wrap {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-wrap.open { display: flex; }
+  .modal {
+    background: var(--bg2);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius);
+    padding: 24px;
+    width: 340px;
+  }
+  .modal h3 { font-family: var(--font-serif); font-size: 20px; margin-bottom: 16px; color: var(--text); }
+  .modal input {
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 9px 12px;
+    font-size: 13px;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-family: var(--font-sans);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .modal input:focus { border-color: var(--accent); }
+  .modal-btns { display: flex; gap: 8px; justify-content: flex-end; margin-top: 4px; }
+  .modal-btns button {
+    padding: 8px 18px; font-size: 13px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-family: var(--font-sans);
+    transition: opacity 0.15s;
+  }
+  .modal-btns button:hover { opacity: 0.8; }
+  .btn-cancel { background: transparent; border: 1px solid var(--border2); color: var(--text2); }
+  .btn-save { background: var(--accent); color: #111; border: none; font-weight: 500; }
+
+  /* ─── ANIMATIONS ─── */
+  @keyframes fadein {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .card { animation: fadein 0.4s ease both; }
+  #clock-card { animation-delay: 0s; }
+  #weather-card { animation-delay: 0.07s; }
+  #links-card { animation-delay: 0.14s; }
+  #gmail-card { animation-delay: 0.21s; }
+
+  /* ─── SCROLLBAR ─── */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- CLOCK -->
+  <div class="card" id="clock-card">
+    <div class="card-label">Local Time</div>
+    <div>
+      <span id="clock-time" style="font-family:'DM Serif Display',serif;font-size:56px;color:#f0f0ee;letter-spacing:-1px;line-height:1;">12:00</span><span id="clock-ampm" style="font-size:20px;color:#d4a853;margin-left:6px;font-weight:300;font-family:'DM Sans',sans-serif;">AM</span>
+    </div>
+    <div id="clock-date" style="font-size:13px;color:#8a8d96;margin-top:8px;font-weight:300;"></div>
+  </div>
+
+  <!-- WEATHER -->
+  <div class="card" id="weather-card">
+    <div class="card-label">Weather — Rochester, NH</div>
+    <div id="weather-content">
+      <div id="weather-status">Loading weather...</div>
+    </div>
+  </div>
+
+  <!-- LINKS -->
+  <div class="card" id="links-card">
+    <div class="links-header">
+      <div class="card-label">Favorite Links</div>
+      <button class="btn-add" onclick="openAddLink()">+ Add Link</button>
+    </div>
+    <div class="links-grid" id="links-grid"></div>
+  </div>
+
+  <!-- GMAIL -->
+  <div class="card" id="gmail-card">
+    <div class="gmail-topbar">
+      <div class="card-label">Gmail Inbox</div>
+      <div class="gmail-actions" id="gmail-actions">
+        <button class="btn-gmail btn-connect" onclick="gmailSignIn()">Connect Gmail</button>
+      </div>
+    </div>
+    <div id="gmail-body">
+      <div class="gmail-setup">
+        <p>Connect your Gmail account to see your inbox here.<br>
+        Click <strong style="color:#f0f0ee;">Connect Gmail</strong> above to sign in with Google.</p>
+        <p style="color:#565a63;font-size:12px;">
+          <strong style="color:#8a8d96;">First-time setup:</strong> You'll need a free Google API key.<br>
+          Add your Client ID below, then click Connect Gmail.
+        </p>
+        <div style="display:flex;gap:8px;max-width:400px;margin:12px auto 0;">
+          <input id="client-id-input" placeholder="Google OAuth Client ID" style="flex:1;padding:8px 12px;font-size:12px;background:#1e2128;border:1px solid rgba(255,255,255,0.13);border-radius:8px;color:#f0f0ee;font-family:'DM Sans',sans-serif;outline:none;" />
+          <button onclick="saveClientId()" style="padding:8px 14px;font-size:12px;background:#d4a853;color:#111;border:none;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;white-space:nowrap;">Save</button>
+        </div>
+        <p id="client-id-status" style="font-size:11px;color:#5b9cf6;margin-top:8px;"></p>
+        <p style="color:#565a63;font-size:11px;margin-top:12px;">
+          Get a free Client ID at <a href="https://console.cloud.google.com/apis/credentials" target="_blank" style="color:#5b9cf6;">console.cloud.google.com</a> → Create OAuth 2.0 Client → Web Application.<br>Add <code>file:///</code> as an authorized JavaScript origin.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD LINK MODAL -->
+<div class="modal-wrap" id="link-modal">
+  <div class="modal">
+    <h3>Add a link</h3>
+    <input id="new-link-name" placeholder="Name (e.g. YouTube)" />
+    <input id="new-link-url" placeholder="URL (e.g. https://youtube.com)" />
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-save" onclick="saveNewLink()">Add</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── CLOCK ───────────────────────────────────────────────
+function updateClock() {
+  const now = new Date();
+  let h = now.getHours();
+  const m = String(now.getMinutes()).padStart(2,'0');
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  h = h % 12 || 12;
+  document.getElementById('clock-time').textContent = `${h}:${m}`;
+  document.getElementById('clock-ampm').textContent = ampm;
+  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('clock-date').textContent =
+    `${days[now.getDay()]}, ${months[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()}`;
+}
+updateClock();
+setInterval(updateClock, 1000);
+
+// ─── WEATHER ─────────────────────────────────────────────
+const WEATHER_LAT = 43.3;
+const WEATHER_LON = -70.97;
+
+function weatherIcon(code) {
+  if (code === 0) return '☀️';
+  if (code <= 2) return '⛅';
+  if (code === 3) return '☁️';
+  if (code <= 49) return '🌫️';
+  if (code <= 57) return '🌧️';
+  if (code <= 67) return '🌧️';
+  if (code <= 77) return '❄️';
+  if (code <= 82) return '🌦️';
+  if (code <= 86) return '❄️';
+  return '⛈️';
+}
+
+function weatherDesc(code) {
+  if (code === 0) return 'Clear sky';
+  if (code === 1) return 'Mostly clear';
+  if (code === 2) return 'Partly cloudy';
+  if (code === 3) return 'Overcast';
+  if (code <= 49) return 'Foggy';
+  if (code <= 57) return 'Drizzle';
+  if (code <= 67) return 'Rain';
+  if (code <= 77) return 'Snow';
+  if (code <= 82) return 'Rain showers';
+  if (code <= 86) return 'Snow showers';
+  return 'Thunderstorm';
+}
+
+async function loadWeather() {
+  try {
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${WEATHER_LAT}&longitude=${WEATHER_LON}&current=temperature_2m,weathercode&daily=temperature_2m_max,weathercode,precipitation_probability_max&temperature_unit=fahrenheit&forecast_days=5&timezone=auto`;
+    const r = await fetch(url);
+    const d = await r.json();
+    const cur = d.current;
+    const daily = d.daily;
+    const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+    const html = `
+      <div class="weather-now">
+        <div class="weather-icon">${weatherIcon(cur.weathercode)}</div>
+        <div>
+          <div class="weather-temp">${Math.round(cur.temperature_2m)}°F</div>
+          <div class="weather-desc">${weatherDesc(cur.weathercode)}</div>
+          <div class="weather-loc">Rochester, NH</div>
+        </div>
+      </div>
+      <div class="forecast">
+        ${daily.time.slice(0,5).map((t,i) => {
+          const d = new Date(t+'T12:00:00');
+          return `<div class="fc-day">
+            <div class="fc-name">${days[d.getDay()]}</div>
+            <div class="fc-icon">${weatherIcon(daily.weathercode[i])}</div>
+            <div class="fc-hi">${Math.round(daily.temperature_2m_max[i])}°</div>
+            <div class="fc-rain">${daily.precipitation_probability_max[i]}%</div>
+          </div>`;
+        }).join('')}
+      </div>`;
+    document.getElementById('weather-content').innerHTML = html;
+  } catch(e) {
+    document.getElementById('weather-content').innerHTML =
+      '<div id="weather-status" style="color:#8a8d96;">Weather unavailable. Check internet connection.</div>';
+  }
+}
+loadWeather();
+setInterval(loadWeather, 10 * 60 * 1000);
+
+// ─── LINKS ───────────────────────────────────────────────
+const DEFAULT_LINKS = [
+  { name: 'Gmail', url: 'https://mail.google.com' },
+  { name: 'YouTube', url: 'https://youtube.com' },
+  { name: 'Reddit', url: 'https://reddit.com' },
+  { name: 'GitHub', url: 'https://github.com' },
+  { name: 'NY Times', url: 'https://nytimes.com' },
+  { name: 'Weather.gov', url: 'https://weather.gov' },
+  { name: 'Google Maps', url: 'https://maps.google.com' },
+  { name: 'Wikipedia', url: 'https://wikipedia.org' },
+];
+
+const LINK_COLORS = ['#EA4335','#FF6D00','#F9A825','#2E7D32','#1565C0','#6A1B9A','#ad1457','#00695C'];
+
+function loadLinks() {
+  try { return JSON.parse(localStorage.getItem('hp_links')) || DEFAULT_LINKS; }
+  catch(e) { return DEFAULT_LINKS; }
+}
+function saveLinks(arr) {
+  try { localStorage.setItem('hp_links', JSON.stringify(arr)); } catch(e) {}
+}
+
+function renderLinks() {
+  const links = loadLinks();
+  const grid = document.getElementById('links-grid');
+  grid.innerHTML = links.map((l, i) => {
+    let hostname = '';
+    try { hostname = new URL(l.url).hostname; } catch(e) { hostname = l.url; }
+    const fav = `https://www.google.com/s2/favicons?domain=${hostname}&sz=32`;
+    const color = LINK_COLORS[i % LINK_COLORS.length];
+    const initials = l.name.slice(0,2).toUpperCase();
+    return `<div class="link-tile" onclick="window.open('${l.url}','_self')">
+      <img src="${fav}" data-idx="${i}" onload="this.style.display='block'" onerror="linkFavFail(this)" style="display:none" />
+      <span class="fallback-icon" id="fb-${i}" style="background:${color}">${initials}</span>
+      <span class="link-name">${l.name}</span>
+      <span class="link-remove" onclick="removeLink(event,${i})" title="Remove">×</span>
+    </div>`;
+  }).join('');
+}
+
+function linkFavFail(img) {
+  img.style.display = 'none';
+  const fb = document.getElementById('fb-' + img.getAttribute('data-idx'));
+  if (fb) fb.style.display = 'flex';
+}
+
+function removeLink(e, i) {
+  e.stopPropagation();
+  const links = loadLinks();
+  links.splice(i, 1);
+  saveLinks(links);
+  renderLinks();
+}
+
+function openAddLink() {
+  document.getElementById('link-modal').classList.add('open');
+  document.getElementById('new-link-name').focus();
+}
+function closeModal() {
+  document.getElementById('link-modal').classList.remove('open');
+  document.getElementById('new-link-name').value = '';
+  document.getElementById('new-link-url').value = '';
+}
+document.getElementById('link-modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('link-modal')) closeModal();
+});
+function saveNewLink() {
+  const name = document.getElementById('new-link-name').value.trim();
+  let url = document.getElementById('new-link-url').value.trim();
+  if (!name || !url) return;
+  if (!url.startsWith('http')) url = 'https://' + url;
+  const links = loadLinks();
+  links.push({ name, url });
+  saveLinks(links);
+  renderLinks();
+  closeModal();
+}
+
+renderLinks();
+
+// ─── GMAIL ───────────────────────────────────────────────
+let gmailClientId = localStorage.getItem('hp_gmail_client_id') || '';
+let gmailToken = null;
+
+if (gmailClientId) {
+  document.getElementById('client-id-input').value = gmailClientId;
+  document.getElementById('client-id-status').textContent = '✓ Client ID saved';
+}
+
+function saveClientId() {
+  const val = document.getElementById('client-id-input').value.trim();
+  if (!val) return;
+  gmailClientId = val;
+  localStorage.setItem('hp_gmail_client_id', val);
+  document.getElementById('client-id-status').textContent = '✓ Client ID saved. Click Connect Gmail to sign in.';
+}
+
+function gmailSignIn() {
+  if (!gmailClientId) {
+    alert('Please enter your Google OAuth Client ID first.');
+    return;
+  }
+  const params = new URLSearchParams({
+    client_id: gmailClientId,
+    redirect_uri: window.location.href.split('?')[0].split('#')[0],
+    response_type: 'token',
+    scope: 'https://www.googleapis.com/auth/gmail.readonly',
+    prompt: 'select_account'
+  });
+  window.location.href = 'https://accounts.google.com/o/oauth2/v2/auth?' + params;
+}
+
+function gmailSignOut() {
+  gmailToken = null;
+  localStorage.removeItem('hp_gmail_token');
+  localStorage.removeItem('hp_gmail_token_exp');
+  document.getElementById('gmail-actions').innerHTML =
+    '<button class="btn-gmail btn-connect" onclick="gmailSignIn()">Connect Gmail</button>';
+  location.reload();
+}
+
+async function loadGmail(token) {
+  document.getElementById('gmail-body').innerHTML = '<div id="gmail-loading">Loading inbox...</div>';
+  try {
+    const listRes = await fetch(
+      'https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=10&labelIds=INBOX',
+      { headers: { Authorization: 'Bearer ' + token } }
+    );
+    const listData = await listRes.json();
+    if (listData.error) throw new Error(listData.error.message);
+    const messages = listData.messages || [];
+
+    const details = await Promise.all(messages.slice(0,8).map(async m => {
+      const r = await fetch(
+        `https://gmail.googleapis.com/gmail/v1/users/me/messages/${m.id}?format=metadata&metadataHeaders=From&metadataHeaders=Subject`,
+        { headers: { Authorization: 'Bearer ' + token } }
+      );
+      return r.json();
+    }));
+
+    const rows = details.map(msg => {
+      const hdrs = msg.payload?.headers || [];
+      const fromHdr = hdrs.find(h => h.name === 'From')?.value || '';
+      const subject = hdrs.find(h => h.name === 'Subject')?.value || '(no subject)';
+      const isUnread = (msg.labelIds || []).includes('UNREAD');
+      const snippet = msg.snippet || '';
+
+      let from = fromHdr.replace(/"([^"]+)".*/, '$1').replace(/<[^>]+>/, '').trim();
+      if (!from) from = fromHdr.replace(/<([^>]+)>/, '$1').trim();
+
+      const d = new Date(parseInt(msg.internalDate));
+      const now = new Date();
+      let timeStr;
+      if (d.toDateString() === now.toDateString()) {
+        let h = d.getHours(), m = String(d.getMinutes()).padStart(2,'0');
+        const ap = h >= 12 ? 'PM' : 'AM';
+        h = h % 12 || 12;
+        timeStr = `${h}:${m} ${ap}`;
+      } else {
+        const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        timeStr = `${months[d.getMonth()]} ${d.getDate()}`;
+      }
+
+      return `<div class="email-row" onclick="window.open('https://mail.google.com/mail/u/0/#inbox/${msg.id}')">
+        <div class="dot${isUnread ? '' : ' read'}"></div>
+        <div class="email-from${isUnread ? '' : ' read'}">${from}</div>
+        <div class="email-snippet"><b>${subject}</b> — ${snippet}</div>
+        <div class="email-time">${timeStr}</div>
+      </div>`;
+    }).join('');
+
+    document.getElementById('gmail-body').innerHTML =
+      `<div class="email-list">${rows}</div>
+       <div class="gmail-footer">Showing latest 8 messages · <a href="https://mail.google.com" target="_blank">Open Gmail</a></div>`;
+
+    document.getElementById('gmail-actions').innerHTML =
+      '<button class="btn-gmail btn-signout" onclick="gmailSignOut()">Sign out</button>';
+
+  } catch(err) {
+    document.getElementById('gmail-body').innerHTML =
+      `<div class="gmail-setup"><p style="color:#e05c5c;">Error loading Gmail: ${err.message}</p>
+       <p>Your token may have expired. <a onclick="gmailSignIn()" style="color:#5b9cf6;cursor:pointer;">Sign in again</a>.</p></div>`;
+  }
+}
+
+// Handle OAuth redirect token
+(function() {
+  const hash = window.location.hash;
+  if (hash.includes('access_token')) {
+    const params = new URLSearchParams(hash.slice(1));
+    const token = params.get('access_token');
+    const expiresIn = parseInt(params.get('expires_in') || '3600');
+    if (token) {
+      gmailToken = token;
+      localStorage.setItem('hp_gmail_token', token);
+      localStorage.setItem('hp_gmail_token_exp', Date.now() + expiresIn * 1000);
+      history.replaceState(null, '', window.location.pathname);
+    }
+  }
+
+  if (!gmailToken) {
+    const saved = localStorage.getItem('hp_gmail_token');
+    const exp = parseInt(localStorage.getItem('hp_gmail_token_exp') || '0');
+    if (saved && Date.now() < exp) gmailToken = saved;
+  }
+
+  if (gmailToken) loadGmail(gmailToken);
+})();
+</script>
+</body>
+</html>
