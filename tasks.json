@@ -19,18 +19,7 @@
       "done": false
     }
   ],
-  "tomorrow": [
-    {
-      "id": "1777594973418-4129",
-      "company": "",
-      "description": "Get good at golf",
-      "url": "",
-      "created": "2026-05-01",
-      "due": "2026-05-02",
-      "done": false,
-      "type": "personal"
-    }
-  ],
+  "tomorrow": [],
   "sevenday": [
     {
       "id": "1777582365196-8839",
@@ -185,6 +174,18 @@
   "fourteenday": [],
   "back": [],
   "completed": [
+    {
+      "id": "1777594973418-4129",
+      "company": "",
+      "description": "Get good at golf",
+      "url": "",
+      "created": "2026-05-01",
+      "due": "2026-05-02",
+      "done": true,
+      "type": "personal",
+      "completedFrom": "tomorrow",
+      "completedAt": "2026-05-01"
+    },
     {
       "id": "1777591552496-5824",
       "company": "",
