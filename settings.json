@@ -76,6 +76,11 @@
       "name": "Gold",
       "symbol": "GLD",
       "prefix": "$"
+    },
+    {
+      "name": "GOOG",
+      "symbol": "GOOG",
+      "prefix": "$"
     }
   ]
 }
