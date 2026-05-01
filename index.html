@@ -798,6 +798,7 @@
       </div>
     </div>
     <div class="weather-forecast" id="weather-forecast"></div>
+    <div class="markets-updated" id="weather-updated">loading…</div>
   </div>
 
   <!-- Markets -->
@@ -924,7 +925,7 @@
 
 </div>
 
-<p class="hint">drag rows between sections &nbsp;·&nbsp; click any cell to edit &nbsp;·&nbsp; overdue dates appear in red &nbsp;·&nbsp; syncs to GitHub<br>v1.46</p>
+<p class="hint">drag rows between sections &nbsp;·&nbsp; click any cell to edit &nbsp;·&nbsp; overdue dates appear in red &nbsp;·&nbsp; syncs to GitHub<br>v1.47</p>
 
 <!-- WEATHER MODAL -->
 <div id="weather-modal" class="hidden">
@@ -1993,23 +1994,120 @@
     }
   }
 
-  // weather forecast data (Rochester, NH — updated May 1, 2026)
-  const FORECAST = [
-    { dow: 'Fri', date: 'May 1',  high: 59,  rain: 5,  condition: 'Mostly Sunny',    icon: '🌤', precip: 'Rain',  wind: 'SW 8 mph',  humidity: '45%' },
-    { dow: 'Sat', date: 'May 2',  high: 52,  rain: 45, condition: 'Chance of Rain',  icon: '🌦', precip: 'Rain',  wind: 'NE 12 mph', humidity: '72%' },
-    { dow: 'Sun', date: 'May 3',  high: 55,  rain: 65, condition: 'Rainy',           icon: '🌧', precip: 'Rain',  wind: 'NE 10 mph', humidity: '80%' },
-    { dow: 'Mon', date: 'May 4',  high: 69,  rain: 10, condition: 'Mostly Sunny',    icon: '🌤', precip: 'Rain',  wind: 'SW 6 mph',  humidity: '40%' },
-    { dow: 'Tue', date: 'May 5',  high: 79,  rain: 20, condition: 'Partly Cloudy',   icon: '⛅', precip: 'Rain',  wind: 'SW 10 mph', humidity: '50%' },
-  ];
+  // ── WEATHER (Open-Meteo, Rochester NH) ──
+  // Lat/Lon for Rochester, NH
+  const WEATHER_LAT = 43.3042;
+  const WEATHER_LON = -70.9742;
+  const WEATHER_LOC = 'Rochester, NH';
 
-  function weatherIcon(rain) {
-    if (rain >= 60) return '🌧';
-    if (rain >= 30) return '🌦';
-    return '🌤';
+  let forecastData = []; // populated by fetchWeather
+
+  function wmoIcon(code, rain) {
+    if (code === 0) return '☀️';
+    if (code <= 2)  return '🌤';
+    if (code <= 3)  return '⛅';
+    if (code <= 48) return '🌫';
+    if (code <= 57) return '🌧';
+    if (code <= 67) return '🌧';
+    if (code <= 77) return '🌨';
+    if (code <= 82) return '🌦';
+    if (code <= 86) return '❄️';
+    return rain >= 50 ? '⛈' : '🌦';
+  }
+
+  function wmoDesc(code) {
+    if (code === 0)  return 'Clear Sky';
+    if (code <= 2)   return 'Partly Cloudy';
+    if (code <= 3)   return 'Overcast';
+    if (code <= 48)  return 'Foggy';
+    if (code <= 55)  return 'Drizzle';
+    if (code <= 57)  return 'Freezing Drizzle';
+    if (code <= 65)  return 'Rain';
+    if (code <= 67)  return 'Freezing Rain';
+    if (code <= 77)  return 'Snow';
+    if (code <= 82)  return 'Rain Showers';
+    if (code <= 86)  return 'Snow Showers';
+    return 'Thunderstorm';
+  }
+
+  function mmToIn(mm) { return (mm / 25.4).toFixed(2); }
+  function mpsToMph(mps) { return Math.round(mps * 2.237); }
+
+  async function fetchWeather() {
+    try {
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${WEATHER_LAT}&longitude=${WEATHER_LON}`
+        + `&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,windspeed_10m_max,winddirection_10m_dominant,relative_humidity_2m_max`
+        + `&current_weather=true&temperature_unit=fahrenheit&windspeed_unit=mph&precipitation_unit=inch&timezone=America%2FNew_York&forecast_days=5`;
+      const r = await fetch(url);
+      if (!r.ok) throw new Error('Weather fetch failed');
+      const d = await r.json();
+
+      // current conditions
+      const cur = d.current_weather;
+      const curIcon = wmoIcon(cur.weathercode, 0);
+      const curDesc = wmoDesc(cur.weathercode);
+      document.getElementById('weather-icon').textContent = curIcon;
+      document.getElementById('weather-temp').textContent = `${Math.round(cur.temperature)}°F`;
+      document.getElementById('weather-desc').textContent = `${curDesc} · ${WEATHER_LOC}`;
+
+      // build forecast array
+      const days   = d.daily;
+      const dows   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+      forecastData = days.time.map((dateStr, i) => {
+        const date   = new Date(dateStr + 'T00:00:00');
+        const code   = days.weathercode[i];
+        const rain   = days.precipitation_probability_max[i] || 0;
+        const precip = days.precipitation_sum[i] || 0;
+        const windSpd = days.windspeed_10m_max[i] || 0;
+        const windDir = days.winddirection_10m_dominant[i] || 0;
+        const humid  = days.relative_humidity_2m_max[i] || 0;
+        return {
+          dow:     dows[date.getDay()],
+          date:    date.toLocaleDateString('en-US', { month:'short', day:'numeric' }),
+          high:    Math.round(days.temperature_2m_max[i]),
+          low:     Math.round(days.temperature_2m_min[i]),
+          rain,
+          precipIn: precip.toFixed(2),
+          condition: wmoDesc(code),
+          icon:    wmoIcon(code, rain),
+          wind:    `${windSpd} mph`,
+          humidity:`${humid}%`,
+        };
+      });
+
+      renderForecast();
+
+      // update timestamp
+      const now = new Date();
+      document.getElementById('weather-updated').textContent =
+        `Open-Meteo · updated ${now.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})} · 30 min refresh`;
+
+    } catch(e) {
+      document.getElementById('weather-updated').textContent = 'Weather unavailable';
+    }
+  }
+
+  function renderForecast() {
+    const fc = document.getElementById('weather-forecast');
+    if (!fc) return;
+    fc.innerHTML = '';
+    forecastData.forEach((d, i) => {
+      const el = document.createElement('div');
+      el.className = 'forecast-day';
+      el.innerHTML = `
+        <div class="forecast-dow">${d.dow}</div>
+        <div class="forecast-icon">${d.icon}</div>
+        <div class="forecast-high">${d.high}°</div>
+        <div class="forecast-rain">${d.rain}%</div>
+      `;
+      el.addEventListener('click', () => openWeather(i));
+      fc.appendChild(el);
+    });
   }
 
   function openWeather(idx) {
-    const d = FORECAST[idx];
+    const d = forecastData[idx];
+    if (!d) return;
     document.getElementById('weather-modal-title').textContent = `${d.dow}, ${d.date}`;
     document.getElementById('weather-modal-body').innerHTML = `
       <div class="weather-detail-row">
@@ -2017,12 +2115,16 @@
         <span class="weather-detail-val">${d.icon} ${d.condition}</span>
       </div>
       <div class="weather-detail-row">
-        <span class="weather-detail-label">High</span>
-        <span class="weather-detail-val">${d.high}°F</span>
+        <span class="weather-detail-label">High / Low</span>
+        <span class="weather-detail-val">${d.high}°F / ${d.low}°F</span>
       </div>
       <div class="weather-detail-row">
         <span class="weather-detail-label">Precip Chance</span>
         <span class="weather-detail-val" style="color:${d.rain >= 50 ? 'var(--week-c)' : 'var(--ink)'}">${d.rain}%</span>
+      </div>
+      <div class="weather-detail-row">
+        <span class="weather-detail-label">Rainfall</span>
+        <span class="weather-detail-val">${d.precipIn} in</span>
       </div>
       <div class="weather-detail-row">
         <span class="weather-detail-label">Wind</span>
@@ -2055,22 +2157,9 @@
     updateClock();
     setInterval(updateClock, 1000);
 
-    // weather forecast
-    const fc = document.getElementById('weather-forecast');
-    if (fc) {
-      FORECAST.forEach((d, i) => {
-        const el = document.createElement('div');
-        el.className = 'forecast-day';
-        el.innerHTML = `
-          <div class="forecast-dow">${d.dow}</div>
-          <div class="forecast-icon">${d.icon}</div>
-          <div class="forecast-high">${d.high}°</div>
-          <div class="forecast-rain">${d.rain}%</div>
-        `;
-        el.addEventListener('click', () => openWeather(i));
-        fc.appendChild(el);
-      });
-    }
+    // weather — live from Open-Meteo, refresh every 30 min
+    fetchWeather();
+    setInterval(fetchWeather, 30 * 60 * 1000);
 
     // weather modal backdrop
     document.getElementById('weather-modal').addEventListener('click', e => {
