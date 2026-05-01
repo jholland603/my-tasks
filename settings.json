@@ -34,6 +34,11 @@
       "id": "1777648764200",
       "name": "GMail",
       "url": "https://mail.google.com/mail/u/0/#inbox"
+    },
+    {
+      "id": "1777648814057",
+      "name": "Utilization",
+      "url": "https://app.fabric.microsoft.com/groups/me/apps/0f20ca08-193c-4140-8c0e-ef6f258046fb/reports/64cca98f-9f0f-49bc-a503-d40c9a00281d/e1079af7896e9ae37533?ctid=ff71b5a4-f281-4bb1-a27d-eda01463c5ea&experience=fabric-developer"
     }
   ]
 }
