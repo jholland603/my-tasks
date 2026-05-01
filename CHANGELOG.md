@@ -1,12 +1,75 @@
 # My Tasks — Changelog
 
+## v1.35
+- Overdue rows now have a light red background
+- All text, checkbox border, and type dot turn red for overdue tasks
+- Hover state also stays in the red family for visual consistency
+
+## v1.34
+- Added rebalanceSections() on load — tasks move to correct section based on current due date
+- Tasks due tomorrow now correctly appear in Tomorrow section
+- Removed colored dots (red/green/yellow) from due date column
+- Overdue rows turn red (entire row text) instead of just the date field
+
+## v1.33
+- Added Tomorrow section — due exactly tomorrow
+- Renamed This Week → 7 Days (due in 2–7 days)
+- Renamed Next Week → 14 Days (due in 8–14 days)
+- Backwards compatible — old week/nextweek keys in tasks.json migrate automatically
+- Section dot colors: Today=red, Tomorrow=orange, 7 Days=blue, 14 Days=purple, Backlog=green
+
+## v1.32
+- Date fields are now read-only — typing disabled
+- Click a date to open native date picker only
+- Eliminates mid-edit section jumping bug
+
+## v1.31
+- Fixed: DOM only rebuilds when task actually moves to a different section
+- Deferred render with setTimeout to let blur event complete first
+
+## v1.30
+- Auto-place now triggers on blur instead of change
+- Dot and overdue styling still updates immediately on change
+- Prevents task from moving while user is still editing the date
+
+## v1.29
+- Fixed timezone bug — todayISO() now uses local date instead of UTC
+- Date math in sectionForDue and dueDotClass also uses local timezone
+- Fixes tasks due tomorrow appearing in Today for users behind UTC
+
+## v1.28
+- Work type dot changed to burgundy (#8b1a2e)
+- Work filter button changed to burgundy to match
+- Better visual separation from green Personal color
+
+## v1.27
+- Fixed: sortState missing nextweek key caused sections to not render
+- loadSortState() now merges saved state with defaults
+- loadSettingsFromGitHub() also merges with defaults before applying
+
+## v1.26
+- Fixed: wireDates used stale closure reference to sec after task moved
+- Now dynamically finds task's current section before all operations
+- autoPlaceTask refactored to look up task fresh from state
+
+## v1.25
+- Added Next Week section (due in 8–14 days, purple dot)
+- sectionForDue() updated to include nextweek bucket
+- autoPlaceTask() moves task to correct section when due date changes
+- promoteTodayTasks updated to check nextweek section
+
+## v1.24
+- Moved Notes column before Due date
+- Moved Created date after Due date
+- New column order: Company · Description · URL · Notes · Due · Created
+
 ## v1.23
-- Fixed: cursor now goes to Description (not Company) for new personal tasks
-- Fixed: added missing `placeCaretAtEnd` helper function
+- Fixed: cursor now goes to Description for new personal tasks
+- Added missing placeCaretAtEnd helper function
 
 ## v1.22
-- Fixed: duplicate `companyInput` declaration was breaking entire script
-- Fixed: setup screen buttons (token, save) were non-functional due to parse error
+- Fixed: duplicate companyInput declaration broke entire script
+- Fixed: setup screen buttons non-functional due to parse error
 
 ## v1.21
 - Company field disabled and greyed out for personal tasks
@@ -14,108 +77,87 @@
 - Toggling type dot enables/disables company field live
 
 ## v1.20
-- New tasks now inherit type from active filter (Personal filter → personal task)
-- All or Work filter selected → defaults to work type
+- New tasks inherit type from active filter
+- Personal filter creates personal task; Work or All creates work task
 
 ## v1.19
-- Fixed: type dot now inline with description text (flexbox alignment)
-- Work/Personal filter buttons colored to match their dot colors (blue/green)
+- Fixed: type dot now inline with description text
+- Work/Personal filter buttons colored to match their dots
 
 ## v1.18
-- Added Work / Personal / All filter buttons next to search bar
-- Added colored type dot next to each description (blue = work, green = personal)
+- Added Work / Personal / All filter buttons
+- Colored type dot next to each description
 - Click dot to toggle task between work and personal
-- New tasks default to Work type
 - Mobile detail panel shows task type
-
-## v1.17 (skipped — intermediate)
 
 ## v1.16
 - New tasks default due date to 7 days from created date
 
 ## v1.15
-- Added search/filter bar — filters all sections at once as you type
-- Search matches company, description, notes, and URL
-- Matched text highlights in yellow
-- Added result count display
-- Added "Clean up completed" — delete completed tasks older than X days
+- Added search/filter bar filtering all sections at once
+- Matched text highlights in yellow with result count
+- Added Clean up completed — delete tasks older than X days
 
 ## v1.14
 - Company ID column now bold on desktop and mobile
 
 ## v1.13
-- Description cell shows full text as native tooltip on hover
+- Description shows full text as tooltip on hover
 - Tooltip updates live as you type
 
 ## v1.12
-- Fixed: mobile layout CSS ordering bug — sections were hidden in portrait mode
-- Bumped mobile breakpoint to 900px to cover more devices
+- Fixed: mobile CSS ordering bug causing sections to be hidden in portrait
+- Bumped mobile breakpoint to 900px
 
 ## v1.11
 - Added mobile-friendly layout for screens under 900px
-- Compact list view: checkbox, Company, Description, due dot per row
-- Tap to expand: reveals URL, dates, notes, and action buttons
+- Compact list view with tap-to-expand details
 - Added version number to footer
 
 ## v1.10
-- Sort preferences now saved to GitHub as settings.json
+- Sort preferences saved to GitHub as settings.json
 - Sort state syncs across all devices
 
 ## v1.9
-- Sort preferences saved to localStorage (per device)
+- Sort preferences saved to localStorage per device
 
 ## v1.8
-- Company, Created, Due columns now sortable
-- Click header to cycle: ascending → descending → manual
+- Company, Created, Due columns sortable
+- Click header to cycle ascending → descending → manual
 - Each section has independent sort state
-- Dragging to reorder switches section back to manual sort
-- Fixed: sort listeners were duplicating on each render (event delegation)
 
 ## v1.7
-- Fixed: drag-and-drop now only activates from the ⠿ handle
-- Within-section row reordering now works reliably
-- Drop indicator (dark line) shows insertion point
-- Default sort by Due then Created on load
+- Fixed: drag only activates from handle
+- Within-section row reordering works reliably
+- Default sort by Due then Created
 
 ## v1.6
-- Added due date color dots: red (overdue), green (today), yellow (within 2 days)
-- Dot updates immediately when due date changes
-- Tasks due today auto-promote to Today section on load
+- Due date color dots added
+- Tasks due today auto-promote to Today on load
 
 ## v1.5
-- Made table wider (1400px max)
-- URL column significantly wider
-- Date picker icon now visible and clickable
-- Added browser tab favicon (✅ emoji)
+- Wider table layout
+- Date picker icon visible
+- Browser tab favicon added
 
 ## v1.4
-- Added Notes column — click ✎ to open free-form text editor
-- Notes modal with save, Escape to close, Ctrl+Enter shortcut
-- ✎ button highlights blue when a note exists
-- Fixed: notes modal HTML moved before script tag to fix null addEventListener error
+- Notes column with modal editor
+- Notes button highlights when note exists
 
 ## v1.3
-- Added Created date column (defaults to today)
-- Added Due date column (defaults to 7 days from created)
-- Overdue dates shown in red
-- Added drag-and-drop between sections
+- Created and Due date columns
+- Drag and drop between sections
 
 ## v1.2
-- Removed Task column — Description now serves as primary task name
-- Company field is now a combobox dropdown populated from existing companies
-- Focus on new task goes to Company field
+- Removed Task column — Description is primary field
+- Company field is combobox from existing companies
 
 ## v1.1
-- Added column headers: Company, Description, URL, Created, Due
-- Single-line rows with truncation
-- URL shows as clickable link, pencil icon to edit
-- Rebuilt as table layout
+- Column headers and table layout
+- Single-line rows with URL as clickable link
 
 ## v1.0
-- Initial build: three-section task tracker (Today, This Week, Backlog)
-- GitHub API sync — tasks saved to tasks.json in your repo
-- Completed tasks section — tasks move there on check, uncheck to restore
-- Drag and drop between sections
-- Setup screen with GitHub token and repo name
-- Token show/hide toggle for mobile paste
-- Whitespace stripping on token input
+- Initial build: Today, This Week, Backlog sections
+- GitHub API sync to tasks.json
+- Completed tasks section
+- GitHub token setup screen
