@@ -244,11 +244,18 @@
   /* date cells */
   .cell-date { text-align: center; padding: 0 4px; }
   /* overdue row highlight */
+  .task-row.overdue { background: #fff5f5; }
+  .task-row.overdue:hover { background: #ffe8e8; }
   .task-row.overdue td { color: var(--today-c); }
   .task-row.overdue .company-input,
   .task-row.overdue .cell-editable,
   .task-row.overdue .date-input,
   .task-row.overdue .url-link { color: var(--today-c); }
+  .task-row.overdue .cell-drag { color: #e8a0a0; }
+  .task-row.overdue input[type="checkbox"] { border-color: var(--today-c); }
+  .task-row.overdue .notes-btn { color: #e8a0a0; }
+  .task-row.overdue .type-dot.work     { background: var(--today-c); }
+  .task-row.overdue .type-dot.personal { background: var(--today-c); }
   .date-input {
     background: none; border: none;
     font-family: 'DM Mono', monospace; font-size: 11px;
@@ -672,7 +679,7 @@
 
 </div>
 
-<p class="hint">drag rows between sections &nbsp;·&nbsp; click any cell to edit &nbsp;·&nbsp; overdue dates appear in red &nbsp;·&nbsp; syncs to GitHub<br>v1.34</p>
+<p class="hint">drag rows between sections &nbsp;·&nbsp; click any cell to edit &nbsp;·&nbsp; overdue dates appear in red &nbsp;·&nbsp; syncs to GitHub<br>v1.35</p>
 
 <!-- NOTES MODAL -->
 <div id="notes-modal" class="hidden">
