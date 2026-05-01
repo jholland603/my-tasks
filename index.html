@@ -473,7 +473,59 @@
     .mobile-action-btn.danger:active { color: var(--today-c); border-color: var(--today-c); }
   }
 
-  /* ── SEARCH BAR ── */
+  /* ── DASHBOARD ── */
+  .dashboard {
+    max-width: 1400px; margin: 0 auto 20px;
+    display: flex; gap: 12px; flex-wrap: wrap; align-items: stretch;
+  }
+
+  .dash-widget {
+    background: var(--card); border: 1px solid var(--line);
+    border-radius: 2px; padding: 10px 16px;
+    display: flex; flex-direction: column; justify-content: center;
+    flex-shrink: 0;
+  }
+
+  /* clock */
+  .dash-clock { min-width: 160px; align-items: center; text-align: center; }
+  .clock-time {
+    font-family: 'Instrument Serif', serif;
+    font-size: 28px; font-weight: 400; letter-spacing: -0.5px;
+    line-height: 1; color: var(--ink);
+  }
+  .clock-date { font-size: 10px; color: var(--muted); margin-top: 4px; letter-spacing: 0.03em; line-height: 1.4; }
+
+  /* weather */
+  .dash-weather { min-width: 140px; }
+  .weather-top { display: flex; align-items: center; gap: 8px; }
+  .weather-icon { font-size: 22px; line-height: 1; }
+  .weather-temp {
+    font-family: 'Instrument Serif', serif;
+    font-size: 26px; font-weight: 400; color: var(--ink);
+  }
+  .weather-desc { font-size: 10px; color: var(--muted); margin-top: 3px; letter-spacing: 0.03em; }
+  .weather-loc  { font-size: 10px; color: var(--muted); letter-spacing: 0.03em; }
+
+  /* markets */
+  .dash-markets { flex: 1; min-width: 300px; }
+  .markets-grid {
+    display: flex; gap: 16px; flex-wrap: wrap; align-items: center;
+  }
+  .market-item { display: flex; flex-direction: column; gap: 1px; }
+  .market-name { font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+  .market-price { font-size: 13px; color: var(--ink); font-weight: 500; }
+  .market-change { font-size: 10px; }
+  .market-change.up   { color: #2e9e4f; }
+  .market-change.down { color: var(--today-c); }
+  .markets-updated { font-size: 9px; color: var(--line); margin-top: 6px; letter-spacing: 0.03em; }
+
+  @media (max-width: 1024px) {
+    .dashboard { gap: 8px; }
+    .dash-widget { padding: 8px 12px; }
+    .clock-time { font-size: 22px; }
+    .weather-temp { font-size: 20px; }
+    .dash-markets { min-width: 100%; }
+  }
   .search-bar {
     max-width: 1400px; margin: 0 auto 20px;
     display: flex; align-items: center; gap: 10px;
@@ -586,6 +638,30 @@
   </div>
 </header>
 
+<div class="dashboard">
+  <!-- Clock -->
+  <div class="dash-widget dash-clock">
+    <div class="clock-time" id="clock-time">--:--</div>
+    <div class="clock-date" id="clock-date"></div>
+  </div>
+
+  <!-- Weather -->
+  <div class="dash-widget dash-weather">
+    <div class="weather-top">
+      <span class="weather-icon">🌤</span>
+      <span class="weather-temp">54°F</span>
+    </div>
+    <div class="weather-desc">Mostly Sunny</div>
+    <div class="weather-loc">Rochester, NH</div>
+  </div>
+
+  <!-- Markets -->
+  <div class="dash-widget dash-markets">
+    <div class="markets-grid" id="markets-grid"></div>
+    <div class="markets-updated" id="markets-updated">loading…</div>
+  </div>
+</div>
+
 <div class="search-bar">
   <div class="filter-btns">
     <button class="filter-btn active" data-filter="all"  onclick="setFilter('all')">All</button>
@@ -680,7 +756,7 @@
 
 </div>
 
-<p class="hint">drag rows between sections &nbsp;·&nbsp; click any cell to edit &nbsp;·&nbsp; overdue dates appear in red &nbsp;·&nbsp; syncs to GitHub<br>v1.38</p>
+<p class="hint">drag rows between sections &nbsp;·&nbsp; click any cell to edit &nbsp;·&nbsp; overdue dates appear in red &nbsp;·&nbsp; syncs to GitHub<br>v1.40</p>
 
 <!-- NOTES MODAL -->
 <div id="notes-modal" class="hidden">
@@ -1546,12 +1622,105 @@
     alert(`Removed ${removed} completed task${removed !== 1 ? 's' : ''} older than ${days} days.`);
   }
 
+  // ── DASHBOARD ──
+  // ── DASHBOARD ──
+  const TICKERS = [
+    { name: 'S&P 500', symbol: '^GSPC',  prefix: '' },
+    { name: 'Dow',     symbol: '^DJI',   prefix: '' },
+    { name: 'Nasdaq',  symbol: '^IXIC',  prefix: '' },
+    { name: 'Bitcoin', symbol: 'BTC-USD', prefix: '$' },
+    { name: 'Gold',    symbol: 'GC=F',   prefix: '$' },
+  ];
+
+  async function fetchQuote(symbol) {
+    try {
+      const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?interval=1d&range=2d`;
+      const r = await fetch(url, { headers: { 'Accept': 'application/json' } });
+      if (!r.ok) return null;
+      const data = await r.json();
+      const meta = data?.chart?.result?.[0]?.meta;
+      if (!meta) return null;
+      const price  = meta.regularMarketPrice;
+      const prev   = meta.chartPreviousClose || meta.previousClose;
+      const change = price - prev;
+      const pct    = (change / prev) * 100;
+      return { price, change, pct };
+    } catch { return null; }
+  }
+
+  function fmtPrice(val, prefix) {
+    if (val === null || val === undefined) return '—';
+    const n = val >= 10000 ? val.toLocaleString('en-US', { maximumFractionDigits: 0 })
+            : val >= 100   ? val.toLocaleString('en-US', { maximumFractionDigits: 2 })
+            :                val.toLocaleString('en-US', { maximumFractionDigits: 2 });
+    return prefix + n;
+  }
+
+  function renderMarketItem(ticker, data) {
+    const el = document.getElementById('mkt-' + ticker.symbol.replace(/[^a-z0-9]/gi,''));
+    if (!el) return;
+    if (!data) { el.querySelector('.market-price').textContent = '—'; return; }
+    const dir = data.change >= 0 ? 'up' : 'down';
+    const arrow = dir === 'up' ? '▲' : '▼';
+    const pct = Math.abs(data.pct).toFixed(2);
+    el.querySelector('.market-price').textContent = fmtPrice(data.price, ticker.prefix);
+    const chEl = el.querySelector('.market-change');
+    chEl.textContent = `${arrow} ${pct}%`;
+    chEl.className = `market-change ${dir}`;
+  }
+
+  async function refreshMarkets() {
+    document.getElementById('markets-updated').textContent = 'updating…';
+    const results = await Promise.all(TICKERS.map(t => fetchQuote(t.symbol)));
+    TICKERS.forEach((t, i) => renderMarketItem(t, results[i]));
+    const now = new Date();
+    document.getElementById('markets-updated').textContent =
+      `updated ${now.toLocaleTimeString('en-US', { hour: 'numeric', minute:'2-digit' })} · 5 min refresh`;
+  }
+
+  function initDashboard() {
+    // clock
+    function updateClock() {
+      const now = new Date();
+      const h    = String(now.getHours() % 12 || 12).padStart(2,'0');
+      const m    = String(now.getMinutes()).padStart(2,'0');
+      const s    = String(now.getSeconds()).padStart(2,'0');
+      const ampm = now.getHours() >= 12 ? 'PM' : 'AM';
+      document.getElementById('clock-time').textContent = `${h}:${m}:${s} ${ampm}`;
+      document.getElementById('clock-date').textContent =
+        now.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric', year:'numeric' });
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+
+    // build market items
+    const grid = document.getElementById('markets-grid');
+    grid.innerHTML = '';
+    TICKERS.forEach(t => {
+      const id = 'mkt-' + t.symbol.replace(/[^a-z0-9]/gi,'');
+      const el = document.createElement('div');
+      el.className = 'market-item';
+      el.id = id;
+      el.innerHTML = `
+        <span class="market-name">${t.name}</span>
+        <span class="market-price">…</span>
+        <span class="market-change">—</span>
+      `;
+      grid.appendChild(el);
+    });
+
+    // fetch live data
+    refreshMarkets();
+    setInterval(refreshMarkets, 5 * 60 * 1000); // every 5 minutes
+  }
+
   // ── INIT ──
   document.getElementById('date-label').textContent =
     new Date().toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
 
   initSortListeners();
   initSearch();
+  initDashboard();
 
   // notes modal listeners (elements exist now)
   document.getElementById('notes-modal').addEventListener('click', e => {
