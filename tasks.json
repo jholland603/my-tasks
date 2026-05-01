@@ -19,6 +19,15 @@
       "due": "2026-04-30",
       "done": false,
       "type": "personal"
+    },
+    {
+      "id": "1777582365196-8839",
+      "company": "ZLMACH",
+      "description": "Test upgrade",
+      "url": "",
+      "created": "2026-04-30",
+      "due": "2026-04-30",
+      "done": false
     }
   ],
   "week": [
@@ -50,17 +59,7 @@
       "done": false
     }
   ],
-  "nextweek": [
-    {
-      "id": "1777582365196-8839",
-      "company": "ZLMACH",
-      "description": "Test upgrade",
-      "url": "",
-      "created": "2026-04-30",
-      "due": "2026-05-09",
-      "done": false
-    }
-  ],
+  "nextweek": [],
   "back": [
     {
       "id": "1777594973418-4129",
