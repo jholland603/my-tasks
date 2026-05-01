@@ -334,8 +334,8 @@
   </div>
 
   <div style="text-align:center;margin-top:18px;padding-bottom:8px;">
-    <div style="font-family:var(--mono);font-size:10px;color:var(--dim);letter-spacing:2px;">DIST TRKR · v1.0.0</div>
-    <div style="font-family:var(--mono);font-size:9px;color:var(--border);letter-spacing:1px;margin-top:4px;">GPS · HAVERSINE · WGS84</div>
+    <div style="font-family:var(--mono);font-size:10px;color:var(--dim);letter-spacing:2px;">DIST TRKR · v1.1.0</div>
+    <div style="font-family:var(--mono);font-size:9px;color:var(--border);letter-spacing:1px;margin-top:4px;">GPS · HAVERSINE · WGS84 · AVERAGED POSITIONING</div>
   </div>
 </div>
 
@@ -388,6 +388,67 @@
     el.classList.remove('empty');
   }
 
+  // ── GPS AVERAGING ────────────────────────────────────────
+  const MIN_SAMPLES   = 5;      // must collect at least this many readings
+  const MAX_ACCURACY  = 15;     // meters — discard readings worse than this (~49 ft)
+  const SAMPLE_WINDOW = 8000;   // ms — keep collecting for up to 8 seconds
+
+  function acquirePosition(onSuccess, onError) {
+    const samples = [];
+    let watchId = null;
+    let timer = null;
+    let settled = false;
+
+    function finish() {
+      if (settled) return;
+      settled = true;
+      navigator.geolocation.clearWatch(watchId);
+      clearTimeout(timer);
+
+      if (samples.length === 0) {
+        onError({ code: 2, message: 'No accurate readings obtained' });
+        return;
+      }
+
+      // Average all accepted samples
+      const lat = samples.reduce((s, p) => s + p.lat, 0) / samples.length;
+      const lon = samples.reduce((s, p) => s + p.lon, 0) / samples.length;
+      const alts = samples.filter(p => p.alt !== null).map(p => p.alt);
+      const alt = alts.length > 0 ? alts.reduce((s, a) => s + a, 0) / alts.length : null;
+      const accuracy = samples.reduce((s, p) => s + p.accuracy, 0) / samples.length;
+      onSuccess({ lat, lon, alt, accuracy, sampleCount: samples.length });
+    }
+
+    watchId = navigator.geolocation.watchPosition(
+      pos => {
+        const acc = pos.coords.accuracy;
+        if (acc <= MAX_ACCURACY) {
+          samples.push({
+            lat: pos.coords.latitude,
+            lon: pos.coords.longitude,
+            alt: pos.coords.altitude,
+            accuracy: acc
+          });
+          // Update status with live sample count
+          const pct = Math.min(100, Math.round((samples.length / MIN_SAMPLES) * 100));
+          setStatus('COLLECTING SAMPLES… ' + samples.length + ' / ' + MIN_SAMPLES +
+            ' (' + Math.round(acc * 3.28084) + ' ft acc)', 'waiting');
+        } else {
+          setStatus('WAITING FOR BETTER SIGNAL… ±' + Math.round(acc * 3.28084) + ' ft', 'waiting');
+        }
+        // Once we have enough good samples, lock in
+        if (samples.length >= MIN_SAMPLES) finish();
+      },
+      err => { if (!settled) { settled = true; clearTimeout(timer); onError(err); } },
+      { enableHighAccuracy: true, timeout: 30000, maximumAge: 0 }
+    );
+
+    // Timeout: use whatever we have after SAMPLE_WINDOW ms
+    timer = setTimeout(() => {
+      if (!settled) finish();
+    }, SAMPLE_WINDOW);
+  }
+
   // ── SET POINT A ──────────────────────────────────────────
   function setPointA() {
     if (!navigator.geolocation) { setStatus('GPS NOT SUPPORTED', 'error'); return; }
@@ -396,23 +457,24 @@
     btn.textContent = 'LOCATING…';
     btn.className = 'btn btn-start locating';
     btn.disabled = true;
-    setStatus('GETTING GPS FIX… THIS MAY TAKE A FEW SECONDS', 'waiting');
+    document.getElementById('btnB').disabled = true;
+    setStatus('WAITING FOR GPS SIGNAL…', 'waiting');
 
-    navigator.geolocation.getCurrentPosition(
+    acquirePosition(
       pos => {
-        pointA = { lat: pos.coords.latitude, lon: pos.coords.longitude, alt: pos.coords.altitude };
-        setCoord('aLat', pointA.lat.toFixed(6));
-        setCoord('aLon', pointA.lon.toFixed(6));
-        const altFt = pointA.alt !== null ? (pointA.alt * 3.28084).toFixed(0) + ' ft' : 'N/A';
+        pointA = { lat: pos.lat, lon: pos.lon, alt: pos.alt };
+        setCoord('aLat', pos.lat.toFixed(6));
+        setCoord('aLon', pos.lon.toFixed(6));
+        const altFt = pos.alt !== null ? (pos.alt * 3.28084).toFixed(0) + ' ft' : 'N/A';
         setCoord('aAlt', altFt);
         document.getElementById('accuracyBadge').innerHTML =
-          'GPS ACCURACY: <span>±' + Math.round(pos.coords.accuracy * 3.28084) + ' ft</span>';
+          'GPS ACCURACY: <span>±' + Math.round(pos.accuracy * 3.28084) + ' ft · ' + pos.sampleCount + ' samples</span>';
 
         btn.textContent = 'POINT A ✓';
         btn.className = 'btn btn-start set-done';
         btn.disabled = false;
         document.getElementById('btnB').disabled = false;
-        setStatus('POINT A SET ✓  MOVE TO DESTINATION, THEN TAP SET POINT B', 'ok');
+        setStatus('POINT A SET ✓  (' + pos.sampleCount + ' samples averaged) — MOVE TO POINT B', 'ok');
       },
       err => {
         btn.textContent = 'SET POINT A';
@@ -424,12 +486,11 @@
           3: 'GPS TIMED OUT — TAP AGAIN TO RETRY'
         };
         setStatus(msgs[err.code] || 'GPS ERROR — TRY AGAIN', 'error');
-      },
-      { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 }
+      }
     );
   }
 
-  // ── MEASURE ───────────────────────────────────────────────
+  // ── SET POINT B ───────────────────────────────────────────
   function setPointB() {
     if (!pointA) return;
     if (!navigator.geolocation) { setStatus('GPS NOT SUPPORTED', 'error'); return; }
@@ -438,21 +499,20 @@
     btn.textContent = 'LOCATING…';
     btn.className = 'btn btn-measure locating';
     btn.disabled = true;
-    setStatus('ACQUIRING POSITION… PLEASE WAIT', 'waiting');
+    setStatus('WAITING FOR GPS SIGNAL…', 'waiting');
 
-    navigator.geolocation.getCurrentPosition(
+    acquirePosition(
       pos => {
-        const lat = pos.coords.latitude, lon = pos.coords.longitude, alt = pos.coords.altitude;
-        setCoord('bLat', lat.toFixed(6));
-        setCoord('bLon', lon.toFixed(6));
-        const altFt = alt !== null ? (alt * 3.28084).toFixed(0) + ' ft' : 'N/A';
+        setCoord('bLat', pos.lat.toFixed(6));
+        setCoord('bLon', pos.lon.toFixed(6));
+        const altFt = pos.alt !== null ? (pos.alt * 3.28084).toFixed(0) + ' ft' : 'N/A';
         setCoord('bAlt', altFt);
         document.getElementById('accuracyBadge').innerHTML =
-          'GPS ACCURACY: <span>±' + Math.round(pos.coords.accuracy * 3.28084) + ' ft</span>';
+          'GPS ACCURACY: <span>±' + Math.round(pos.accuracy * 3.28084) + ' ft · ' + pos.sampleCount + ' samples</span>';
 
         // Elevation change
-        if (pointA.alt !== null && alt !== null) {
-          const diffFt = ((alt - pointA.alt) * 3.28084).toFixed(0);
+        if (pointA.alt !== null && pos.alt !== null) {
+          const diffFt = ((pos.alt - pointA.alt) * 3.28084).toFixed(0);
           const sign = diffFt > 0 ? '+' : '';
           const color = diffFt > 0 ? 'var(--accent)' : diffFt < 0 ? 'var(--accent2)' : 'var(--dim)';
           const arrow = diffFt > 0 ? '▲' : diffFt < 0 ? '▼' : '—';
@@ -461,7 +521,7 @@
           document.getElementById('elevChangeRow').style.display = 'block';
         }
 
-        const meters = haversine(pointA.lat, pointA.lon, lat, lon);
+        const meters = haversine(pointA.lat, pointA.lon, pos.lat, pos.lon);
         const el = document.getElementById('distanceNum');
         el.textContent = fmt(meters);
         el.classList.remove('zero');
@@ -470,13 +530,13 @@
         const time = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'});
         const date = new Date().toLocaleDateString();
         const name = 'Measurement ' + measureCount;
-        measurements.push({ id: measureCount, name, meters, pointA: {...pointA}, pointB: {lat, lon, alt}, time, date });
+        measurements.push({ id: measureCount, name, meters, pointA: {...pointA}, pointB: {lat: pos.lat, lon: pos.lon, alt: pos.alt}, time, date });
         addHistory(measureCount, meters, time, name);
 
         btn.textContent = 'SET POINT B';
         btn.className = 'btn btn-measure';
         btn.disabled = false;
-        setStatus('MEASURED ✓  ' + fmt(meters) + ' ' + unitLabels[unit] + ' FROM POINT A', 'ok');
+        setStatus('MEASURED ✓  ' + fmt(meters) + ' ' + unitLabels[unit] + ' (' + pos.sampleCount + ' samples)', 'ok');
       },
       err => {
         btn.textContent = 'SET POINT B';
@@ -484,8 +544,7 @@
         btn.disabled = false;
         const msgs = { 1:'PERMISSION DENIED', 2:'POSITION UNAVAILABLE — TRY AGAIN', 3:'GPS TIMED OUT — TAP AGAIN' };
         setStatus(msgs[err.code] || 'GPS ERROR', 'error');
-      },
-      { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 }
+      }
     );
   }
 
