@@ -19,6 +19,16 @@
       "due": "2026-04-30",
       "done": false,
       "type": "personal"
+    },
+    {
+      "id": "1777556211436-2418",
+      "company": "VANELE",
+      "description": "Finish Upgrade",
+      "url": "",
+      "created": "2026-04-30",
+      "due": "2026-04-30",
+      "done": false,
+      "notes": ""
     }
   ],
   "tomorrow": [
@@ -73,18 +83,5 @@
   ],
   "fourteenday": [],
   "back": [],
-  "completed": [
-    {
-      "id": "1777556211436-2418",
-      "company": "VANELE",
-      "description": "Finish Upgrade",
-      "url": "",
-      "created": "2026-04-30",
-      "due": "2026-04-30",
-      "done": true,
-      "notes": "",
-      "completedFrom": "today",
-      "completedAt": "2026-04-30"
-    }
-  ]
+  "completed": []
 }
