@@ -32,15 +32,6 @@
   ],
   "week": [
     {
-      "id": "1777556915532-8513",
-      "company": "RCEMAN",
-      "description": "Copy for test db",
-      "url": "",
-      "created": "2026-04-30",
-      "due": "2026-05-01",
-      "done": false
-    },
-    {
       "id": "1777556202388-7985",
       "company": "PREPRE",
       "description": "Data migration",
@@ -70,7 +61,17 @@
     }
   ],
   "nextweek": [],
-  "back": [],
+  "back": [
+    {
+      "id": "1777556915532-8513",
+      "company": "RCEMAN",
+      "description": "Copy for test db",
+      "url": "",
+      "created": "2026-04-30",
+      "due": "2026-06-01",
+      "done": false
+    }
+  ],
   "completed": [
     {
       "id": "1777556211436-2418",
