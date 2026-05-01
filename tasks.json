@@ -48,6 +48,16 @@
       "created": "2026-04-30",
       "due": "2026-05-01",
       "done": false
+    },
+    {
+      "id": "1777598840263-2179",
+      "company": "SYNRES",
+      "description": "Check email",
+      "url": "",
+      "created": "2026-04-30",
+      "due": "2026-05-01",
+      "done": false,
+      "type": "work"
     }
   ],
   "sevenday": [
@@ -69,16 +79,6 @@
       "due": "2026-05-02",
       "done": false,
       "type": "personal"
-    },
-    {
-      "id": "1777598840263-2179",
-      "company": "SYNRES",
-      "description": "Check email",
-      "url": "",
-      "created": "2026-04-30",
-      "due": "2026-05-07",
-      "done": false,
-      "type": "work"
     }
   ],
   "fourteenday": [],
