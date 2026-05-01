@@ -28,16 +28,6 @@
       "due": "2026-05-01",
       "done": false,
       "type": "personal"
-    },
-    {
-      "id": "1777594973418-4129",
-      "company": "",
-      "description": "Get good at golf",
-      "url": "",
-      "created": "2026-05-01",
-      "due": "2025-05-08",
-      "done": false,
-      "type": "personal"
     }
   ],
   "week": [
@@ -67,6 +57,16 @@
       "created": "2026-04-29",
       "due": "2026-05-02",
       "done": false
+    },
+    {
+      "id": "1777594973418-4129",
+      "company": "",
+      "description": "Get good at golf",
+      "url": "",
+      "created": "2026-05-01",
+      "due": "2026-05-08",
+      "done": false,
+      "type": "personal"
     }
   ],
   "nextweek": [],
