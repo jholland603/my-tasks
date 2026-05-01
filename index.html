@@ -626,6 +626,11 @@
     </div>
     <button class="setup-btn" onclick="setupSave()">Save &amp; Connect</button>
     <div class="setup-error" id="setup-error"></div>
+    <div style="margin-top:20px; border-top:1px solid var(--line); padding-top:16px;">
+      <div class="field-label">Finnhub API Key (for live market data)</div>
+      <input class="setup-input" id="setup-finnhub" type="password" placeholder="get free key at finnhub.io">
+      <button class="setup-btn" style="background:var(--back-c);" onclick="saveFinnhubKey()">Save Market Key</button>
+    </div>
   </div>
 </div>
 
@@ -756,7 +761,7 @@
 
 </div>
 
-<p class="hint">drag rows between sections &nbsp;·&nbsp; click any cell to edit &nbsp;·&nbsp; overdue dates appear in red &nbsp;·&nbsp; syncs to GitHub<br>v1.40</p>
+<p class="hint">drag rows between sections &nbsp;·&nbsp; click any cell to edit &nbsp;·&nbsp; overdue dates appear in red &nbsp;·&nbsp; syncs to GitHub<br>v1.41</p>
 
 <!-- NOTES MODAL -->
 <div id="notes-modal" class="hidden">
@@ -814,7 +819,17 @@
   function showSetup() {
     document.getElementById('setup-repo').value  = getRepo();
     document.getElementById('setup-token').value = getToken() || '';
+    document.getElementById('setup-finnhub').value = getFinnhubKey() || '';
     document.getElementById('setup-overlay').classList.remove('hidden');
+  }
+
+  function saveFinnhubKey() {
+    const key = document.getElementById('setup-finnhub').value.trim();
+    if (key) {
+      localStorage.setItem(LS_FINNHUB, key);
+      document.getElementById('setup-overlay').classList.add('hidden');
+      refreshMarkets();
+    }
   }
 
   function toggleTokenVisibility() {
@@ -1624,27 +1639,29 @@
 
   // ── DASHBOARD ──
   // ── DASHBOARD ──
+  const LS_FINNHUB = 'mytasks_finnhub';
+
+  // Finnhub symbols
   const TICKERS = [
-    { name: 'S&P 500', symbol: '^GSPC',  prefix: '' },
-    { name: 'Dow',     symbol: '^DJI',   prefix: '' },
-    { name: 'Nasdaq',  symbol: '^IXIC',  prefix: '' },
-    { name: 'Bitcoin', symbol: 'BTC-USD', prefix: '$' },
-    { name: 'Gold',    symbol: 'GC=F',   prefix: '$' },
+    { name: 'S&P 500', symbol: 'SPY',     prefix: '$', type: 'stock'  },
+    { name: 'Dow',     symbol: 'DIA',     prefix: '$', type: 'stock'  },
+    { name: 'Nasdaq',  symbol: 'QQQ',     prefix: '$', type: 'stock'  },
+    { name: 'Bitcoin', symbol: 'BINANCE:BTCUSDT', prefix: '$', type: 'crypto' },
+    { name: 'Gold',    symbol: 'GLD',     prefix: '$', type: 'stock'  },
   ];
 
-  async function fetchQuote(symbol) {
+  function getFinnhubKey() { return localStorage.getItem(LS_FINNHUB) || ''; }
+
+  async function fetchQuote(ticker) {
+    const key = getFinnhubKey();
+    if (!key) return null;
     try {
-      const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?interval=1d&range=2d`;
-      const r = await fetch(url, { headers: { 'Accept': 'application/json' } });
+      const url = `https://finnhub.io/api/v1/quote?symbol=${encodeURIComponent(ticker.symbol)}&token=${key}`;
+      const r = await fetch(url);
       if (!r.ok) return null;
-      const data = await r.json();
-      const meta = data?.chart?.result?.[0]?.meta;
-      if (!meta) return null;
-      const price  = meta.regularMarketPrice;
-      const prev   = meta.chartPreviousClose || meta.previousClose;
-      const change = price - prev;
-      const pct    = (change / prev) * 100;
-      return { price, change, pct };
+      const d = await r.json();
+      if (!d.c) return null;
+      return { price: d.c, change: d.d, pct: d.dp };
     } catch { return null; }
   }
 
@@ -1670,12 +1687,26 @@
   }
 
   async function refreshMarkets() {
+    const key = getFinnhubKey();
+    if (!key) {
+      document.getElementById('markets-updated').innerHTML =
+        '<a href="#" onclick="promptFinnhubKey()" style="color:var(--week-c)">Enter Finnhub API key to enable live quotes →</a>';
+      return;
+    }
     document.getElementById('markets-updated').textContent = 'updating…';
-    const results = await Promise.all(TICKERS.map(t => fetchQuote(t.symbol)));
+    const results = await Promise.all(TICKERS.map(t => fetchQuote(t)));
     TICKERS.forEach((t, i) => renderMarketItem(t, results[i]));
     const now = new Date();
     document.getElementById('markets-updated').textContent =
-      `updated ${now.toLocaleTimeString('en-US', { hour: 'numeric', minute:'2-digit' })} · 5 min refresh`;
+      `updated ${now.toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit' })} · refreshes every 5 min`;
+  }
+
+  function promptFinnhubKey() {
+    const key = prompt('Enter your Finnhub API key (free at finnhub.io):');
+    if (key && key.trim()) {
+      localStorage.setItem(LS_FINNHUB, key.trim());
+      refreshMarkets();
+    }
   }
 
   function initDashboard() {
