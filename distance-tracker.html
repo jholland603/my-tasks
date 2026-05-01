@@ -334,7 +334,7 @@
   </div>
 
   <div style="text-align:center;margin-top:18px;padding-bottom:8px;">
-    <div style="font-family:var(--mono);font-size:10px;color:var(--dim);letter-spacing:2px;">DIST TRKR · v1.2.0</div>
+    <div style="font-family:var(--mono);font-size:10px;color:var(--dim);letter-spacing:2px;">DIST TRKR · v1.3.0</div>
     <div style="font-family:var(--mono);font-size:9px;color:var(--border);letter-spacing:1px;margin-top:4px;">GPS · HAVERSINE · WGS84 · AVERAGED POSITIONING</div>
   </div>
 </div>
@@ -360,7 +360,7 @@
 
   function setUnit(u) {
     unit = u;
-    document.getElementById('distanceUnit').textContent = unitLabels[u];
+    document.getElementById('distanceUnit').textContent = liveWatchId !== null ? '~ ' + unitLabels[u] : unitLabels[u];
     document.querySelectorAll('.unit-btn').forEach(b => b.classList.remove('active'));
     document.getElementById('btn' + u.charAt(0).toUpperCase() + u.slice(1)).classList.add('active');
     if (measurements.length > 0) {
@@ -449,9 +449,39 @@
     }, SAMPLE_WINDOW);
   }
 
+  // ── LIVE TRACKING ─────────────────────────────────────────
+  let liveWatchId = null;
+
+  function startLiveTracking() {
+    if (liveWatchId !== null) navigator.geolocation.clearWatch(liveWatchId);
+    liveWatchId = navigator.geolocation.watchPosition(
+      pos => {
+        if (!pointA) return;
+        const dist = haversine(pointA.lat, pointA.lon, pos.coords.latitude, pos.coords.longitude);
+        const el = document.getElementById('distanceNum');
+        el.textContent = fmt(dist);
+        el.classList.remove('zero');
+        el.style.opacity = '0.6'; // dim to indicate live/unlocked
+        document.getElementById('distanceUnit').textContent = '~ ' + unitLabels[unit];
+      },
+      () => {},
+      { enableHighAccuracy: true, maximumAge: 2000 }
+    );
+  }
+
+  function stopLiveTracking() {
+    if (liveWatchId !== null) {
+      navigator.geolocation.clearWatch(liveWatchId);
+      liveWatchId = null;
+    }
+    document.getElementById('distanceNum').style.opacity = '1';
+    document.getElementById('distanceUnit').textContent = unitLabels[unit];
+  }
+
   // ── SET POINT A ──────────────────────────────────────────
   function setPointA() {
     if (!navigator.geolocation) { setStatus('GPS NOT SUPPORTED', 'error'); return; }
+    stopLiveTracking();
 
     const btn = document.getElementById('btnA');
     btn.textContent = 'LOCATING…';
@@ -474,7 +504,8 @@
         btn.className = 'btn btn-start set-done';
         btn.disabled = false;
         document.getElementById('btnB').disabled = false;
-        setStatus('POINT A SET ✓  (' + pos.sampleCount + ' samples averaged) — MOVE TO POINT B', 'ok');
+        setStatus('POINT A SET ✓  MOVE TOWARD POINT B — DISTANCE UPDATING LIVE', 'ok');
+        startLiveTracking();
       },
       err => {
         btn.textContent = 'SET POINT A';
@@ -503,6 +534,7 @@
 
     acquirePosition(
       pos => {
+        stopLiveTracking();
         setCoord('bLat', pos.lat.toFixed(6));
         setCoord('bLon', pos.lon.toFixed(6));
         const altFt = pos.alt !== null ? (pos.alt * 3.28084).toFixed(0) + ' ft' : 'N/A';
@@ -622,6 +654,7 @@
 
   function reset() {
     if (measurements.length > 0 && !confirm('Clear all measurements and reset?')) return;
+    stopLiveTracking();
     pointA = null; measurements = []; measureCount = 0;
     saveToStorage();
     ['aLat','aLon','aAlt','bLat','bLon','bAlt'].forEach(id => {
