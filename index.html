@@ -15,6 +15,7 @@
     --muted: #8a8478;
     --today-c: #c8392b;
     --week-c:  #2b5fc8;
+    --work-c:  #8b1a2e;
     --back-c:  #4a7a4a;
     --line: #d8d4cc;
     --card: #fff;
@@ -193,7 +194,7 @@
     display: inline-block; align-self: center;
   }
   .type-dot:hover { opacity: 0.7; }
-  .type-dot.work     { background: var(--week-c); }
+  .type-dot.work     { background: var(--work-c); }
   .type-dot.personal { background: var(--back-c); }
 
   /* company dropdown */
@@ -476,9 +477,9 @@
   }
   .filter-btn:hover { border-color: var(--ink); color: var(--ink); }
   .filter-btn.active                        { background: var(--ink);    border-color: var(--ink);    color: var(--bg); }
-  .filter-btn[data-filter="work"]           { color: var(--week-c);      border-color: var(--week-c); }
-  .filter-btn[data-filter="work"]:hover     { background: #eef2fc; }
-  .filter-btn[data-filter="work"].active    { background: var(--week-c); border-color: var(--week-c); color: var(--bg); }
+  .filter-btn[data-filter="work"]           { color: var(--work-c);      border-color: var(--work-c); }
+  .filter-btn[data-filter="work"]:hover     { background: #f9eaec; }
+  .filter-btn[data-filter="work"].active    { background: var(--work-c); border-color: var(--work-c); color: var(--bg); }
   .filter-btn[data-filter="personal"]       { color: var(--back-c);      border-color: var(--back-c); }
   .filter-btn[data-filter="personal"]:hover { background: #edf5ed; }
   .filter-btn[data-filter="personal"].active{ background: var(--back-c); border-color: var(--back-c); color: var(--bg); }
@@ -654,7 +655,7 @@
 
 </div>
 
-<p class="hint">drag rows between sections &nbsp;·&nbsp; click any cell to edit &nbsp;·&nbsp; overdue dates appear in red &nbsp;·&nbsp; syncs to GitHub<br>v1.27</p>
+<p class="hint">drag rows between sections &nbsp;·&nbsp; click any cell to edit &nbsp;·&nbsp; overdue dates appear in red &nbsp;·&nbsp; syncs to GitHub<br>v1.28</p>
 
 <!-- NOTES MODAL -->
 <div id="notes-modal" class="hidden">
