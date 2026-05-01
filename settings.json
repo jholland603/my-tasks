@@ -53,6 +53,11 @@
       "prefix": "$"
     },
     {
+      "name": "S$P",
+      "symbol": "SPY",
+      "prefix": "$"
+    },
+    {
       "name": "TSLA",
       "symbol": "TSLA",
       "prefix": "$"
@@ -65,11 +70,6 @@
     {
       "name": "Gold",
       "symbol": "GLD",
-      "prefix": "$"
-    },
-    {
-      "name": "S$P",
-      "symbol": "SPY",
       "prefix": "$"
     }
   ]
