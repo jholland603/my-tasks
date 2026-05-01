@@ -496,15 +496,58 @@
   .clock-date { font-size: 10px; color: var(--muted); margin-top: 4px; letter-spacing: 0.03em; line-height: 1.4; }
 
   /* weather */
-  .dash-weather { min-width: 140px; }
-  .weather-top { display: flex; align-items: center; gap: 8px; }
+  .dash-weather { min-width: 280px; }
+  .weather-current { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
   .weather-icon { font-size: 22px; line-height: 1; }
   .weather-temp {
     font-family: 'Instrument Serif', serif;
-    font-size: 26px; font-weight: 400; color: var(--ink);
+    font-size: 26px; font-weight: 400; color: var(--ink); line-height: 1;
   }
   .weather-desc { font-size: 10px; color: var(--muted); margin-top: 3px; letter-spacing: 0.03em; }
-  .weather-loc  { font-size: 10px; color: var(--muted); letter-spacing: 0.03em; }
+
+  .weather-forecast {
+    display: flex; gap: 6px;
+  }
+  .forecast-day {
+    flex: 1; text-align: center; padding: 5px 4px;
+    border: 1px solid var(--line); border-radius: 2px;
+    cursor: pointer; transition: background 0.15s, border-color 0.15s;
+    min-width: 0;
+  }
+  .forecast-day:hover { background: var(--bg); border-color: var(--ink); }
+  .forecast-dow   { font-size: 9px; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; }
+  .forecast-icon  { font-size: 14px; margin: 2px 0; }
+  .forecast-high  { font-size: 11px; color: var(--ink); font-weight: 500; }
+  .forecast-rain  { font-size: 9px; color: var(--week-c); }
+
+  /* weather detail modal */
+  #weather-modal {
+    position: fixed; inset: 0; z-index: 200;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(26,24,20,0.35); backdrop-filter: blur(2px);
+  }
+  #weather-modal.hidden { display: none; }
+  .weather-box {
+    background: var(--card); border: 1.5px solid var(--ink);
+    border-radius: 2px; width: 340px; max-width: 90vw;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+  }
+  .weather-box-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 16px; border-bottom: 1px solid var(--line);
+  }
+  .weather-box-title {
+    font-family: 'Instrument Serif', serif; font-size: 18px;
+    font-style: italic; color: var(--ink);
+  }
+  .weather-box-body { padding: 16px; }
+  .weather-detail-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 6px 0; border-bottom: 1px solid var(--line); font-size: 12px;
+  }
+  .weather-detail-row:last-child { border-bottom: none; }
+  .weather-detail-label { color: var(--muted); font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; }
+  .weather-detail-val { color: var(--ink); font-weight: 500; }
 
   /* markets */
   .dash-markets { flex: 1; min-width: 300px; }
@@ -604,6 +647,64 @@
     .search-bar { margin: 0 0 16px; }
   }
 
+  /* ── LINKS PANEL ── */
+  .links-panel {
+    max-width: 1400px; margin: 0 auto 16px;
+    background: var(--card); border: 1px solid var(--line); border-radius: 2px;
+  }
+  .links-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 14px; cursor: pointer; user-select: none;
+    transition: background 0.15s;
+  }
+  .links-header:hover { background: var(--row-hover); }
+  .links-title {
+    font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--muted); display: flex; align-items: center; gap: 8px;
+  }
+  .links-chevron { font-size: 10px; color: var(--muted); transition: transform 0.2s; }
+  .links-panel.open .links-chevron { transform: rotate(90deg); }
+
+  .links-body { display: none; padding: 10px 14px 12px; border-top: 1px solid var(--line); }
+  .links-panel.open .links-body { display: block; }
+
+  .links-list { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+
+  .link-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--bg); border: 1px solid var(--line); border-radius: 20px;
+    padding: 4px 10px 4px 12px; font-size: 11px; color: var(--ink);
+    text-decoration: none; transition: border-color 0.15s, background 0.15s;
+  }
+  .link-chip:hover { border-color: var(--ink); background: #f0ede6; }
+  .link-remove {
+    background: none; border: none; color: var(--line);
+    cursor: pointer; font-size: 13px; line-height: 1; padding: 0;
+    transition: color 0.15s;
+  }
+  .link-remove:hover { color: var(--today-c); }
+
+  .links-add-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .link-input {
+    background: var(--bg); border: 1px solid var(--line); border-radius: 2px;
+    padding: 5px 10px; font-family: 'DM Mono', monospace; font-size: 11px;
+    color: var(--ink); outline: none; transition: border-color 0.15s;
+  }
+  .link-input:focus { border-color: var(--ink); }
+  .link-input.url  { flex: 2; min-width: 160px; }
+  .link-input.name { flex: 1; min-width: 100px; }
+  .link-add-btn {
+    background: var(--ink); color: var(--bg); border: none; border-radius: 2px;
+    padding: 5px 14px; font-family: 'DM Mono', monospace; font-size: 11px;
+    cursor: pointer; white-space: nowrap; transition: opacity 0.15s;
+  }
+  .link-add-btn:hover { opacity: 0.82; }
+
+  @media (max-width: 1024px) {
+    .links-add-row { flex-direction: column; align-items: stretch; }
+    .link-input { width: 100%; }
+  }
+
   .hint { max-width: 1400px; margin: 28px auto 0; color: var(--muted); font-size: 10px; text-align: center; letter-spacing: 0.03em; line-height: 1.8; }
 
   @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
@@ -652,18 +753,36 @@
 
   <!-- Weather -->
   <div class="dash-widget dash-weather">
-    <div class="weather-top">
-      <span class="weather-icon">🌤</span>
-      <span class="weather-temp">54°F</span>
+    <div class="weather-current">
+      <span class="weather-icon" id="weather-icon">🌤</span>
+      <div>
+        <div class="weather-temp" id="weather-temp">54°F</div>
+        <div class="weather-desc" id="weather-desc">Mostly Sunny · Rochester, NH</div>
+      </div>
     </div>
-    <div class="weather-desc">Mostly Sunny</div>
-    <div class="weather-loc">Rochester, NH</div>
+    <div class="weather-forecast" id="weather-forecast"></div>
   </div>
 
   <!-- Markets -->
   <div class="dash-widget dash-markets">
     <div class="markets-grid" id="markets-grid"></div>
     <div class="markets-updated" id="markets-updated">loading…</div>
+  </div>
+</div>
+
+<!-- LINKS PANEL -->
+<div class="links-panel" id="links-panel">
+  <div class="links-header" onclick="toggleLinks()">
+    <span class="links-title">⭐ Favorite Links</span>
+    <span class="links-chevron">›</span>
+  </div>
+  <div class="links-body">
+    <div class="links-list" id="links-list"></div>
+    <div class="links-add-row">
+      <input class="link-input url"  id="link-url"  type="text" placeholder="https://…">
+      <input class="link-input name" id="link-name" type="text" placeholder="Label">
+      <button class="link-add-btn" onclick="addLink()">+ Add</button>
+    </div>
   </div>
 </div>
 
@@ -761,7 +880,18 @@
 
 </div>
 
-<p class="hint">drag rows between sections &nbsp;·&nbsp; click any cell to edit &nbsp;·&nbsp; overdue dates appear in red &nbsp;·&nbsp; syncs to GitHub<br>v1.41</p>
+<p class="hint">drag rows between sections &nbsp;·&nbsp; click any cell to edit &nbsp;·&nbsp; overdue dates appear in red &nbsp;·&nbsp; syncs to GitHub<br>v1.43</p>
+
+<!-- WEATHER MODAL -->
+<div id="weather-modal" class="hidden">
+  <div class="weather-box">
+    <div class="weather-box-header">
+      <span class="weather-box-title" id="weather-modal-title">Friday</span>
+      <button class="notes-close" onclick="closeWeather()">×</button>
+    </div>
+    <div class="weather-box-body" id="weather-modal-body"></div>
+  </div>
+</div>
 
 <!-- NOTES MODAL -->
 <div id="notes-modal" class="hidden">
@@ -1001,6 +1131,10 @@
         Object.assign(sortState, _defaultSort, decoded.sortState);
         saveSortState(); // keep localStorage in sync too
       }
+      if (decoded.links) {
+        links = decoded.links;
+        renderLinks();
+      }
     } catch(e) {}
   }
 
@@ -1009,7 +1143,7 @@
     const token = getToken(); if (!token) return;
     try {
       const sha = localStorage.getItem(LS_SETTINGS_SHA);
-      const settings = { sortState };
+      const settings = { sortState, links };
       const content = btoa(unescape(encodeURIComponent(JSON.stringify(settings, null, 2))));
       const r = await fetch(
         `https://api.github.com/repos/${GITHUB_USER}/${getRepo()}/contents/${SETTINGS_FILE}`,
@@ -1637,17 +1771,71 @@
     alert(`Removed ${removed} completed task${removed !== 1 ? 's' : ''} older than ${days} days.`);
   }
 
-  // ── DASHBOARD ──
+  // ── LINKS ──
+  let links = [];
+  let linksOpen = false;
+
+  function toggleLinks() {
+    linksOpen = !linksOpen;
+    document.getElementById('links-panel').classList.toggle('open', linksOpen);
+  }
+
+  function renderLinks() {
+    const list = document.getElementById('links-list');
+    list.innerHTML = '';
+    if (links.length === 0) {
+      list.innerHTML = '<span style="font-size:11px;color:var(--muted)">No links yet — add one below.</span>';
+      return;
+    }
+    links.forEach(link => {
+      const chip = document.createElement('a');
+      chip.className = 'link-chip';
+      chip.href = link.url;
+      chip.target = '_blank';
+      chip.rel = 'noopener';
+      chip.innerHTML = `${escHtml(link.name)}<button class="link-remove" title="Remove">×</button>`;
+      chip.querySelector('.link-remove').addEventListener('click', e => {
+        e.preventDefault(); e.stopPropagation();
+        removeLink(link.id);
+      });
+      list.appendChild(chip);
+    });
+  }
+
+  function addLink() {
+    const urlEl  = document.getElementById('link-url');
+    const nameEl = document.getElementById('link-name');
+    let url  = urlEl.value.trim();
+    let name = nameEl.value.trim();
+    if (!url) return;
+    if (!url.startsWith('http')) url = 'https://' + url;
+    if (!name) name = url.replace(/^https?:\/\//, '').split('/')[0];
+    links.push({ id: Date.now() + '', name, url });
+    urlEl.value = ''; nameEl.value = '';
+    renderLinks();
+    saveLinks();
+  }
+
+  function removeLink(id) {
+    links = links.filter(l => l.id !== id);
+    renderLinks();
+    saveLinks();
+  }
+
+  function saveLinks() { scheduleSettingsSave(); }
+
   // ── DASHBOARD ──
   const LS_FINNHUB = 'mytasks_finnhub';
 
   // Finnhub symbols
   const TICKERS = [
-    { name: 'S&P 500', symbol: 'SPY',     prefix: '$', type: 'stock'  },
-    { name: 'Dow',     symbol: 'DIA',     prefix: '$', type: 'stock'  },
-    { name: 'Nasdaq',  symbol: 'QQQ',     prefix: '$', type: 'stock'  },
-    { name: 'Bitcoin', symbol: 'BINANCE:BTCUSDT', prefix: '$', type: 'crypto' },
-    { name: 'Gold',    symbol: 'GLD',     prefix: '$', type: 'stock'  },
+    { name: 'S&P 500', symbol: 'SPY',              prefix: '$', type: 'stock'  },
+    { name: 'Dow',     symbol: 'DIA',              prefix: '$', type: 'stock'  },
+    { name: 'Nasdaq',  symbol: 'QQQ',              prefix: '$', type: 'stock'  },
+    { name: 'SPY',     symbol: 'SPY',              prefix: '$', type: 'stock'  },
+    { name: 'TSLA',    symbol: 'TSLA',             prefix: '$', type: 'stock'  },
+    { name: 'Bitcoin', symbol: 'BINANCE:BTCUSDT',  prefix: '$', type: 'crypto' },
+    { name: 'Gold',    symbol: 'GLD',              prefix: '$', type: 'stock'  },
   ];
 
   function getFinnhubKey() { return localStorage.getItem(LS_FINNHUB) || ''; }
@@ -1709,6 +1897,53 @@
     }
   }
 
+  // weather forecast data (Rochester, NH — updated May 1, 2026)
+  const FORECAST = [
+    { dow: 'Fri', date: 'May 1',  high: 59,  rain: 5,  condition: 'Mostly Sunny',    icon: '🌤', precip: 'Rain',  wind: 'SW 8 mph',  humidity: '45%' },
+    { dow: 'Sat', date: 'May 2',  high: 52,  rain: 45, condition: 'Chance of Rain',  icon: '🌦', precip: 'Rain',  wind: 'NE 12 mph', humidity: '72%' },
+    { dow: 'Sun', date: 'May 3',  high: 55,  rain: 65, condition: 'Rainy',           icon: '🌧', precip: 'Rain',  wind: 'NE 10 mph', humidity: '80%' },
+    { dow: 'Mon', date: 'May 4',  high: 69,  rain: 10, condition: 'Mostly Sunny',    icon: '🌤', precip: 'Rain',  wind: 'SW 6 mph',  humidity: '40%' },
+    { dow: 'Tue', date: 'May 5',  high: 79,  rain: 20, condition: 'Partly Cloudy',   icon: '⛅', precip: 'Rain',  wind: 'SW 10 mph', humidity: '50%' },
+  ];
+
+  function weatherIcon(rain) {
+    if (rain >= 60) return '🌧';
+    if (rain >= 30) return '🌦';
+    return '🌤';
+  }
+
+  function openWeather(idx) {
+    const d = FORECAST[idx];
+    document.getElementById('weather-modal-title').textContent = `${d.dow}, ${d.date}`;
+    document.getElementById('weather-modal-body').innerHTML = `
+      <div class="weather-detail-row">
+        <span class="weather-detail-label">Condition</span>
+        <span class="weather-detail-val">${d.icon} ${d.condition}</span>
+      </div>
+      <div class="weather-detail-row">
+        <span class="weather-detail-label">High</span>
+        <span class="weather-detail-val">${d.high}°F</span>
+      </div>
+      <div class="weather-detail-row">
+        <span class="weather-detail-label">Precip Chance</span>
+        <span class="weather-detail-val" style="color:${d.rain >= 50 ? 'var(--week-c)' : 'var(--ink)'}">${d.rain}%</span>
+      </div>
+      <div class="weather-detail-row">
+        <span class="weather-detail-label">Wind</span>
+        <span class="weather-detail-val">${d.wind}</span>
+      </div>
+      <div class="weather-detail-row">
+        <span class="weather-detail-label">Humidity</span>
+        <span class="weather-detail-val">${d.humidity}</span>
+      </div>
+    `;
+    document.getElementById('weather-modal').classList.remove('hidden');
+  }
+
+  function closeWeather() {
+    document.getElementById('weather-modal').classList.add('hidden');
+  }
+
   function initDashboard() {
     // clock
     function updateClock() {
@@ -1723,6 +1958,28 @@
     }
     updateClock();
     setInterval(updateClock, 1000);
+
+    // weather forecast
+    const fc = document.getElementById('weather-forecast');
+    if (fc) {
+      FORECAST.forEach((d, i) => {
+        const el = document.createElement('div');
+        el.className = 'forecast-day';
+        el.innerHTML = `
+          <div class="forecast-dow">${d.dow}</div>
+          <div class="forecast-icon">${d.icon}</div>
+          <div class="forecast-high">${d.high}°</div>
+          <div class="forecast-rain">${d.rain}%</div>
+        `;
+        el.addEventListener('click', () => openWeather(i));
+        fc.appendChild(el);
+      });
+    }
+
+    // weather modal backdrop
+    document.getElementById('weather-modal').addEventListener('click', e => {
+      if (e.target === document.getElementById('weather-modal')) closeWeather();
+    });
 
     // build market items
     const grid = document.getElementById('markets-grid');
@@ -1742,7 +1999,7 @@
 
     // fetch live data
     refreshMarkets();
-    setInterval(refreshMarkets, 5 * 60 * 1000); // every 5 minutes
+    setInterval(refreshMarkets, 5 * 60 * 1000);
   }
 
   // ── INIT ──
@@ -1752,6 +2009,11 @@
   initSortListeners();
   initSearch();
   initDashboard();
+  renderLinks();
+
+  // enter key on link inputs
+  document.getElementById('link-url').addEventListener('keydown',  e => { if (e.key === 'Enter') addLink(); });
+  document.getElementById('link-name').addEventListener('keydown', e => { if (e.key === 'Enter') addLink(); });
 
   // notes modal listeners (elements exist now)
   document.getElementById('notes-modal').addEventListener('click', e => {
