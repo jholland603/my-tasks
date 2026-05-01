@@ -654,7 +654,7 @@
 
 </div>
 
-<p class="hint">drag rows between sections &nbsp;·&nbsp; click any cell to edit &nbsp;·&nbsp; overdue dates appear in red &nbsp;·&nbsp; syncs to GitHub<br>v1.25</p>
+<p class="hint">drag rows between sections &nbsp;·&nbsp; click any cell to edit &nbsp;·&nbsp; overdue dates appear in red &nbsp;·&nbsp; syncs to GitHub<br>v1.26</p>
 
 <!-- NOTES MODAL -->
 <div id="notes-modal" class="hidden">
@@ -784,14 +784,14 @@
   }
 
   function autoPlaceTask(task) {
-    // called when due date changes — move task to correct section
     const dest = sectionForDue(task.due);
-    if (!dest) return; // no due date, leave it where it is
-    // find which section it's currently in
+    if (!dest) return;
     const current = ['today','week','nextweek','back'].find(s => state[s].some(t => t.id === task.id));
     if (!current || current === dest) return;
-    state[current] = state[current].filter(t => t.id !== task.id);
-    state[dest].push(task);
+    const t = state[current].find(t => t.id === task.id);
+    if (!t) return;
+    state[current] = state[current].filter(x => x.id !== task.id);
+    state[dest].push(t);
     scheduleSave();
   }
 
@@ -1376,26 +1376,33 @@
 
   function wireDates(tr, sec, task) {
     const dateInputs = tr.querySelectorAll('.date-input');
-    // new order: due [0], created [1]
+    // due [0], created [1]
     dateInputs[0].addEventListener('change', () => {
-      updateField(sec, task.id, 'due', dateInputs[0].value);
+      const newDue = dateInputs[0].value;
+      // find current section dynamically in case task was moved
+      const curSec = ['today','week','nextweek','back'].find(s => state[s].some(t => t.id === task.id)) || sec;
+      updateField(curSec, task.id, 'due', newDue);
+      // refresh dot
       const wrap = dateInputs[0].closest('.due-wrap');
       if (wrap) {
         const existing = wrap.querySelector('.due-dot');
         if (existing) existing.remove();
-        const cls = dueDotClass(dateInputs[0].value);
+        const cls = dueDotClass(newDue);
         if (cls) {
           const dot = document.createElement('span');
           dot.className = 'due-dot ' + cls;
           wrap.insertBefore(dot, dateInputs[0]);
         }
       }
-      dateInputs[0].classList.toggle('overdue', isOverdue(dateInputs[0].value));
+      dateInputs[0].classList.toggle('overdue', isOverdue(newDue));
       // auto-place into correct section
-      const t = state[sec].find(t => t.id === task.id);
-      if (t) { t.due = dateInputs[0].value; autoPlaceTask(t); render(); }
+      const t = state[curSec] && state[curSec].find(t => t.id === task.id);
+      if (t) { t.due = newDue; autoPlaceTask(t); render(); }
     });
-    dateInputs[1].addEventListener('change', () => updateField(sec, task.id, 'created', dateInputs[1].value));
+    dateInputs[1].addEventListener('change', () => {
+      const curSec = ['today','week','nextweek','back'].find(s => state[s].some(t => t.id === task.id)) || sec;
+      updateField(curSec, task.id, 'created', dateInputs[1].value);
+    });
   }
 
   // ── NOTES MODAL ──
