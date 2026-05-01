@@ -1,15 +1,26 @@
 # My Tasks — Changelog
 
+## v1.37
+- Fixed: renderMobile was calling deleted dueDotClass() function, silently killing all mobile task rendering
+- Mobile tasks now render correctly in portrait mode
+- Bumped mobile breakpoint to 1024px to catch more devices
+- Added !important to mobile CSS show/hide rules to prevent override
+- Overdue tasks now show red text on mobile too
+
+## v1.36
+- Section counts now reflect active Work/Personal/All filter
+- Removed confusing "2 / 3" format from Today count — now shows plain number like all other sections
+
 ## v1.35
 - Overdue rows now have a light red background
 - All text, checkbox border, and type dot turn red for overdue tasks
-- Hover state also stays in the red family for visual consistency
+- Hover state stays in the red family for visual consistency
 
 ## v1.34
-- Added rebalanceSections() on load — tasks move to correct section based on current due date
+- Added rebalanceSections() on load — moves every task to correct section based on current due date
 - Tasks due tomorrow now correctly appear in Tomorrow section
 - Removed colored dots (red/green/yellow) from due date column
-- Overdue rows turn red (entire row text) instead of just the date field
+- Overdue rows turn red instead of just the date field
 
 ## v1.33
 - Added Tomorrow section — due exactly tomorrow
@@ -29,12 +40,10 @@
 
 ## v1.30
 - Auto-place now triggers on blur instead of change
-- Dot and overdue styling still updates immediately on change
 - Prevents task from moving while user is still editing the date
 
 ## v1.29
 - Fixed timezone bug — todayISO() now uses local date instead of UTC
-- Date math in sectionForDue and dueDotClass also uses local timezone
 - Fixes tasks due tomorrow appearing in Today for users behind UTC
 
 ## v1.28
@@ -43,20 +52,17 @@
 - Better visual separation from green Personal color
 
 ## v1.27
-- Fixed: sortState missing nextweek key caused sections to not render
-- loadSortState() now merges saved state with defaults
-- loadSettingsFromGitHub() also merges with defaults before applying
+- Fixed: sortState missing section key caused sections to not render
+- loadSortState() now merges saved state with defaults to ensure all sections present
 
 ## v1.26
 - Fixed: wireDates used stale closure reference to sec after task moved
 - Now dynamically finds task's current section before all operations
-- autoPlaceTask refactored to look up task fresh from state
 
 ## v1.25
 - Added Next Week section (due in 8–14 days, purple dot)
-- sectionForDue() updated to include nextweek bucket
 - autoPlaceTask() moves task to correct section when due date changes
-- promoteTodayTasks updated to check nextweek section
+- rebalanceSections() runs on load to place all tasks correctly
 
 ## v1.24
 - Moved Notes column before Due date
@@ -73,7 +79,6 @@
 
 ## v1.21
 - Company field disabled and greyed out for personal tasks
-- Existing company data preserved but dimmed when task is personal
 - Toggling type dot enables/disables company field live
 
 ## v1.20
@@ -86,8 +91,8 @@
 
 ## v1.18
 - Added Work / Personal / All filter buttons
-- Colored type dot next to each description
-- Click dot to toggle task between work and personal
+- Colored type dot next to each description (burgundy=work, green=personal)
+- Click dot to toggle task type
 - Mobile detail panel shows task type
 
 ## v1.16
@@ -103,7 +108,6 @@
 
 ## v1.13
 - Description shows full text as tooltip on hover
-- Tooltip updates live as you type
 
 ## v1.12
 - Fixed: mobile CSS ordering bug causing sections to be hidden in portrait
@@ -127,13 +131,12 @@
 - Each section has independent sort state
 
 ## v1.7
-- Fixed: drag only activates from handle
+- Fixed: drag only activates from ⠿ handle
 - Within-section row reordering works reliably
-- Default sort by Due then Created
 
 ## v1.6
 - Due date color dots added
-- Tasks due today auto-promote to Today on load
+- Tasks due today auto-promote to Today section on load
 
 ## v1.5
 - Wider table layout
