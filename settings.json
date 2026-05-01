@@ -66,6 +66,11 @@
       "name": "Gold",
       "symbol": "GLD",
       "prefix": "$"
+    },
+    {
+      "name": "S$P",
+      "symbol": "SPY",
+      "prefix": "$"
     }
   ]
 }
