@@ -104,10 +104,13 @@
     padding: 12px 14px; border-bottom: 1px solid var(--line);
   }
   .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-  .today .dot    { background: var(--today-c); }
-  .week  .dot    { background: var(--week-c); }
-  .nextweek .dot { background: #7b4fc4; }
-  .back  .dot    { background: var(--back-c); }
+  .today      .dot { background: var(--today-c); }
+  .tomorrow   .dot { background: #e87820; }
+  .week       .dot { background: var(--week-c); }
+  .sevenday   .dot { background: var(--week-c); }
+  .nextweek   .dot { background: #7b4fc4; }
+  .fourteenday .dot { background: #7b4fc4; }
+  .back       .dot { background: var(--back-c); }
   .section-label { font-family: 'Instrument Serif', serif; font-size: 17px; font-style: italic; flex: 1; }
   .count { font-size: 10px; color: var(--muted); background: var(--bg); border: 1px solid var(--line); border-radius: 20px; padding: 2px 8px; }
   .today .count { color: var(--today-c); border-color: var(--today-c); background: #fdf4f3; }
@@ -168,9 +171,11 @@
     border: 1.5px solid var(--line); border-radius: 2px;
     cursor: pointer; position: relative; transition: all 0.15s; vertical-align: middle;
   }
-  .today input[type="checkbox"]:checked { background: var(--today-c); border-color: var(--today-c); }
-  .week  input[type="checkbox"]:checked { background: var(--week-c);  border-color: var(--week-c); }
-  .back  input[type="checkbox"]:checked { background: var(--back-c);  border-color: var(--back-c); }
+  .today       input[type="checkbox"]:checked { background: var(--today-c); border-color: var(--today-c); }
+  .tomorrow    input[type="checkbox"]:checked { background: #e87820;        border-color: #e87820; }
+  .sevenday    input[type="checkbox"]:checked { background: var(--week-c);  border-color: var(--week-c); }
+  .fourteenday input[type="checkbox"]:checked { background: #7b4fc4;        border-color: #7b4fc4; }
+  .back        input[type="checkbox"]:checked { background: var(--back-c);  border-color: var(--back-c); }
   input[type="checkbox"]:checked::after {
     content: ''; position: absolute; left: 3px; top: 0px; width: 5px; height: 8px;
     border: 1.5px solid white; border-top: none; border-left: none; transform: rotate(45deg);
@@ -601,28 +606,40 @@
     <div class="mobile-add"><button class="mobile-add-btn" onclick="addTask('today')">+ add task</button></div>
   </div>
 
-  <div class="section week" id="sec-week">
-    <div class="section-title"><div class="dot"></div><span class="section-label">This Week</span><span class="count" id="count-week">0</span></div>
+  <div class="section tomorrow" id="sec-tomorrow">
+    <div class="section-title"><div class="dot"></div><span class="section-label">Tomorrow</span><span class="count" id="count-tomorrow">0</span></div>
     <table class="task-table">
       <colgroup><col class="col-drag"><col class="col-check"><col class="col-company"><col class="col-desc"><col class="col-url"><col class="col-notes"><col class="col-due"><col class="col-created"><col class="col-del"></colgroup>
-      <thead id="thead-week"><tr class="col-headers"><th></th><th></th><th>Company</th><th>Description</th><th>URL</th><th class="center">Notes</th><th class="center">Due</th><th class="center">Created</th><th></th></tr></thead>
-      <tbody id="list-week"></tbody>
-      <tfoot><tr class="add-row"><td colspan="9"><button class="add-btn" onclick="addTask('week')">+ add task</button></td></tr></tfoot>
+      <thead id="thead-tomorrow"><tr class="col-headers"><th></th><th></th><th>Company</th><th>Description</th><th>URL</th><th class="center">Notes</th><th class="center">Due</th><th class="center">Created</th><th></th></tr></thead>
+      <tbody id="list-tomorrow"></tbody>
+      <tfoot><tr class="add-row"><td colspan="9"><button class="add-btn" onclick="addTask('tomorrow')">+ add task</button></td></tr></tfoot>
     </table>
-    <div class="mobile-list" id="mobile-week"></div>
-    <div class="mobile-add"><button class="mobile-add-btn" onclick="addTask('week')">+ add task</button></div>
+    <div class="mobile-list" id="mobile-tomorrow"></div>
+    <div class="mobile-add"><button class="mobile-add-btn" onclick="addTask('tomorrow')">+ add task</button></div>
   </div>
 
-  <div class="section nextweek" id="sec-nextweek">
-    <div class="section-title"><div class="dot"></div><span class="section-label">Next Week</span><span class="count" id="count-nextweek">0</span></div>
+  <div class="section sevenday" id="sec-sevenday">
+    <div class="section-title"><div class="dot"></div><span class="section-label">7 Days</span><span class="count" id="count-sevenday">0</span></div>
     <table class="task-table">
       <colgroup><col class="col-drag"><col class="col-check"><col class="col-company"><col class="col-desc"><col class="col-url"><col class="col-notes"><col class="col-due"><col class="col-created"><col class="col-del"></colgroup>
-      <thead id="thead-nextweek"><tr class="col-headers"><th></th><th></th><th>Company</th><th>Description</th><th>URL</th><th class="center">Notes</th><th class="center">Due</th><th class="center">Created</th><th></th></tr></thead>
-      <tbody id="list-nextweek"></tbody>
-      <tfoot><tr class="add-row"><td colspan="9"><button class="add-btn" onclick="addTask('nextweek')">+ add task</button></td></tr></tfoot>
+      <thead id="thead-sevenday"><tr class="col-headers"><th></th><th></th><th>Company</th><th>Description</th><th>URL</th><th class="center">Notes</th><th class="center">Due</th><th class="center">Created</th><th></th></tr></thead>
+      <tbody id="list-sevenday"></tbody>
+      <tfoot><tr class="add-row"><td colspan="9"><button class="add-btn" onclick="addTask('sevenday')">+ add task</button></td></tr></tfoot>
     </table>
-    <div class="mobile-list" id="mobile-nextweek"></div>
-    <div class="mobile-add"><button class="mobile-add-btn" onclick="addTask('nextweek')">+ add task</button></div>
+    <div class="mobile-list" id="mobile-sevenday"></div>
+    <div class="mobile-add"><button class="mobile-add-btn" onclick="addTask('sevenday')">+ add task</button></div>
+  </div>
+
+  <div class="section fourteenday" id="sec-fourteenday">
+    <div class="section-title"><div class="dot"></div><span class="section-label">14 Days</span><span class="count" id="count-fourteenday">0</span></div>
+    <table class="task-table">
+      <colgroup><col class="col-drag"><col class="col-check"><col class="col-company"><col class="col-desc"><col class="col-url"><col class="col-notes"><col class="col-due"><col class="col-created"><col class="col-del"></colgroup>
+      <thead id="thead-fourteenday"><tr class="col-headers"><th></th><th></th><th>Company</th><th>Description</th><th>URL</th><th class="center">Notes</th><th class="center">Due</th><th class="center">Created</th><th></th></tr></thead>
+      <tbody id="list-fourteenday"></tbody>
+      <tfoot><tr class="add-row"><td colspan="9"><button class="add-btn" onclick="addTask('fourteenday')">+ add task</button></td></tr></tfoot>
+    </table>
+    <div class="mobile-list" id="mobile-fourteenday"></div>
+    <div class="mobile-add"><button class="mobile-add-btn" onclick="addTask('fourteenday')">+ add task</button></div>
   </div>
 
   <div class="section back" id="sec-back">
@@ -656,7 +673,7 @@
 
 </div>
 
-<p class="hint">drag rows between sections &nbsp;·&nbsp; click any cell to edit &nbsp;·&nbsp; overdue dates appear in red &nbsp;·&nbsp; syncs to GitHub<br>v1.32</p>
+<p class="hint">drag rows between sections &nbsp;·&nbsp; click any cell to edit &nbsp;·&nbsp; overdue dates appear in red &nbsp;·&nbsp; syncs to GitHub<br>v1.33</p>
 
 <!-- NOTES MODAL -->
 <div id="notes-modal" class="hidden">
@@ -681,7 +698,7 @@
   const LS_SHA        = 'mytasks_sha';
   const LS_SETTINGS_SHA = 'mytasks_settings_sha';
 
-  let state = { today: [], week: [], nextweek: [], back: [], completed: [] };
+  let state = { today: [], tomorrow: [], sevenday: [], fourteenday: [], back: [], completed: [] };
   let saveTimer = null;
   let dragSrc = null;
 
@@ -767,24 +784,22 @@
   function sectionForDue(due) {
     if (!due) return null;
     const today = todayISO();
-    if (due < today)  return 'today'; // overdue
-    if (due === today) return 'today';
-    // compare dates as strings to avoid timezone shifts
+    if (due <= today) return 'today'; // overdue or today
     const [ty, tm, td] = today.split('-').map(Number);
     const [dy, dm, dd] = due.split('-').map(Number);
     const t = new Date(ty, tm-1, td);
     const d = new Date(dy, dm-1, dd);
     const diff = Math.round((d - t) / (1000 * 60 * 60 * 24));
-    if (diff <= 7)  return 'week';
-    if (diff <= 14) return 'nextweek';
+    if (diff === 1)  return 'tomorrow';
+    if (diff <= 7)   return 'sevenday';
+    if (diff <= 14)  return 'fourteenday';
     return 'back';
   }
 
   function promoteTodayTasks() {
-    // called on load — only move tasks whose due date has passed their current section
     const today = todayISO();
     let changed = false;
-    ['week', 'nextweek', 'back'].forEach(sec => {
+    ['tomorrow','sevenday','fourteenday','back'].forEach(sec => {
       const promote = state[sec].filter(t => t.due === today && !t.done);
       if (!promote.length) return;
       promote.forEach(t => {
@@ -799,7 +814,7 @@
   function autoPlaceTask(task) {
     const dest = sectionForDue(task.due);
     if (!dest) return;
-    const current = ['today','week','nextweek','back'].find(s => state[s].some(t => t.id === task.id));
+    const current = ['today','tomorrow','sevenday','fourteenday','back'].find(s => state[s].some(t => t.id === task.id));
     if (!current || current === dest) return;
     const t = state[current].find(t => t.id === task.id);
     if (!t) return;
@@ -831,7 +846,14 @@
       } catch(e) {
         throw new Error('Could not parse tasks.json — file may be corrupted');
       }
-      state = { today: decoded.today||[], week: decoded.week||[], nextweek: decoded.nextweek||[], back: decoded.back||[], completed: decoded.completed||[] };
+      state = {
+        today:       decoded.today||[],
+        tomorrow:    decoded.tomorrow||[],
+        sevenday:    decoded.sevenday || decoded.week||[],
+        fourteenday: decoded.fourteenday || decoded.nextweek||[],
+        back:        decoded.back||[],
+        completed:   decoded.completed||[]
+      };
       promoteTodayTasks();
       await loadSettingsFromGitHub(token);
       setSyncState('saved','synced'); render();
@@ -972,10 +994,11 @@
   const LS_SORT = 'mytasks_sort';
 
   const _defaultSort = {
-    today:    { col: 'due', dir: 'asc' },
-    week:     { col: 'due', dir: 'asc' },
-    nextweek: { col: 'due', dir: 'asc' },
-    back:     { col: 'due', dir: 'asc' }
+    today:       { col: 'due', dir: 'asc' },
+    tomorrow:    { col: 'due', dir: 'asc' },
+    sevenday:    { col: 'due', dir: 'asc' },
+    fourteenday: { col: 'due', dir: 'asc' },
+    back:        { col: 'due', dir: 'asc' }
   };
 
   function loadSortState() {
@@ -1061,7 +1084,7 @@
 
   // one-time click delegation per thead — set up after DOM ready
   function initSortListeners() {
-    ['today','week','nextweek','back'].forEach(sec => {
+    ['today','tomorrow','sevenday','fourteenday','back'].forEach(sec => {
       const thead = document.getElementById('thead-' + sec);
       if (!thead) return;
       thead.addEventListener('click', e => {
@@ -1162,7 +1185,7 @@
 
   // ── COMPANY LIST ──
   function getCompanies() {
-    const all = [...state.today, ...state.week, ...state.nextweek, ...state.back, ...state.completed];
+    const all = [...state.today, ...state.tomorrow, ...state.sevenday, ...state.fourteenday, ...state.back, ...state.completed];
     const set = new Set(all.map(t => (t.company||'').trim()).filter(Boolean));
     return [...set].sort((a,b) => a.localeCompare(b));
   }
@@ -1176,7 +1199,7 @@
   function render() {
     updateDatalist();
     let totalMatches = 0;
-    ['today','week','nextweek','back'].forEach(sec => {
+    ['today','tomorrow','sevenday','fourteenday','back'].forEach(sec => {
       renderHeaders(sec);
       const tbody = document.getElementById('list-' + sec);
       tbody.innerHTML = '';
@@ -1292,11 +1315,12 @@
 
   function renderMobile() {
     const sections = [
-      { key: 'today',     id: 'mobile-today',     completed: false },
-      { key: 'week',      id: 'mobile-week',       completed: false },
-      { key: 'nextweek',  id: 'mobile-nextweek',   completed: false },
-      { key: 'back',      id: 'mobile-back',       completed: false },
-      { key: 'completed', id: 'mobile-completed',  completed: true  },
+      { key: 'today',       id: 'mobile-today',       completed: false },
+      { key: 'tomorrow',    id: 'mobile-tomorrow',     completed: false },
+      { key: 'sevenday',    id: 'mobile-sevenday',     completed: false },
+      { key: 'fourteenday', id: 'mobile-fourteenday',  completed: false },
+      { key: 'back',        id: 'mobile-back',         completed: false },
+      { key: 'completed',   id: 'mobile-completed',    completed: true  },
     ];
 
     sections.forEach(({ key, id, completed: isCompleted }) => {
@@ -1409,7 +1433,7 @@
     dateInputs[0].addEventListener('change', () => {
       const newDue = dateInputs[0].value;
       dateInputs[0].setAttribute('readonly', '');
-      const curSec = ['today','week','nextweek','back'].find(s => state[s].some(t => t.id === task.id)) || sec;
+      const curSec = ['today','tomorrow','sevenday','fourteenday','back'].find(s => state[s].some(t => t.id === task.id)) || sec;
       updateField(curSec, task.id, 'due', newDue);
       // refresh dot
       const wrap = dateInputs[0].closest('.due-wrap');
@@ -1434,7 +1458,7 @@
     });
 
     dateInputs[1].addEventListener('change', () => {
-      const curSec = ['today','week','nextweek','back'].find(s => state[s].some(t => t.id === task.id)) || sec;
+      const curSec = ['today','tomorrow','sevenday','fourteenday','back'].find(s => state[s].some(t => t.id === task.id)) || sec;
       updateField(curSec, task.id, 'created', dateInputs[1].value);
     });
   }
