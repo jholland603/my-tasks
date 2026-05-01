@@ -3,8 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Distance Tracker</title>
+<title>DIST TRKR</title>
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@300;600;800&display=swap" rel="stylesheet">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%230a0c0f'/><circle cx='8' cy='24' r='4' fill='%2300e5ff'/><circle cx='24' cy='8' r='4' fill='%2339ff14'/><line x1='8' y1='24' x2='24' y2='8' stroke='%237a8fa8' stroke-width='1.5' stroke-dasharray='3,2'/><circle cx='8' cy='24' r='2' fill='%230a0c0f'/><circle cx='24' cy='8' r='2' fill='%230a0c0f'/></svg>">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -60,7 +61,7 @@
 
   .title {
     font-family: var(--sans);
-    font-size: 48px;
+    font-size: 40px;
     font-weight: 800;
     letter-spacing: 6px;
     text-transform: uppercase;
@@ -258,25 +259,13 @@
 <body>
 <div class="container">
   <header>
-    <div class="title">DIST</div>
+    <div class="title">DIST TRKR</div>
     <div class="subtitle">GPS · DISTANCE · TRACKER</div>
   </header>
 
   <div class="status-bar">
     <div class="status-dot" id="statusDot"></div>
     <span id="statusText">READY — TAP SET POINT A TO BEGIN</span>
-  </div>
-
-  <div class="panel">
-    <div class="panel-label">Distance</div>
-    <div class="distance-display">
-      <div class="distance-number zero" id="distanceNum">—</div>
-      <div class="distance-unit" id="distanceUnit">YARDS</div>
-    </div>
-    <div class="unit-toggle">
-      <button class="unit-btn active" id="btnYd" onclick="setUnit('yd')">YD</button>
-      <button class="unit-btn"        id="btnMi" onclick="setUnit('mi')">MI</button>
-    </div>
   </div>
 
   <div class="panel">
@@ -291,6 +280,8 @@
         <div class="coord-key">LAT / LON</div>
         <div class="coord-val empty" id="aLat">—</div>
         <div class="coord-val empty" id="aLon">—</div>
+        <div class="coord-key" style="margin-top:5px;">ELEVATION</div>
+        <div class="coord-val empty" id="aAlt">—</div>
       </div>
     </div>
 
@@ -303,12 +294,32 @@
         <div class="coord-key">LAT / LON</div>
         <div class="coord-val empty" id="bLat">—</div>
         <div class="coord-val empty" id="bLon">—</div>
+        <div class="coord-key" style="margin-top:5px;">ELEVATION</div>
+        <div class="coord-val empty" id="bAlt">—</div>
       </div>
     </div>
 
+    <!-- Elevation change -->
+    <div id="elevChangeRow" style="display:none; background:var(--bg); border:1px solid var(--border); border-radius:3px; padding:8px 12px; margin-top:10px;">
+      <div style="font-family:var(--mono);font-size:9px;color:var(--dim);letter-spacing:1px;">ELEVATION CHANGE (A → B)</div>
+      <div style="font-family:var(--mono);font-size:14px;margin-top:3px;" id="elevChange">—</div>
+    </div>
+
     <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
-      <div class="accuracy-badge" id="accuracyBadge" style="margin-top:0;">ACC: —</div>
+      <div class="accuracy-badge" id="accuracyBadge" style="margin-top:0;">GPS ACCURACY: —</div>
       <button class="btn-reset" id="btnReset" onclick="reset()" title="Reset">↺ RESET</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-label">Distance</div>
+    <div class="distance-display">
+      <div class="distance-number zero" id="distanceNum">0</div>
+      <div class="distance-unit" id="distanceUnit">YARDS</div>
+    </div>
+    <div class="unit-toggle">
+      <button class="unit-btn active" id="btnYd" onclick="setUnit('yd')">YD</button>
+      <button class="unit-btn"        id="btnMi" onclick="setUnit('mi')">MI</button>
     </div>
   </div>
 
@@ -320,6 +331,11 @@
     <ul class="history-list" id="historyList">
       <li class="empty-history">NO MEASUREMENTS YET</li>
     </ul>
+  </div>
+
+  <div style="text-align:center;margin-top:18px;padding-bottom:8px;">
+    <div style="font-family:var(--mono);font-size:10px;color:var(--dim);letter-spacing:2px;">DIST TRKR · v1.0.0</div>
+    <div style="font-family:var(--mono);font-size:9px;color:var(--border);letter-spacing:1px;margin-top:4px;">GPS · HAVERSINE · WGS84</div>
   </div>
 </div>
 
@@ -384,11 +400,13 @@
 
     navigator.geolocation.getCurrentPosition(
       pos => {
-        pointA = { lat: pos.coords.latitude, lon: pos.coords.longitude };
+        pointA = { lat: pos.coords.latitude, lon: pos.coords.longitude, alt: pos.coords.altitude };
         setCoord('aLat', pointA.lat.toFixed(6));
         setCoord('aLon', pointA.lon.toFixed(6));
+        const altFt = pointA.alt !== null ? (pointA.alt * 3.28084).toFixed(0) + ' ft' : 'N/A';
+        setCoord('aAlt', altFt);
         document.getElementById('accuracyBadge').innerHTML =
-          'ACC: <span>±' + Math.round(pos.coords.accuracy * 3.28084) + ' ft</span>';
+          'GPS ACCURACY: <span>±' + Math.round(pos.coords.accuracy * 3.28084) + ' ft</span>';
 
         btn.textContent = 'POINT A ✓';
         btn.className = 'btn btn-start set-done';
@@ -424,11 +442,24 @@
 
     navigator.geolocation.getCurrentPosition(
       pos => {
-        const lat = pos.coords.latitude, lon = pos.coords.longitude;
+        const lat = pos.coords.latitude, lon = pos.coords.longitude, alt = pos.coords.altitude;
         setCoord('bLat', lat.toFixed(6));
         setCoord('bLon', lon.toFixed(6));
+        const altFt = alt !== null ? (alt * 3.28084).toFixed(0) + ' ft' : 'N/A';
+        setCoord('bAlt', altFt);
         document.getElementById('accuracyBadge').innerHTML =
-          'ACC: <span>±' + Math.round(pos.coords.accuracy * 3.28084) + ' ft</span>';
+          'GPS ACCURACY: <span>±' + Math.round(pos.coords.accuracy * 3.28084) + ' ft</span>';
+
+        // Elevation change
+        if (pointA.alt !== null && alt !== null) {
+          const diffFt = ((alt - pointA.alt) * 3.28084).toFixed(0);
+          const sign = diffFt > 0 ? '+' : '';
+          const color = diffFt > 0 ? 'var(--accent)' : diffFt < 0 ? 'var(--accent2)' : 'var(--dim)';
+          const arrow = diffFt > 0 ? '▲' : diffFt < 0 ? '▼' : '—';
+          document.getElementById('elevChange').innerHTML =
+            '<span style="color:' + color + '">' + arrow + ' ' + sign + diffFt + ' ft</span>';
+          document.getElementById('elevChangeRow').style.display = 'block';
+        }
 
         const meters = haversine(pointA.lat, pointA.lon, lat, lon);
         const el = document.getElementById('distanceNum');
@@ -439,7 +470,7 @@
         const time = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'});
         const date = new Date().toLocaleDateString();
         const name = 'Measurement ' + measureCount;
-        measurements.push({ id: measureCount, name, meters, pointA: {...pointA}, pointB: {lat, lon}, time, date });
+        measurements.push({ id: measureCount, name, meters, pointA: {...pointA}, pointB: {lat, lon, alt}, time, date });
         addHistory(measureCount, meters, time, name);
 
         btn.textContent = 'SET POINT B';
@@ -508,13 +539,15 @@
 
   function reset() {
     pointA = null; measurements = []; measureCount = 0;
-    ['aLat','aLon','bLat','bLon'].forEach(id => {
+    ['aLat','aLon','aAlt','bLat','bLon','bAlt'].forEach(id => {
       const el = document.getElementById(id);
       el.textContent = '—'; el.classList.add('empty');
     });
     const num = document.getElementById('distanceNum');
-    num.textContent = '—'; num.classList.add('zero');
-    document.getElementById('accuracyBadge').innerHTML = 'ACC: —';
+    num.textContent = '0'; num.classList.add('zero');
+    document.getElementById('accuracyBadge').innerHTML = 'GPS ACCURACY: —';
+    document.getElementById('elevChangeRow').style.display = 'none';
+    document.getElementById('elevChange').textContent = '—';
     const btnA = document.getElementById('btnA');
     btnA.textContent = 'SET POINT A';
     btnA.className = 'btn btn-start';
