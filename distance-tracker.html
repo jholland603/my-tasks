@@ -173,26 +173,45 @@
   .unit-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(0,229,255,0.07); }
   .unit-btn:hover:not(.active) { border-color: #556; color: var(--text); }
 
-  /* COORDS */
-  .coord-row { display: flex; gap: 12px; margin-bottom: 8px; }
-  .coord-box { flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 3px; padding: 10px 12px; }
-  .coord-key { font-family: var(--mono); font-size: 9px; color: var(--dim); letter-spacing: 1px; }
-  .coord-val { font-family: var(--mono); font-size: 12px; color: var(--accent); margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .coord-val.empty { color: var(--dim); }
-  .accuracy-badge { font-family: var(--mono); font-size: 10px; color: var(--dim); text-align: right; margin-top: 6px; }
-  .accuracy-badge span { color: var(--accent); }
+  /* POINT ROWS */
+  .point-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+  .point-row:last-child { margin-bottom: 0; }
 
-  /* BUTTONS */
-  .btn-row { display: flex; gap: 12px; margin-top: 4px; }
+  .point-btn-wrap { flex: 0 0 auto; width: 130px; }
+  .point-btn-wrap .btn { width: 100%; padding: 16px 8px; font-size: 15px; letter-spacing: 2px; }
+
+  .point-coords {
+    flex: 1;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 8px 12px;
+    min-width: 0;
+  }
+  .point-coords .coord-key { font-family: var(--mono); font-size: 9px; color: var(--dim); letter-spacing: 1px; margin-bottom: 3px; }
+  .point-coords .coord-val { font-family: var(--mono); font-size: 11px; color: var(--accent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .point-coords .coord-val.empty { color: var(--dim); }
+
+  .reset-row { display: flex; justify-content: flex-end; margin-top: 10px; }
+  .btn-reset {
+    background: transparent; border: 1px solid var(--border);
+    color: var(--dim); font-size: 20px; letter-spacing: 0;
+    padding: 8px 18px; border-radius: 3px; cursor: pointer;
+    transition: all 0.12s; -webkit-tap-highlight-color: rgba(0,0,0,0);
+  }
+  .btn-reset:hover { border-color: var(--accent2); color: var(--accent2); }
 
   .btn {
-    flex: 1;
     font-family: var(--sans);
     font-weight: 600;
     font-size: 18px;
     letter-spacing: 3px;
     text-transform: uppercase;
-    padding: 22px 12px;
     border: none;
     border-radius: 3px;
     cursor: pointer;
@@ -202,22 +221,13 @@
   }
   .btn:active:not(:disabled) { transform: scale(0.96); }
   .btn:disabled { opacity: 0.35; cursor: not-allowed; transform: none !important; }
-
   .btn-start { background: var(--accent); color: #000; }
-  .btn-start:hover:not(:disabled) { background: #33eaff; box-shadow: 0 0 28px rgba(0,229,255,0.5); }
-  .btn-start.set-done { background: #00c853; }
+  .btn-start:hover:not(:disabled) { background: #33eaff; box-shadow: 0 0 20px rgba(0,229,255,0.4); }
+  .btn-start.set-done { background: #00c853; color: #000; }
   .btn-start.locating { background: #ffbe00; color: #000; animation: pulse 0.8s infinite; }
-
   .btn-measure { background: transparent; color: var(--green); border: 2px solid var(--green); }
-  .btn-measure:hover:not(:disabled) { background: rgba(57,255,20,0.08); box-shadow: 0 0 24px rgba(57,255,20,0.3); }
+  .btn-measure:hover:not(:disabled) { background: rgba(57,255,20,0.08); box-shadow: 0 0 20px rgba(57,255,20,0.25); }
   .btn-measure.locating { background: rgba(57,255,20,0.12); color: #ffbe00; border-color: #ffbe00; animation: pulse 0.8s infinite; }
-
-  .btn-reset {
-    flex: 0 0 auto; width: 60px;
-    background: transparent; border: 1px solid var(--border);
-    color: var(--dim); font-size: 22px; letter-spacing: 0; padding: 22px 0;
-  }
-  .btn-reset:hover:not(:disabled) { border-color: var(--accent2); color: var(--accent2); }
 
   /* HISTORY */
   .history-list { list-style: none; max-height: 180px; overflow-y: auto; }
@@ -264,29 +274,42 @@
       <div class="distance-unit" id="distanceUnit">YARDS</div>
     </div>
     <div class="unit-toggle">
-      <button class="unit-btn"        id="btnMi" onclick="setUnit('mi')">MI</button>
       <button class="unit-btn active" id="btnYd" onclick="setUnit('yd')">YD</button>
-      <button class="unit-btn"        id="btnFt" onclick="setUnit('ft')">FT</button>
+      <button class="unit-btn"        id="btnMi" onclick="setUnit('mi')">MI</button>
     </div>
   </div>
 
   <div class="panel">
-    <div class="panel-label">Coordinates</div>
-    <div class="coord-row">
-      <div class="coord-box"><div class="coord-key">POINT A · LAT</div><div class="coord-val empty" id="aLat">—</div></div>
-      <div class="coord-box"><div class="coord-key">POINT A · LON</div><div class="coord-val empty" id="aLon">—</div></div>
-    </div>
-    <div class="coord-row">
-      <div class="coord-box"><div class="coord-key">POINT B · LAT</div><div class="coord-val empty" id="bLat">—</div></div>
-      <div class="coord-box"><div class="coord-key">POINT B · LON</div><div class="coord-val empty" id="bLon">—</div></div>
-    </div>
-    <div class="accuracy-badge" id="accuracyBadge">ACC: —</div>
-  </div>
+    <div class="panel-label">Points</div>
 
-  <div class="btn-row">
-    <button class="btn btn-start"   id="btnA" onclick="setPointA()">SET POINT A</button>
-    <button class="btn btn-measure" id="btnB" onclick="setPointB()" disabled>SET POINT B</button>
-    <button class="btn btn-reset"   id="btnReset" onclick="reset()">↺</button>
+    <!-- Point A row -->
+    <div class="point-row">
+      <div class="point-btn-wrap">
+        <button class="btn btn-start" id="btnA" onclick="setPointA()">SET POINT A</button>
+      </div>
+      <div class="point-coords">
+        <div class="coord-key">LAT / LON</div>
+        <div class="coord-val empty" id="aLat">—</div>
+        <div class="coord-val empty" id="aLon">—</div>
+      </div>
+    </div>
+
+    <!-- Point B row -->
+    <div class="point-row">
+      <div class="point-btn-wrap">
+        <button class="btn btn-measure" id="btnB" onclick="setPointB()" disabled>SET POINT B</button>
+      </div>
+      <div class="point-coords">
+        <div class="coord-key">LAT / LON</div>
+        <div class="coord-val empty" id="bLat">—</div>
+        <div class="coord-val empty" id="bLon">—</div>
+      </div>
+    </div>
+
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
+      <div class="accuracy-badge" id="accuracyBadge" style="margin-top:0;">ACC: —</div>
+      <button class="btn-reset" id="btnReset" onclick="reset()" title="Reset">↺ RESET</button>
+    </div>
   </div>
 
   <div class="panel" style="margin-top:14px;">
@@ -492,10 +515,14 @@
     const num = document.getElementById('distanceNum');
     num.textContent = '—'; num.classList.add('zero');
     document.getElementById('accuracyBadge').innerHTML = 'ACC: —';
-    document.getElementById('btnA').textContent = 'SET POINT A';
-    document.getElementById('btnA').className = 'btn btn-start';
-    document.getElementById('btnA').disabled = false;
-    document.getElementById('btnB').disabled = true;
+    const btnA = document.getElementById('btnA');
+    btnA.textContent = 'SET POINT A';
+    btnA.className = 'btn btn-start';
+    btnA.disabled = false;
+    const btnB = document.getElementById('btnB');
+    btnB.textContent = 'SET POINT B';
+    btnB.className = 'btn btn-measure';
+    btnB.disabled = true;
     document.getElementById('historyList').innerHTML = '<li class="empty-history">NO MEASUREMENTS YET</li>';
     setStatus('READY — TAP SET POINT A TO BEGIN', '');
   }
