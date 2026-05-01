@@ -352,23 +352,36 @@
     </div>
     <div id="gmail-body">
       <div class="gmail-setup">
-        <p>Connect your Gmail account to see your inbox here.<br>
-        Click <strong style="color:#f0f0ee;">Connect Gmail</strong> above to sign in with Google.</p>
-        <p style="color:#565a63;font-size:12px;">
-          <strong style="color:#8a8d96;">First-time setup:</strong> You'll need a free Google API key.<br>
-          Add your Client ID below, then click Connect Gmail.
-        </p>
-        <div style="display:flex;gap:8px;max-width:400px;margin:12px auto 0;">
-          <input id="client-id-input" placeholder="Google OAuth Client ID" style="flex:1;padding:8px 12px;font-size:12px;background:#1e2128;border:1px solid rgba(255,255,255,0.13);border-radius:8px;color:#f0f0ee;font-family:'DM Sans',sans-serif;outline:none;" />
-          <button onclick="saveClientId()" style="padding:8px 14px;font-size:12px;background:#d4a853;color:#111;border:none;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;white-space:nowrap;">Save</button>
+        <p>Google requires this page to be served over <code>http://localhost</code> for Gmail sign-in.<br>
+        It's a one-time, one-command setup — no installs needed if you have Python or Node.</p>
+
+        <div style="margin:16px 0;text-align:left;max-width:500px;margin-left:auto;margin-right:auto;">
+          <p style="color:#8a8d96;font-size:12px;font-weight:500;margin-bottom:8px;">Step 1 — Serve this file locally (run once in Terminal / Command Prompt):</p>
+          <div style="background:#0e0f11;border:1px solid rgba(255,255,255,0.13);border-radius:8px;padding:10px 14px;font-family:monospace;font-size:12px;color:#d4a853;">
+            cd ~/Downloads &amp;&amp; python3 -m http.server 8080
+          </div>
+          <p style="color:#565a63;font-size:11px;margin-top:6px;">Then open <a href="http://localhost:8080/homepage.html" target="_blank" style="color:#5b9cf6;">http://localhost:8080/homepage.html</a> in your browser and set that as your homepage.</p>
+          <p style="color:#565a63;font-size:11px;margin-top:4px;">No Python? Use Node: <code style="color:#8a8d96;">npx serve . -p 8080</code> &nbsp;·&nbsp; Or just set Chrome's homepage to this localhost URL after starting the server.</p>
         </div>
-        <p id="client-id-status" style="font-size:11px;color:#5b9cf6;margin-top:8px;"></p>
-        <p style="color:#565a63;font-size:11px;margin-top:12px;">
-          Get a free Client ID at <a href="https://console.cloud.google.com/apis/credentials" target="_blank" style="color:#5b9cf6;">console.cloud.google.com</a><br>
-          → Create Credentials → OAuth 2.0 Client ID → <strong style="color:#8a8d96;">Web application</strong><br>
-          → Under <strong style="color:#8a8d96;">Authorized JavaScript origins</strong> add: <code>null</code><br>
-          No redirect URI needed — sign-in uses a secure popup.
-        </p>
+
+        <div style="margin:16px 0;text-align:left;max-width:500px;margin-left:auto;margin-right:auto;">
+          <p style="color:#8a8d96;font-size:12px;font-weight:500;margin-bottom:8px;">Step 2 — Create a Google OAuth Client ID (free, one-time):</p>
+          <p style="color:#565a63;font-size:11px;line-height:1.9;">
+            1. Go to <a href="https://console.cloud.google.com/apis/credentials" target="_blank" style="color:#5b9cf6;">console.cloud.google.com/apis/credentials</a><br>
+            2. Create Credentials → OAuth 2.0 Client ID → <strong style="color:#8a8d96;">Web application</strong><br>
+            3. Authorized JavaScript origins: add <code style="color:#d4a853;">http://localhost:8080</code><br>
+            4. No redirect URI needed. Copy your Client ID.
+          </p>
+        </div>
+
+        <div style="margin:16px 0;text-align:left;max-width:500px;margin-left:auto;margin-right:auto;">
+          <p style="color:#8a8d96;font-size:12px;font-weight:500;margin-bottom:8px;">Step 3 — Paste your Client ID here:</p>
+          <div style="display:flex;gap:8px;">
+            <input id="client-id-input" placeholder="Paste OAuth Client ID (ends in .apps.googleusercontent.com)" style="flex:1;padding:8px 12px;font-size:12px;background:#1e2128;border:1px solid rgba(255,255,255,0.13);border-radius:8px;color:#f0f0ee;font-family:'DM Sans',sans-serif;outline:none;" />
+            <button onclick="saveClientId()" style="padding:8px 14px;font-size:12px;background:#d4a853;color:#111;border:none;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;white-space:nowrap;">Save</button>
+          </div>
+          <p id="client-id-status" style="font-size:11px;color:#5b9cf6;margin-top:8px;"></p>
+        </div>
       </div>
     </div>
   </div>
