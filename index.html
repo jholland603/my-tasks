@@ -527,34 +527,28 @@
   .forecast-high  { font-size: 11px; color: var(--ink); font-weight: 500; }
   .forecast-rain  { font-size: 9px; color: var(--week-c); }
 
-  /* weather detail modal */
-  #weather-modal {
-    position: fixed; inset: 0; z-index: 200;
-    display: flex; align-items: center; justify-content: center;
-    background: rgba(26,24,20,0.35); backdrop-filter: blur(2px);
+  /* weather hover tooltip */
+  #weather-tooltip {
+    position: fixed; z-index: 300; pointer-events: none;
+    background: var(--card); border: 1px solid var(--ink);
+    border-radius: 2px; width: 220px;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.15);
+    opacity: 0; transition: opacity 0.15s;
+    padding: 10px 12px;
   }
-  #weather-modal.hidden { display: none; }
-  .weather-box {
-    background: var(--card); border: 1.5px solid var(--ink);
-    border-radius: 2px; width: 340px; max-width: 90vw;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
-  }
-  .weather-box-header {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 12px 16px; border-bottom: 1px solid var(--line);
-  }
-  .weather-box-title {
-    font-family: 'Instrument Serif', serif; font-size: 18px;
+  #weather-tooltip.visible { opacity: 1; }
+  .tooltip-title {
+    font-family: 'Instrument Serif', serif; font-size: 14px;
     font-style: italic; color: var(--ink);
+    margin-bottom: 8px; padding-bottom: 6px;
+    border-bottom: 1px solid var(--line);
   }
-  .weather-box-body { padding: 16px; }
   .weather-detail-row {
     display: flex; justify-content: space-between; align-items: center;
-    padding: 6px 0; border-bottom: 1px solid var(--line); font-size: 12px;
+    padding: 3px 0; font-size: 11px;
   }
-  .weather-detail-row:last-child { border-bottom: none; }
-  .weather-detail-label { color: var(--muted); font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; }
-  .weather-detail-val { color: var(--ink); font-weight: 500; }
+  .weather-detail-label { color: var(--muted); font-size: 9px; letter-spacing: 0.06em; text-transform: uppercase; }
+  .weather-detail-val { color: var(--ink); font-weight: 500; font-size: 11px; }
 
   /* markets */
   .dash-markets { flex: 1; min-width: 300px; }
@@ -930,17 +924,12 @@
 
 </div>
 
-<p class="hint">drag rows between sections &nbsp;·&nbsp; click any cell to edit &nbsp;·&nbsp; overdue dates appear in red &nbsp;·&nbsp; syncs to GitHub<br>v1.48</p>
+<p class="hint">drag rows between sections &nbsp;·&nbsp; click any cell to edit &nbsp;·&nbsp; overdue dates appear in red &nbsp;·&nbsp; syncs to GitHub<br>v1.49</p>
 
-<!-- WEATHER MODAL -->
-<div id="weather-modal" class="hidden">
-  <div class="weather-box">
-    <div class="weather-box-header">
-      <span class="weather-box-title" id="weather-modal-title">Friday</span>
-      <button class="notes-close" onclick="closeWeather()">×</button>
-    </div>
-    <div class="weather-box-body" id="weather-modal-body"></div>
-  </div>
+<!-- WEATHER TOOLTIP -->
+<div id="weather-tooltip">
+  <div class="tooltip-title" id="weather-tooltip-title"></div>
+  <div id="weather-tooltip-body"></div>
 </div>
 
 <!-- NOTES MODAL -->
@@ -2167,31 +2156,30 @@
         <div class="forecast-high">${d.high}°</div>
         <div class="forecast-rain">${d.rain}%</div>
       `;
-      el.addEventListener('click', () => openWeather(i));
+      el.addEventListener('mouseenter', e => showWeatherTooltip(i, e));
+      el.addEventListener('mousemove',  e => moveWeatherTooltip(e));
+      el.addEventListener('mouseleave', () => hideWeatherTooltip());
       fc.appendChild(el);
     });
   }
 
-  function openWeather(idx) {
+  function showWeatherTooltip(idx, e) {
     const d = forecastData[idx];
     if (!d) return;
-    document.getElementById('weather-modal-title').textContent = `${d.dow}, ${d.date}`;
-    document.getElementById('weather-modal-body').innerHTML = `
+    const tip = document.getElementById('weather-tooltip');
+    document.getElementById('weather-tooltip-title').textContent = `${d.dow}, ${d.date}`;
+    document.getElementById('weather-tooltip-body').innerHTML = `
       <div class="weather-detail-row">
         <span class="weather-detail-label">Condition</span>
         <span class="weather-detail-val">${d.icon} ${d.condition}</span>
       </div>
       <div class="weather-detail-row">
         <span class="weather-detail-label">High / Low</span>
-        <span class="weather-detail-val">${d.high}°F / ${d.low}°F</span>
+        <span class="weather-detail-val">${d.high}° / ${d.low}°F</span>
       </div>
       <div class="weather-detail-row">
-        <span class="weather-detail-label">Precip Chance</span>
-        <span class="weather-detail-val" style="color:${d.rain >= 50 ? 'var(--week-c)' : 'var(--ink)'}">${d.rain}%</span>
-      </div>
-      <div class="weather-detail-row">
-        <span class="weather-detail-label">Rainfall</span>
-        <span class="weather-detail-val">${d.precipIn} in</span>
+        <span class="weather-detail-label">Precip</span>
+        <span class="weather-detail-val" style="color:${d.rain>=50?'var(--week-c)':'var(--ink)'}">${d.rain}% · ${d.precipIn}"</span>
       </div>
       <div class="weather-detail-row">
         <span class="weather-detail-label">Wind</span>
@@ -2202,12 +2190,32 @@
         <span class="weather-detail-val">${d.humidity}</span>
       </div>
     `;
-    document.getElementById('weather-modal').classList.remove('hidden');
+    positionTooltip(tip, e);
+    tip.classList.add('visible');
   }
 
-  function closeWeather() {
-    document.getElementById('weather-modal').classList.add('hidden');
+  function moveWeatherTooltip(e) {
+    const tip = document.getElementById('weather-tooltip');
+    if (tip.classList.contains('visible')) positionTooltip(tip, e);
   }
+
+  function hideWeatherTooltip() {
+    document.getElementById('weather-tooltip').classList.remove('visible');
+  }
+
+  function positionTooltip(tip, e) {
+    const pad = 12;
+    const tw  = tip.offsetWidth  || 220;
+    const th  = tip.offsetHeight || 180;
+    let x = e.clientX + pad;
+    let y = e.clientY + pad;
+    if (x + tw > window.innerWidth  - pad) x = e.clientX - tw - pad;
+    if (y + th > window.innerHeight - pad) y = e.clientY - th - pad;
+    tip.style.left = x + 'px';
+    tip.style.top  = y + 'px';
+  }
+
+  function closeWeather() { hideWeatherTooltip(); }
 
   function initDashboard() {
     // clock
@@ -2227,11 +2235,6 @@
     // weather — live from Open-Meteo, refresh every 30 min
     fetchWeather();
     setInterval(fetchWeather, 30 * 60 * 1000);
-
-    // weather modal backdrop
-    document.getElementById('weather-modal').addEventListener('click', e => {
-      if (e.target === document.getElementById('weather-modal')) closeWeather();
-    });
 
     // build market items
     rebuildMarketItems();
