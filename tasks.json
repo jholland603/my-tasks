@@ -19,9 +19,7 @@
       "due": "2026-04-30",
       "done": false,
       "type": "personal"
-    }
-  ],
-  "tomorrow": [
+    },
     {
       "id": "1777556915532-8513",
       "company": "RCEMAN",
@@ -60,16 +58,7 @@
       "type": "work"
     }
   ],
-  "sevenday": [
-    {
-      "id": "1777582365196-8839",
-      "company": "ZLMACH",
-      "description": "Test upgrade",
-      "url": "",
-      "created": "2026-04-30",
-      "due": "2026-05-04",
-      "done": false
-    },
+  "tomorrow": [
     {
       "id": "1777594973418-4129",
       "company": "",
@@ -79,6 +68,17 @@
       "due": "2026-05-02",
       "done": false,
       "type": "personal"
+    }
+  ],
+  "sevenday": [
+    {
+      "id": "1777582365196-8839",
+      "company": "ZLMACH",
+      "description": "Test upgrade",
+      "url": "",
+      "created": "2026-04-30",
+      "due": "2026-05-04",
+      "done": false
     }
   ],
   "fourteenday": [],
