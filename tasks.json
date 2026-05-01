@@ -11,15 +11,6 @@
       "notes": "Testing a longer note"
     },
     {
-      "id": "1777582365196-8839",
-      "company": "ZLMACH",
-      "description": "Test upgrade",
-      "url": "",
-      "created": "2026-04-30",
-      "due": "2026-04-29",
-      "done": false
-    },
-    {
       "id": "1777591552496-5824",
       "company": "",
       "description": "Buy dog food",
@@ -59,7 +50,17 @@
       "done": false
     }
   ],
-  "sevenday": [],
+  "sevenday": [
+    {
+      "id": "1777582365196-8839",
+      "company": "ZLMACH",
+      "description": "Test upgrade",
+      "url": "",
+      "created": "2026-04-30",
+      "due": "2026-05-04",
+      "done": false
+    }
+  ],
   "fourteenday": [
     {
       "id": "1777594973418-4129",
