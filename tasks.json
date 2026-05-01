@@ -43,15 +43,6 @@
   ],
   "sevenday": [
     {
-      "id": "1777556202388-7985",
-      "company": "PREPRE",
-      "description": "Data migration",
-      "url": "",
-      "created": "2026-04-30",
-      "due": "2026-05-02",
-      "done": false
-    },
-    {
       "id": "1777556221941-822",
       "company": "SYNRES",
       "description": "Desk Tickets",
@@ -73,7 +64,17 @@
       "type": "personal"
     }
   ],
-  "back": [],
+  "back": [
+    {
+      "id": "1777556202388-7985",
+      "company": "PREPRE",
+      "description": "Data migration",
+      "url": "",
+      "created": "2026-04-30",
+      "due": "2026-05-28",
+      "done": false
+    }
+  ],
   "completed": [
     {
       "id": "1777556211436-2418",
