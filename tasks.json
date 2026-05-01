@@ -71,18 +71,7 @@
       "type": "personal"
     }
   ],
-  "fourteenday": [
-    {
-      "id": "1777598810626-9025",
-      "company": "",
-      "description": "",
-      "url": "",
-      "created": "2026-04-30",
-      "due": "2026-05-08",
-      "done": false,
-      "type": "work"
-    }
-  ],
+  "fourteenday": [],
   "back": [],
   "completed": [
     {
