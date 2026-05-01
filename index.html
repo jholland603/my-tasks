@@ -250,13 +250,14 @@
     font-family: 'DM Mono', monospace; font-size: 11px;
     color: var(--ink); outline: none; width: 100%;
     text-align: center; cursor: pointer; padding: 9px 2px;
+    caret-color: transparent;
   }
   .date-input::-webkit-calendar-picker-indicator {
     opacity: 0.4; cursor: pointer; font-size: 11px;
-    filter: invert(0.4);
-    transition: opacity 0.15s;
+    filter: invert(0.4); transition: opacity 0.15s;
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    opacity: 0;
   }
-  .date-input:hover::-webkit-calendar-picker-indicator { opacity: 0.8; }
   .date-input:hover { color: var(--week-c); }
   .date-input.overdue { color: var(--today-c); font-weight: 500; }
 
@@ -655,7 +656,7 @@
 
 </div>
 
-<p class="hint">drag rows between sections &nbsp;·&nbsp; click any cell to edit &nbsp;·&nbsp; overdue dates appear in red &nbsp;·&nbsp; syncs to GitHub<br>v1.31</p>
+<p class="hint">drag rows between sections &nbsp;·&nbsp; click any cell to edit &nbsp;·&nbsp; overdue dates appear in red &nbsp;·&nbsp; syncs to GitHub<br>v1.32</p>
 
 <!-- NOTES MODAL -->
 <div id="notes-modal" class="hidden">
@@ -1207,10 +1208,10 @@
           <td class="cell-date">
             <div class="due-wrap">
               ${task.due && dueDotClass(task.due) ? `<span class="due-dot ${dueDotClass(task.due)}"></span>` : ''}
-              <input class="date-input${isOverdue(task.due) ? ' overdue' : ''}" type="date" value="${escHtml(task.due||'')}">
+              <input class="date-input${isOverdue(task.due) ? ' overdue' : ''}" type="date" value="${escHtml(task.due||'')}" readonly>
             </div>
           </td>
-          <td class="cell-date"><input class="date-input" type="date" value="${escHtml(task.created||todayISO())}"></td>
+          <td class="cell-date"><input class="date-input" type="date" value="${escHtml(task.created||todayISO())}" readonly></td>
           <td class="cell-del"><button class="delete-btn" title="remove">×</button></td>
         `;
 
@@ -1393,11 +1394,24 @@
   function wireDates(tr, sec, task) {
     const dateInputs = tr.querySelectorAll('.date-input');
     // due [0], created [1]
+
+    // click anywhere on cell opens the picker
+    dateInputs.forEach(input => {
+      input.addEventListener('click', () => {
+        input.removeAttribute('readonly');
+        input.showPicker && input.showPicker();
+      });
+      input.addEventListener('blur', () => {
+        input.setAttribute('readonly', '');
+      });
+    });
+
     dateInputs[0].addEventListener('change', () => {
       const newDue = dateInputs[0].value;
+      dateInputs[0].setAttribute('readonly', '');
       const curSec = ['today','week','nextweek','back'].find(s => state[s].some(t => t.id === task.id)) || sec;
       updateField(curSec, task.id, 'due', newDue);
-      // refresh dot immediately
+      // refresh dot
       const wrap = dateInputs[0].closest('.due-wrap');
       if (wrap) {
         const existing = wrap.querySelector('.due-dot');
@@ -1410,22 +1424,15 @@
         }
       }
       dateInputs[0].classList.toggle('overdue', isOverdue(newDue));
-    });
-    // auto-place only when user finishes editing (blur)
-    dateInputs[0].addEventListener('blur', () => {
-      const newDue = dateInputs[0].value;
-      const curSec = ['today','week','nextweek','back'].find(s => state[s].some(t => t.id === task.id));
-      if (!curSec) return;
-      const t = state[curSec].find(t => t.id === task.id);
-      if (!t) return;
-      t.due = newDue;
-      const dest = sectionForDue(newDue);
-      if (dest && dest !== curSec) {
-        // task needs to move — do it and re-render after a tick
-        autoPlaceTask(t);
-        setTimeout(() => render(), 0);
+      // auto-place after picker closes
+      const t = state[curSec] && state[curSec].find(t => t.id === task.id);
+      if (t) {
+        t.due = newDue;
+        const dest = sectionForDue(newDue);
+        if (dest && dest !== curSec) { autoPlaceTask(t); setTimeout(() => render(), 0); }
       }
     });
+
     dateInputs[1].addEventListener('change', () => {
       const curSec = ['today','week','nextweek','back'].find(s => state[s].some(t => t.id === task.id)) || sec;
       updateField(curSec, task.id, 'created', dateInputs[1].value);
