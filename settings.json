@@ -1,0 +1,20 @@
+{
+  "sortState": {
+    "today": {
+      "col": "company",
+      "dir": "asc"
+    },
+    "week": {
+      "col": "manual",
+      "dir": "asc"
+    },
+    "nextweek": {
+      "col": "due",
+      "dir": "asc"
+    },
+    "back": {
+      "col": "company",
+      "dir": "asc"
+    }
+  }
+}
