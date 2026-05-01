@@ -655,7 +655,7 @@
 
 </div>
 
-<p class="hint">drag rows between sections &nbsp;·&nbsp; click any cell to edit &nbsp;·&nbsp; overdue dates appear in red &nbsp;·&nbsp; syncs to GitHub<br>v1.28</p>
+<p class="hint">drag rows between sections &nbsp;·&nbsp; click any cell to edit &nbsp;·&nbsp; overdue dates appear in red &nbsp;·&nbsp; syncs to GitHub<br>v1.29</p>
 
 <!-- NOTES MODAL -->
 <div id="notes-modal" class="hidden">
@@ -684,18 +684,25 @@
   let saveTimer = null;
   let dragSrc = null;
 
-  function todayISO() { return new Date().toISOString().slice(0,10); }
+  function todayISO() {
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  }
   function isOverdue(iso) { return !!iso && iso < todayISO(); }
 
   function dueDotClass(iso) {
     if (!iso) return '';
     const today = todayISO();
-    if (iso < today) return 'dot-overdue';
+    if (iso < today)  return 'dot-overdue';
     if (iso === today) return 'dot-today';
-    // within 2 days
-    const due  = new Date(iso + 'T00:00:00');
-    const now  = new Date(today + 'T00:00:00');
-    const diff = (due - now) / (1000 * 60 * 60 * 24);
+    const [ty, tm, td] = today.split('-').map(Number);
+    const [dy, dm, dd] = iso.split('-').map(Number);
+    const t = new Date(ty, tm-1, td);
+    const d = new Date(dy, dm-1, dd);
+    const diff = Math.round((d - t) / (1000 * 60 * 60 * 24));
     if (diff <= 2) return 'dot-soon';
     return '';
   }
@@ -757,12 +764,16 @@
 
   // ── AUTO-PLACE BY DUE DATE ──
   function sectionForDue(due) {
-    if (!due) return null; // no due date — don't auto-move
-    const today  = todayISO();
-    const d      = new Date(due + 'T00:00:00');
-    const now    = new Date(today + 'T00:00:00');
-    const diff   = Math.round((d - now) / (1000 * 60 * 60 * 24));
-    if (diff <= 0)  return 'today';
+    if (!due) return null;
+    const today = todayISO();
+    if (due < today)  return 'today'; // overdue
+    if (due === today) return 'today';
+    // compare dates as strings to avoid timezone shifts
+    const [ty, tm, td] = today.split('-').map(Number);
+    const [dy, dm, dd] = due.split('-').map(Number);
+    const t = new Date(ty, tm-1, td);
+    const d = new Date(dy, dm-1, dd);
+    const diff = Math.round((d - t) / (1000 * 60 * 60 * 24));
     if (diff <= 7)  return 'week';
     if (diff <= 14) return 'nextweek';
     return 'back';
