@@ -4,6 +4,22 @@
       "col": "company",
       "dir": "asc"
     },
+    "tomorrow": {
+      "col": "due",
+      "dir": "asc"
+    },
+    "sevenday": {
+      "col": "due",
+      "dir": "asc"
+    },
+    "fourteenday": {
+      "col": "due",
+      "dir": "asc"
+    },
+    "back": {
+      "col": "company",
+      "dir": "asc"
+    },
     "week": {
       "col": "manual",
       "dir": "asc"
@@ -11,10 +27,13 @@
     "nextweek": {
       "col": "due",
       "dir": "asc"
-    },
-    "back": {
-      "col": "company",
-      "dir": "asc"
     }
-  }
+  },
+  "links": [
+    {
+      "id": "1777648764200",
+      "name": "GMail",
+      "url": "https://mail.google.com/mail/u/0/#inbox"
+    }
+  ]
 }
