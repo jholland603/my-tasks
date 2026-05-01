@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Distance Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@300;600;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0c0f;
+    --panel: #111418;
+    --border: #1e2530;
+    --accent: #00e5ff;
+    --accent2: #ff3d71;
+    --green: #39ff14;
+    --dim: #3a4455;
+    --text: #c8d4e0;
+    --mono: 'Share Tech Mono', monospace;
+    --sans: 'Barlow Condensed', sans-serif;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 420px;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 28px;
+  }
+
+  .title {
+    font-family: var(--sans);
+    font-size: 48px;
+    font-weight: 800;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    color: var(--accent);
+    text-shadow: 0 0 30px rgba(0,229,255,0.4);
+    line-height: 1;
+  }
+
+  .subtitle {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--dim);
+    letter-spacing: 3px;
+    margin-top: 6px;
+  }
+
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 18px 20px;
+    margin-bottom: 14px;
+  }
+
+  .panel-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--dim);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  /* STATUS BAR */
+  .status-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text);
+    margin-bottom: 14px;
+    padding: 10px 14px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    min-height: 48px;
+    line-height: 1.5;
+  }
+
+  .status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--dim);
+    flex-shrink: 0;
+    transition: background 0.3s, box-shadow 0.3s;
+  }
+  .status-dot.waiting { background: #ffbe00; box-shadow: 0 0 10px #ffbe00; animation: pulse 0.8s infinite; }
+  .status-dot.ok      { background: var(--green); box-shadow: 0 0 10px var(--green); }
+  .status-dot.error   { background: var(--accent2); box-shadow: 0 0 10px var(--accent2); }
+
+  @keyframes pulse {
+    0%,100% { opacity:1; transform:scale(1); }
+    50%      { opacity:0.4; transform:scale(0.75); }
+  }
+
+  /* DISTANCE */
+  .distance-display { text-align: center; padding: 16px 0 10px; }
+
+  .distance-number {
+    font-family: var(--sans);
+    font-size: 76px;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--green);
+    text-shadow: 0 0 40px rgba(57,255,20,0.35);
+    transition: color 0.3s;
+    letter-spacing: -2px;
+  }
+  .distance-number.zero { color: var(--dim); text-shadow: none; }
+
+  .distance-unit {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--dim);
+    letter-spacing: 3px;
+    margin-top: 4px;
+  }
+
+  .unit-toggle {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 14px;
+  }
+
+  .unit-btn {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 2px;
+    padding: 6px 20px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    color: var(--dim);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .unit-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(0,229,255,0.07); }
+  .unit-btn:hover:not(.active) { border-color: #556; color: var(--text); }
+
+  /* COORDS */
+  .coord-row { display: flex; gap: 12px; margin-bottom: 8px; }
+  .coord-box { flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 3px; padding: 10px 12px; }
+  .coord-key { font-family: var(--mono); font-size: 9px; color: var(--dim); letter-spacing: 1px; }
+  .coord-val { font-family: var(--mono); font-size: 12px; color: var(--accent); margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .coord-val.empty { color: var(--dim); }
+  .accuracy-badge { font-family: var(--mono); font-size: 10px; color: var(--dim); text-align: right; margin-top: 6px; }
+  .accuracy-badge span { color: var(--accent); }
+
+  /* BUTTONS */
+  .btn-row { display: flex; gap: 12px; margin-top: 4px; }
+
+  .btn {
+    flex: 1;
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 18px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    padding: 22px 12px;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.12s;
+    -webkit-tap-highlight-color: rgba(0,0,0,0);
+    outline: none;
+  }
+  .btn:active:not(:disabled) { transform: scale(0.96); }
+  .btn:disabled { opacity: 0.35; cursor: not-allowed; transform: none !important; }
+
+  .btn-start { background: var(--accent); color: #000; }
+  .btn-start:hover:not(:disabled) { background: #33eaff; box-shadow: 0 0 28px rgba(0,229,255,0.5); }
+  .btn-start.set-done { background: #00c853; }
+  .btn-start.locating { background: #ffbe00; color: #000; animation: pulse 0.8s infinite; }
+
+  .btn-measure { background: transparent; color: var(--green); border: 2px solid var(--green); }
+  .btn-measure:hover:not(:disabled) { background: rgba(57,255,20,0.08); box-shadow: 0 0 24px rgba(57,255,20,0.3); }
+  .btn-measure.locating { background: rgba(57,255,20,0.12); color: #ffbe00; border-color: #ffbe00; animation: pulse 0.8s infinite; }
+
+  .btn-reset {
+    flex: 0 0 auto; width: 60px;
+    background: transparent; border: 1px solid var(--border);
+    color: var(--dim); font-size: 22px; letter-spacing: 0; padding: 22px 0;
+  }
+  .btn-reset:hover:not(:disabled) { border-color: var(--accent2); color: var(--accent2); }
+
+  /* HISTORY */
+  .history-list { list-style: none; max-height: 180px; overflow-y: auto; }
+  .history-list::-webkit-scrollbar { width: 4px; }
+  .history-list::-webkit-scrollbar-track { background: var(--bg); }
+  .history-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .history-item {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 8px 0; border-bottom: 1px solid var(--border);
+    font-family: var(--mono); font-size: 12px;
+    animation: slideIn 0.2s ease;
+  }
+  @keyframes slideIn { from { opacity:0; transform:translateX(-8px); } to { opacity:1; transform:none; } }
+  .history-item:last-child { border-bottom: none; }
+  .history-num  { color: var(--dim); font-size: 10px; min-width: 28px; }
+  .history-dist { color: var(--green); }
+  .history-time { color: var(--dim); font-size: 10px; }
+
+  .empty-history {
+    font-family: var(--mono); font-size: 11px; color: var(--dim);
+    text-align: center; padding: 16px 0; letter-spacing: 1px;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="title">DIST</div>
+    <div class="subtitle">GPS · DISTANCE · TRACKER</div>
+  </header>
+
+  <div class="status-bar">
+    <div class="status-dot" id="statusDot"></div>
+    <span id="statusText">READY — TAP SET POINT A TO BEGIN</span>
+  </div>
+
+  <div class="panel">
+    <div class="panel-label">Distance</div>
+    <div class="distance-display">
+      <div class="distance-number zero" id="distanceNum">—</div>
+      <div class="distance-unit" id="distanceUnit">YARDS</div>
+    </div>
+    <div class="unit-toggle">
+      <button class="unit-btn"        id="btnMi" onclick="setUnit('mi')">MI</button>
+      <button class="unit-btn active" id="btnYd" onclick="setUnit('yd')">YD</button>
+      <button class="unit-btn"        id="btnFt" onclick="setUnit('ft')">FT</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-label">Coordinates</div>
+    <div class="coord-row">
+      <div class="coord-box"><div class="coord-key">POINT A · LAT</div><div class="coord-val empty" id="aLat">—</div></div>
+      <div class="coord-box"><div class="coord-key">POINT A · LON</div><div class="coord-val empty" id="aLon">—</div></div>
+    </div>
+    <div class="coord-row">
+      <div class="coord-box"><div class="coord-key">POINT B · LAT</div><div class="coord-val empty" id="bLat">—</div></div>
+      <div class="coord-box"><div class="coord-key">POINT B · LON</div><div class="coord-val empty" id="bLon">—</div></div>
+    </div>
+    <div class="accuracy-badge" id="accuracyBadge">ACC: —</div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-start"   id="btnA" onclick="setPointA()">SET POINT A</button>
+    <button class="btn btn-measure" id="btnB" onclick="setPointB()" disabled>MEASURE</button>
+    <button class="btn btn-reset"   id="btnReset" onclick="reset()">↺</button>
+  </div>
+
+  <div class="panel" style="margin-top:14px;">
+    <div class="panel-label">Measurement Log</div>
+    <ul class="history-list" id="historyList">
+      <li class="empty-history">NO MEASUREMENTS YET</li>
+    </ul>
+  </div>
+</div>
+
+<script>
+  let pointA = null;
+  let unit = 'yd';
+  let measurements = [];
+  let measureCount = 0;
+
+  const unitLabels   = { mi:'MILES', yd:'YARDS', ft:'FEET' };
+  const unitDecimals = { mi:3,       yd:1,       ft:0 };
+
+  function metersTo(m, u) {
+    if (u === 'mi') return m / 1609.344;
+    if (u === 'yd') return m / 0.9144;
+    return m * 3.28084;
+  }
+
+  function fmt(meters) {
+    return metersTo(meters, unit).toFixed(unitDecimals[unit]);
+  }
+
+  function setUnit(u) {
+    unit = u;
+    document.getElementById('distanceUnit').textContent = unitLabels[u];
+    document.querySelectorAll('.unit-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('btn' + u.charAt(0).toUpperCase() + u.slice(1)).classList.add('active');
+    if (measurements.length > 0) {
+      const el = document.getElementById('distanceNum');
+      el.textContent = fmt(measurements[measurements.length - 1].meters);
+    }
+  }
+
+  function haversine(lat1, lon1, lat2, lon2) {
+    const R = 6371000;
+    const toR = x => x * Math.PI / 180;
+    const dLat = toR(lat2 - lat1), dLon = toR(lon2 - lon1);
+    const a = Math.sin(dLat/2)**2 + Math.cos(toR(lat1))*Math.cos(toR(lat2))*Math.sin(dLon/2)**2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  }
+
+  function setStatus(msg, state) {
+    document.getElementById('statusText').textContent = msg;
+    document.getElementById('statusDot').className = 'status-dot' + (state ? ' '+state : '');
+  }
+
+  function setCoord(id, val) {
+    const el = document.getElementById(id);
+    el.textContent = val;
+    el.classList.remove('empty');
+  }
+
+  // ── SET POINT A ──────────────────────────────────────────
+  function setPointA() {
+    if (!navigator.geolocation) { setStatus('GPS NOT SUPPORTED', 'error'); return; }
+
+    const btn = document.getElementById('btnA');
+    btn.textContent = 'LOCATING…';
+    btn.className = 'btn btn-start locating';
+    btn.disabled = true;
+    setStatus('GETTING GPS FIX… THIS MAY TAKE A FEW SECONDS', 'waiting');
+
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        pointA = { lat: pos.coords.latitude, lon: pos.coords.longitude };
+        setCoord('aLat', pointA.lat.toFixed(6));
+        setCoord('aLon', pointA.lon.toFixed(6));
+        document.getElementById('accuracyBadge').innerHTML =
+          'ACC: <span>±' + Math.round(pos.coords.accuracy * 3.28084) + ' ft</span>';
+
+        btn.textContent = 'POINT A ✓';
+        btn.className = 'btn btn-start set-done';
+        btn.disabled = false;
+        document.getElementById('btnB').disabled = false;
+        setStatus('POINT A SET ✓  MOVE TO DESTINATION, THEN TAP MEASURE', 'ok');
+      },
+      err => {
+        btn.textContent = 'SET POINT A';
+        btn.className = 'btn btn-start';
+        btn.disabled = false;
+        const msgs = {
+          1: 'PERMISSION DENIED — ALLOW LOCATION IN YOUR BROWSER SETTINGS',
+          2: 'POSITION UNAVAILABLE — TRY OUTDOORS OR NEAR A WINDOW',
+          3: 'GPS TIMED OUT — TAP AGAIN TO RETRY'
+        };
+        setStatus(msgs[err.code] || 'GPS ERROR — TRY AGAIN', 'error');
+      },
+      { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 }
+    );
+  }
+
+  // ── MEASURE ───────────────────────────────────────────────
+  function setPointB() {
+    if (!pointA) return;
+    if (!navigator.geolocation) { setStatus('GPS NOT SUPPORTED', 'error'); return; }
+
+    const btn = document.getElementById('btnB');
+    btn.textContent = 'LOCATING…';
+    btn.className = 'btn btn-measure locating';
+    btn.disabled = true;
+    setStatus('ACQUIRING POSITION… PLEASE WAIT', 'waiting');
+
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        const lat = pos.coords.latitude, lon = pos.coords.longitude;
+        setCoord('bLat', lat.toFixed(6));
+        setCoord('bLon', lon.toFixed(6));
+        document.getElementById('accuracyBadge').innerHTML =
+          'ACC: <span>±' + Math.round(pos.coords.accuracy * 3.28084) + ' ft</span>';
+
+        const meters = haversine(pointA.lat, pointA.lon, lat, lon);
+        const el = document.getElementById('distanceNum');
+        el.textContent = fmt(meters);
+        el.classList.remove('zero');
+
+        measureCount++;
+        const time = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+        measurements.push({ meters, time });
+        addHistory(measureCount, meters, time);
+
+        btn.textContent = 'MEASURE';
+        btn.className = 'btn btn-measure';
+        btn.disabled = false;
+        setStatus('MEASURED ✓  ' + fmt(meters) + ' ' + unitLabels[unit] + ' FROM POINT A', 'ok');
+      },
+      err => {
+        btn.textContent = 'MEASURE';
+        btn.className = 'btn btn-measure';
+        btn.disabled = false;
+        const msgs = { 1:'PERMISSION DENIED', 2:'POSITION UNAVAILABLE — TRY AGAIN', 3:'GPS TIMED OUT — TAP AGAIN' };
+        setStatus(msgs[err.code] || 'GPS ERROR', 'error');
+      },
+      { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 }
+    );
+  }
+
+  function addHistory(n, meters, time) {
+    const list = document.getElementById('historyList');
+    const empty = list.querySelector('.empty-history');
+    if (empty) empty.remove();
+    const li = document.createElement('li');
+    li.className = 'history-item';
+    li.innerHTML =
+      '<span class="history-num">#' + String(n).padStart(2,'0') + '</span>' +
+      '<span class="history-dist">' + fmt(meters) + ' ' + unit.toUpperCase() + '</span>' +
+      '<span class="history-time">' + time + '</span>';
+    list.insertBefore(li, list.firstChild);
+  }
+
+  function reset() {
+    pointA = null; measurements = []; measureCount = 0;
+    ['aLat','aLon','bLat','bLon'].forEach(id => {
+      const el = document.getElementById(id);
+      el.textContent = '—'; el.classList.add('empty');
+    });
+    const num = document.getElementById('distanceNum');
+    num.textContent = '—'; num.classList.add('zero');
+    document.getElementById('accuracyBadge').innerHTML = 'ACC: —';
+    document.getElementById('btnA').textContent = 'SET POINT A';
+    document.getElementById('btnA').className = 'btn btn-start';
+    document.getElementById('btnA').disabled = false;
+    document.getElementById('btnB').disabled = true;
+    document.getElementById('historyList').innerHTML = '<li class="empty-history">NO MEASUREMENTS YET</li>';
+    setStatus('READY — TAP SET POINT A TO BEGIN', '');
+  }
+
+  if (!navigator.geolocation) {
+    setStatus('GPS NOT SUPPORTED IN THIS BROWSER', 'error');
+    document.getElementById('btnA').disabled = true;
+  }
+</script>
+</body>
+</html>
