@@ -243,13 +243,12 @@
 
   /* date cells */
   .cell-date { text-align: center; padding: 0 4px; }
-  .due-wrap { display: flex; align-items: center; justify-content: center; gap: 5px; }
-  .due-dot {
-    width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
-  }
-  .due-dot.dot-overdue { background: #c8392b; }
-  .due-dot.dot-today   { background: #2e9e4f; }
-  .due-dot.dot-soon    { background: #e8a020; }
+  /* overdue row highlight */
+  .task-row.overdue td { color: var(--today-c); }
+  .task-row.overdue .company-input,
+  .task-row.overdue .cell-editable,
+  .task-row.overdue .date-input,
+  .task-row.overdue .url-link { color: var(--today-c); }
   .date-input {
     background: none; border: none;
     font-family: 'DM Mono', monospace; font-size: 11px;
@@ -673,7 +672,7 @@
 
 </div>
 
-<p class="hint">drag rows between sections &nbsp;·&nbsp; click any cell to edit &nbsp;·&nbsp; overdue dates appear in red &nbsp;·&nbsp; syncs to GitHub<br>v1.33</p>
+<p class="hint">drag rows between sections &nbsp;·&nbsp; click any cell to edit &nbsp;·&nbsp; overdue dates appear in red &nbsp;·&nbsp; syncs to GitHub<br>v1.34</p>
 
 <!-- NOTES MODAL -->
 <div id="notes-modal" class="hidden">
@@ -710,20 +709,6 @@
     return `${y}-${m}-${day}`;
   }
   function isOverdue(iso) { return !!iso && iso < todayISO(); }
-
-  function dueDotClass(iso) {
-    if (!iso) return '';
-    const today = todayISO();
-    if (iso < today)  return 'dot-overdue';
-    if (iso === today) return 'dot-today';
-    const [ty, tm, td] = today.split('-').map(Number);
-    const [dy, dm, dd] = iso.split('-').map(Number);
-    const t = new Date(ty, tm-1, td);
-    const d = new Date(dy, dm-1, dd);
-    const diff = Math.round((d - t) / (1000 * 60 * 60 * 24));
-    if (diff <= 2) return 'dot-soon';
-    return '';
-  }
   function escHtml(s) {
     return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
@@ -823,7 +808,23 @@
     scheduleSave();
   }
 
-  // ── GITHUB SYNC ──
+  function rebalanceSections() {
+    // on load, move every task to the section matching its due date
+    let changed = false;
+    ['today','tomorrow','sevenday','fourteenday','back'].forEach(sec => {
+      const toMove = state[sec].filter(t => {
+        const dest = sectionForDue(t.due);
+        return dest && dest !== sec && !t.done;
+      });
+      toMove.forEach(t => {
+        const dest = sectionForDue(t.due);
+        state[sec] = state[sec].filter(x => x.id !== t.id);
+        state[dest].push(t);
+        changed = true;
+      });
+    });
+    if (changed) scheduleSave();
+  }
   async function loadFromGitHub() {
     const token = getToken();
     if (!token) { showSetup(); return; }
@@ -855,6 +856,7 @@
         completed:   decoded.completed||[]
       };
       promoteTodayTasks();
+      rebalanceSections();
       await loadSettingsFromGitHub(token);
       setSyncState('saved','synced'); render();
     } catch(e) {
@@ -1209,7 +1211,7 @@
       totalMatches += filtered.length;
       filtered.forEach(task => {
         const tr = document.createElement('tr');
-        tr.className = 'task-row';
+        tr.className = 'task-row' + (isOverdue(task.due) ? ' overdue' : '');
         tr.dataset.taskId = task.id;
 
         const hasUrl = !!task.url;
@@ -1228,12 +1230,7 @@
             </div>
           </td>
           <td class="cell-notes"><button class="notes-btn${task.notes ? ' has-note' : ''}" title="${task.notes ? 'Has notes — click to edit' : 'Add notes'}">✎</button></td>
-          <td class="cell-date">
-            <div class="due-wrap">
-              ${task.due && dueDotClass(task.due) ? `<span class="due-dot ${dueDotClass(task.due)}"></span>` : ''}
-              <input class="date-input${isOverdue(task.due) ? ' overdue' : ''}" type="date" value="${escHtml(task.due||'')}" readonly>
-            </div>
-          </td>
+          <td class="cell-date"><input class="date-input${isOverdue(task.due) ? ' overdue' : ''}" type="date" value="${escHtml(task.due||'')}" readonly></td>
           <td class="cell-date"><input class="date-input" type="date" value="${escHtml(task.created||todayISO())}" readonly></td>
           <td class="cell-del"><button class="delete-btn" title="remove">×</button></td>
         `;
@@ -1435,18 +1432,6 @@
       dateInputs[0].setAttribute('readonly', '');
       const curSec = ['today','tomorrow','sevenday','fourteenday','back'].find(s => state[s].some(t => t.id === task.id)) || sec;
       updateField(curSec, task.id, 'due', newDue);
-      // refresh dot
-      const wrap = dateInputs[0].closest('.due-wrap');
-      if (wrap) {
-        const existing = wrap.querySelector('.due-dot');
-        if (existing) existing.remove();
-        const cls = dueDotClass(newDue);
-        if (cls) {
-          const dot = document.createElement('span');
-          dot.className = 'due-dot ' + cls;
-          wrap.insertBefore(dot, dateInputs[0]);
-        }
-      }
       dateInputs[0].classList.toggle('overdue', isOverdue(newDue));
       // auto-place after picker closes
       const t = state[curSec] && state[curSec].find(t => t.id === task.id);
