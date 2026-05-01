@@ -655,7 +655,7 @@
 
 </div>
 
-<p class="hint">drag rows between sections &nbsp;·&nbsp; click any cell to edit &nbsp;·&nbsp; overdue dates appear in red &nbsp;·&nbsp; syncs to GitHub<br>v1.29</p>
+<p class="hint">drag rows between sections &nbsp;·&nbsp; click any cell to edit &nbsp;·&nbsp; overdue dates appear in red &nbsp;·&nbsp; syncs to GitHub<br>v1.30</p>
 
 <!-- NOTES MODAL -->
 <div id="notes-modal" class="hidden">
@@ -1395,10 +1395,9 @@
     // due [0], created [1]
     dateInputs[0].addEventListener('change', () => {
       const newDue = dateInputs[0].value;
-      // find current section dynamically in case task was moved
       const curSec = ['today','week','nextweek','back'].find(s => state[s].some(t => t.id === task.id)) || sec;
       updateField(curSec, task.id, 'due', newDue);
-      // refresh dot
+      // refresh dot immediately
       const wrap = dateInputs[0].closest('.due-wrap');
       if (wrap) {
         const existing = wrap.querySelector('.due-dot');
@@ -1411,8 +1410,13 @@
         }
       }
       dateInputs[0].classList.toggle('overdue', isOverdue(newDue));
-      // auto-place into correct section
-      const t = state[curSec] && state[curSec].find(t => t.id === task.id);
+    });
+    // auto-place only when user finishes editing (blur)
+    dateInputs[0].addEventListener('blur', () => {
+      const newDue = dateInputs[0].value;
+      const t = ['today','week','nextweek','back']
+        .flatMap(s => state[s])
+        .find(t => t.id === task.id);
       if (t) { t.due = newDue; autoPlaceTask(t); render(); }
     });
     dateInputs[1].addEventListener('change', () => {
