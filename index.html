@@ -654,7 +654,7 @@
 
 </div>
 
-<p class="hint">drag rows between sections &nbsp;·&nbsp; click any cell to edit &nbsp;·&nbsp; overdue dates appear in red &nbsp;·&nbsp; syncs to GitHub<br>v1.26</p>
+<p class="hint">drag rows between sections &nbsp;·&nbsp; click any cell to edit &nbsp;·&nbsp; overdue dates appear in red &nbsp;·&nbsp; syncs to GitHub<br>v1.27</p>
 
 <!-- NOTES MODAL -->
 <div id="notes-modal" class="hidden">
@@ -862,7 +862,7 @@
       localStorage.setItem(LS_SETTINGS_SHA, data.sha);
       const decoded = JSON.parse(atob(data.content.replace(/\n/g,'')));
       if (decoded.sortState) {
-        Object.assign(sortState, decoded.sortState);
+        Object.assign(sortState, _defaultSort, decoded.sortState);
         saveSortState(); // keep localStorage in sync too
       }
     } catch(e) {}
@@ -968,9 +968,13 @@
   function loadSortState() {
     try {
       const saved = localStorage.getItem(LS_SORT);
-      if (saved) return JSON.parse(saved);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        // ensure all sections exist
+        return Object.assign({}, _defaultSort, parsed);
+      }
     } catch(e) {}
-    return _defaultSort;
+    return Object.assign({}, _defaultSort);
   }
 
   function saveSortState() {
@@ -996,7 +1000,7 @@
   }
 
   function sortSection(tasks, sec) {
-    const { col, dir } = sortState[sec] || { col: 'manual', dir: 'asc' };
+    const { col, dir } = sortState[sec] || { col: 'due', dir: 'asc' };
     if (col === 'manual') return [...tasks];
     const mult = dir === 'asc' ? 1 : -1;
     return [...tasks].sort((a, b) => {
