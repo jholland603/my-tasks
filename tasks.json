@@ -30,7 +30,18 @@
       "done": false
     }
   ],
-  "week": [
+  "tomorrow": [
+    {
+      "id": "1777556915532-8513",
+      "company": "RCEMAN",
+      "description": "Copy for test db",
+      "url": "",
+      "created": "2026-04-30",
+      "due": "2026-05-01",
+      "done": false
+    }
+  ],
+  "sevenday": [
     {
       "id": "1777556202388-7985",
       "company": "PREPRE",
@@ -50,15 +61,6 @@
       "done": false
     },
     {
-      "id": "1777556915532-8513",
-      "company": "RCEMAN",
-      "description": "Copy for test db",
-      "url": "",
-      "created": "2026-04-30",
-      "due": "2026-05-01",
-      "done": false
-    },
-    {
       "id": "1777594973418-4129",
       "company": "",
       "description": "Get good at golf",
@@ -69,7 +71,7 @@
       "type": "personal"
     }
   ],
-  "nextweek": [],
+  "fourteenday": [],
   "back": [],
   "completed": [
     {
