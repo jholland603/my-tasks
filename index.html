@@ -558,10 +558,15 @@
 
   /* markets */
   .dash-markets { flex: 1; min-width: 300px; }
-  .markets-grid {
-    display: flex; gap: 16px; flex-wrap: wrap; align-items: center;
+  .markets-grid { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; }
+  .market-item { display: flex; flex-direction: column; gap: 1px; position: relative; }
+  .market-drag {
+    position: absolute; top: 0; left: -12px;
+    font-size: 10px; color: var(--line); cursor: grab;
+    opacity: 0; transition: opacity 0.15s;
+    user-select: none;
   }
-  .market-item { display: flex; flex-direction: column; gap: 1px; }
+  .market-item:hover .market-drag { opacity: 1; }
   .market-name { font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
   .market-price { font-size: 13px; color: var(--ink); font-weight: 500; }
   .market-change { font-size: 10px; }
@@ -925,7 +930,7 @@
 
 </div>
 
-<p class="hint">drag rows between sections &nbsp;·&nbsp; click any cell to edit &nbsp;·&nbsp; overdue dates appear in red &nbsp;·&nbsp; syncs to GitHub<br>v1.47</p>
+<p class="hint">drag rows between sections &nbsp;·&nbsp; click any cell to edit &nbsp;·&nbsp; overdue dates appear in red &nbsp;·&nbsp; syncs to GitHub<br>v1.48</p>
 
 <!-- WEATHER MODAL -->
 <div id="weather-modal" class="hidden">
@@ -1901,6 +1906,8 @@
     scheduleSettingsSave();
   }
 
+  let tickerDragSrc = null;
+
   function rebuildMarketItems() {
     const grid = document.getElementById('markets-grid');
     grid.innerHTML = '';
@@ -1909,13 +1916,73 @@
       const el = document.createElement('div');
       el.className = 'market-item';
       el.id = id;
+      el.dataset.symbol = t.symbol;
       el.innerHTML = `
+        <span class="market-drag" title="drag to reorder">⠿</span>
         <span class="market-name">${escHtml(t.name)}</span>
         <span class="market-price">…</span>
         <span class="market-change">—</span>
         <button class="ticker-remove" title="Remove ${escHtml(t.symbol)}">×</button>
       `;
       el.querySelector('.ticker-remove').addEventListener('click', () => removeTicker(t.symbol));
+
+      // drag to reorder
+      const handle = el.querySelector('.market-drag');
+      el.draggable = false;
+      handle.addEventListener('mousedown', () => { el.draggable = true; });
+      document.addEventListener('mouseup', () => { el.draggable = false; }, { passive: true });
+
+      el.addEventListener('dragstart', e => {
+        tickerDragSrc = t.symbol;
+        el.style.opacity = '0.4';
+        e.dataTransfer.effectAllowed = 'move';
+      });
+      el.addEventListener('dragend', () => {
+        el.style.opacity = '';
+        el.draggable = false;
+        document.querySelectorAll('.market-item').forEach(i => i.style.boxShadow = '');
+      });
+      el.addEventListener('dragover', e => {
+        e.preventDefault();
+        if (tickerDragSrc && tickerDragSrc !== t.symbol) {
+          el.style.boxShadow = 'inset 0 -2px 0 var(--ink)';
+        }
+      });
+      el.addEventListener('dragleave', () => { el.style.boxShadow = ''; });
+      el.addEventListener('drop', e => {
+        e.preventDefault();
+        el.style.boxShadow = '';
+        if (!tickerDragSrc || tickerDragSrc === t.symbol) return;
+        const fromIdx = tickers.findIndex(x => x.symbol === tickerDragSrc);
+        const toIdx   = tickers.findIndex(x => x.symbol === t.symbol);
+        if (fromIdx === -1 || toIdx === -1) return;
+        const [moved] = tickers.splice(fromIdx, 1);
+        tickers.splice(toIdx, 0, moved);
+        tickerDragSrc = null;
+        // rebuild keeping existing price values
+        const prices = {};
+        document.querySelectorAll('.market-item').forEach(item => {
+          prices[item.dataset.symbol] = {
+            price:  item.querySelector('.market-price').textContent,
+            change: item.querySelector('.market-change').textContent,
+            cls:    item.querySelector('.market-change').className,
+          };
+        });
+        rebuildMarketItems();
+        // restore prices
+        tickers.forEach(tk => {
+          const p = prices[tk.symbol];
+          if (!p) return;
+          const el2 = document.getElementById('mkt-' + tk.symbol.replace(/[^a-z0-9]/gi,''));
+          if (!el2) return;
+          el2.querySelector('.market-price').textContent = p.price;
+          const chEl = el2.querySelector('.market-change');
+          chEl.textContent = p.change;
+          chEl.className = p.cls;
+        });
+        scheduleSettingsSave();
+      });
+
       grid.appendChild(el);
     });
   }
