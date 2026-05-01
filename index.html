@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>My Tasks</title>
+<title>My Day</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✅</text></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -76,7 +76,14 @@
     display: flex; align-items: baseline; justify-content: space-between;
     border-bottom: 1.5px solid var(--ink); padding-bottom: 12px;
   }
-  h1 { font-family: 'Instrument Serif', serif; font-size: 30px; font-weight: 400; letter-spacing: -0.5px; }
+  h1 { font-family: 'Instrument Serif', serif; font-size: 42px; font-weight: 400; letter-spacing: -0.5px; }
+
+  .my-tasks-label {
+    font-family: 'Instrument Serif', serif;
+    font-size: 22px; font-weight: 400; font-style: italic;
+    color: var(--muted); letter-spacing: -0.3px;
+    padding: 0 0 4px 2px;
+  }
   .header-right { display: flex; align-items: center; gap: 16px; }
   .date { color: var(--muted); font-size: 11px; letter-spacing: 0.05em; text-transform: uppercase; }
   .sync-status { font-size: 10px; letter-spacing: 0.04em; color: var(--muted); display: flex; align-items: center; gap: 5px; }
@@ -766,7 +773,7 @@
 </div>
 
 <header>
-  <h1>My Tasks</h1>
+  <h1>My Day</h1>
   <div class="header-right">
     <div class="sync-status"><div class="sync-dot" id="sync-dot"></div><span id="sync-label">synced</span></div>
     <span class="date" id="date-label"></span>
@@ -835,6 +842,8 @@
 </div>
 
 <div class="board">
+
+  <div class="my-tasks-label">My Tasks</div>
 
   <div class="section today" id="sec-today">
     <div class="section-title"><div class="dot"></div><span class="section-label">Today</span><span class="count" id="count-today">0 / 3</span></div>
@@ -915,7 +924,7 @@
 
 </div>
 
-<p class="hint">drag rows between sections &nbsp;·&nbsp; click any cell to edit &nbsp;·&nbsp; overdue dates appear in red &nbsp;·&nbsp; syncs to GitHub<br>v1.45</p>
+<p class="hint">drag rows between sections &nbsp;·&nbsp; click any cell to edit &nbsp;·&nbsp; overdue dates appear in red &nbsp;·&nbsp; syncs to GitHub<br>v1.46</p>
 
 <!-- WEATHER MODAL -->
 <div id="weather-modal" class="hidden">
@@ -1884,7 +1893,10 @@
 
   function removeTicker(symbol) {
     tickers = tickers.filter(t => t.symbol !== symbol);
-    rebuildMarketItems();
+    // just remove that one DOM element — don't rebuild all (would clear prices)
+    const id = 'mkt-' + symbol.replace(/[^a-z0-9]/gi,'');
+    const el = document.getElementById(id);
+    if (el) el.remove();
     scheduleSettingsSave();
   }
 
@@ -1915,7 +1927,6 @@
     { name: 'S&P 500', symbol: 'SPY',             prefix: '$' },
     { name: 'Dow',     symbol: 'DIA',             prefix: '$' },
     { name: 'Nasdaq',  symbol: 'QQQ',             prefix: '$' },
-    { name: 'SPY',     symbol: 'SPY',             prefix: '$' },
     { name: 'TSLA',    symbol: 'TSLA',            prefix: '$' },
     { name: 'Bitcoin', symbol: 'BINANCE:BTCUSDT', prefix: '$' },
     { name: 'Gold',    symbol: 'GLD',             prefix: '$' },
