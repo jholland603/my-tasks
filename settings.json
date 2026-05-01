@@ -43,11 +43,6 @@
   ],
   "tickers": [
     {
-      "name": "S&P 500",
-      "symbol": "SPY",
-      "prefix": "$"
-    },
-    {
       "name": "Dow",
       "symbol": "DIA",
       "prefix": "$"
@@ -55,11 +50,6 @@
     {
       "name": "Nasdaq",
       "symbol": "QQQ",
-      "prefix": "$"
-    },
-    {
-      "name": "SPY",
-      "symbol": "SPY",
       "prefix": "$"
     },
     {
