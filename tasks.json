@@ -58,10 +58,7 @@
       "due": "2026-05-08",
       "done": false,
       "type": "personal"
-    }
-  ],
-  "nextweek": [],
-  "back": [
+    },
     {
       "id": "1777556915532-8513",
       "company": "RCEMAN",
@@ -72,6 +69,8 @@
       "done": false
     }
   ],
+  "nextweek": [],
+  "back": [],
   "completed": [
     {
       "id": "1777556211436-2418",
