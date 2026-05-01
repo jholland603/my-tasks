@@ -562,6 +562,36 @@
   .market-change.down { color: var(--today-c); }
   .markets-updated { font-size: 9px; color: var(--line); margin-top: 6px; letter-spacing: 0.03em; }
 
+  .markets-add-row {
+    display: flex; gap: 6px; align-items: center;
+    margin-top: 8px; flex-wrap: wrap;
+  }
+  .markets-input {
+    background: var(--bg); border: 1px solid var(--line); border-radius: 2px;
+    padding: 4px 8px; font-family: 'DM Mono', monospace; font-size: 11px;
+    color: var(--ink); outline: none; width: 90px; text-transform: uppercase;
+    transition: border-color 0.15s;
+  }
+  .markets-input.name { text-transform: none; width: 80px; }
+  .markets-input:focus { border-color: var(--ink); }
+  .markets-input::placeholder { text-transform: none; color: var(--line); }
+  .markets-add-btn {
+    background: none; border: 1px solid var(--line); border-radius: 2px;
+    padding: 4px 10px; font-family: 'DM Mono', monospace; font-size: 11px;
+    color: var(--muted); cursor: pointer; white-space: nowrap;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .markets-add-btn:hover { color: var(--ink); border-color: var(--ink); }
+
+  .ticker-remove {
+    background: none; border: none; color: var(--line);
+    cursor: pointer; font-size: 12px; padding: 0 0 0 2px;
+    opacity: 0; transition: opacity 0.15s, color 0.15s;
+    line-height: 1;
+  }
+  .market-item:hover .ticker-remove { opacity: 1; }
+  .ticker-remove:hover { color: var(--today-c); }
+
   @media (max-width: 1024px) {
     .dashboard { gap: 8px; }
     .dash-widget { padding: 8px 12px; }
@@ -766,6 +796,11 @@
   <!-- Markets -->
   <div class="dash-widget dash-markets">
     <div class="markets-grid" id="markets-grid"></div>
+    <div class="markets-add-row">
+      <input class="markets-input" id="ticker-symbol" type="text" placeholder="Symbol (e.g. AAPL)">
+      <input class="markets-input name" id="ticker-name" type="text" placeholder="Label (optional)">
+      <button class="markets-add-btn" onclick="addTicker()">+ Add</button>
+    </div>
     <div class="markets-updated" id="markets-updated">loading…</div>
   </div>
 </div>
@@ -880,7 +915,7 @@
 
 </div>
 
-<p class="hint">drag rows between sections &nbsp;·&nbsp; click any cell to edit &nbsp;·&nbsp; overdue dates appear in red &nbsp;·&nbsp; syncs to GitHub<br>v1.43</p>
+<p class="hint">drag rows between sections &nbsp;·&nbsp; click any cell to edit &nbsp;·&nbsp; overdue dates appear in red &nbsp;·&nbsp; syncs to GitHub<br>v1.45</p>
 
 <!-- WEATHER MODAL -->
 <div id="weather-modal" class="hidden">
@@ -1135,6 +1170,11 @@
         links = decoded.links;
         renderLinks();
       }
+      if (decoded.tickers && decoded.tickers.length) {
+        tickers = decoded.tickers;
+        rebuildMarketItems();
+        refreshMarkets();
+      }
     } catch(e) {}
   }
 
@@ -1143,7 +1183,7 @@
     const token = getToken(); if (!token) return;
     try {
       const sha = localStorage.getItem(LS_SETTINGS_SHA);
-      const settings = { sortState, links };
+      const settings = { sortState, links, tickers };
       const content = btoa(unescape(encodeURIComponent(JSON.stringify(settings, null, 2))));
       const r = await fetch(
         `https://api.github.com/repos/${GITHUB_USER}/${getRepo()}/contents/${SETTINGS_FILE}`,
@@ -1824,19 +1864,64 @@
 
   function saveLinks() { scheduleSettingsSave(); }
 
+  // ── TICKER MANAGEMENT ──
+  function addTicker() {
+    const symEl  = document.getElementById('ticker-symbol');
+    const nameEl = document.getElementById('ticker-name');
+    let symbol = symEl.value.trim().toUpperCase();
+    let name   = nameEl.value.trim();
+    if (!symbol) return;
+    if (!name) name = symbol;
+    if (tickers.find(t => t.symbol === symbol)) {
+      symEl.value = ''; return; // already exists
+    }
+    tickers.push({ name, symbol, prefix: '$' });
+    symEl.value = ''; nameEl.value = '';
+    rebuildMarketItems();
+    refreshMarkets();
+    scheduleSettingsSave();
+  }
+
+  function removeTicker(symbol) {
+    tickers = tickers.filter(t => t.symbol !== symbol);
+    rebuildMarketItems();
+    scheduleSettingsSave();
+  }
+
+  function rebuildMarketItems() {
+    const grid = document.getElementById('markets-grid');
+    grid.innerHTML = '';
+    tickers.forEach(t => {
+      const id = 'mkt-' + t.symbol.replace(/[^a-z0-9]/gi,'');
+      const el = document.createElement('div');
+      el.className = 'market-item';
+      el.id = id;
+      el.innerHTML = `
+        <span class="market-name">${escHtml(t.name)}</span>
+        <span class="market-price">…</span>
+        <span class="market-change">—</span>
+        <button class="ticker-remove" title="Remove ${escHtml(t.symbol)}">×</button>
+      `;
+      el.querySelector('.ticker-remove').addEventListener('click', () => removeTicker(t.symbol));
+      grid.appendChild(el);
+    });
+  }
+
   // ── DASHBOARD ──
   const LS_FINNHUB = 'mytasks_finnhub';
 
-  // Finnhub symbols
-  const TICKERS = [
-    { name: 'S&P 500', symbol: 'SPY',              prefix: '$', type: 'stock'  },
-    { name: 'Dow',     symbol: 'DIA',              prefix: '$', type: 'stock'  },
-    { name: 'Nasdaq',  symbol: 'QQQ',              prefix: '$', type: 'stock'  },
-    { name: 'SPY',     symbol: 'SPY',              prefix: '$', type: 'stock'  },
-    { name: 'TSLA',    symbol: 'TSLA',             prefix: '$', type: 'stock'  },
-    { name: 'Bitcoin', symbol: 'BINANCE:BTCUSDT',  prefix: '$', type: 'crypto' },
-    { name: 'Gold',    symbol: 'GLD',              prefix: '$', type: 'stock'  },
+  // default tickers — overridden by settings.json if saved
+  const DEFAULT_TICKERS = [
+    { name: 'S&P 500', symbol: 'SPY',             prefix: '$' },
+    { name: 'Dow',     symbol: 'DIA',             prefix: '$' },
+    { name: 'Nasdaq',  symbol: 'QQQ',             prefix: '$' },
+    { name: 'SPY',     symbol: 'SPY',             prefix: '$' },
+    { name: 'TSLA',    symbol: 'TSLA',            prefix: '$' },
+    { name: 'Bitcoin', symbol: 'BINANCE:BTCUSDT', prefix: '$' },
+    { name: 'Gold',    symbol: 'GLD',             prefix: '$' },
   ];
+
+  let tickers = DEFAULT_TICKERS.map(t => ({ ...t }));
 
   function getFinnhubKey() { return localStorage.getItem(LS_FINNHUB) || ''; }
 
@@ -1882,8 +1967,8 @@
       return;
     }
     document.getElementById('markets-updated').textContent = 'updating…';
-    const results = await Promise.all(TICKERS.map(t => fetchQuote(t)));
-    TICKERS.forEach((t, i) => renderMarketItem(t, results[i]));
+    const results = await Promise.all(tickers.map(t => fetchQuote(t)));
+    tickers.forEach((t, i) => renderMarketItem(t, results[i]));
     const now = new Date();
     document.getElementById('markets-updated').textContent =
       `updated ${now.toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit' })} · refreshes every 5 min`;
@@ -1982,20 +2067,7 @@
     });
 
     // build market items
-    const grid = document.getElementById('markets-grid');
-    grid.innerHTML = '';
-    TICKERS.forEach(t => {
-      const id = 'mkt-' + t.symbol.replace(/[^a-z0-9]/gi,'');
-      const el = document.createElement('div');
-      el.className = 'market-item';
-      el.id = id;
-      el.innerHTML = `
-        <span class="market-name">${t.name}</span>
-        <span class="market-price">…</span>
-        <span class="market-change">—</span>
-      `;
-      grid.appendChild(el);
-    });
+    rebuildMarketItems();
 
     // fetch live data
     refreshMarkets();
@@ -2014,6 +2086,8 @@
   // enter key on link inputs
   document.getElementById('link-url').addEventListener('keydown',  e => { if (e.key === 'Enter') addLink(); });
   document.getElementById('link-name').addEventListener('keydown', e => { if (e.key === 'Enter') addLink(); });
+  document.getElementById('ticker-symbol').addEventListener('keydown', e => { if (e.key === 'Enter') addTicker(); });
+  document.getElementById('ticker-name').addEventListener('keydown',   e => { if (e.key === 'Enter') addTicker(); });
 
   // notes modal listeners (elements exist now)
   document.getElementById('notes-modal').addEventListener('click', e => {
