@@ -126,8 +126,9 @@
 
   col.col-drag    { width: 28px; }
   col.col-check   { width: 30px; }
-  col.col-company { width: 12%; }
-  col.col-desc    { width: 26%; }
+  col.col-company { width: 10%; }
+  col.col-ticket  { width: 10%; }
+  col.col-desc    { width: 22%; }
   col.col-url     { width: 26%; }
   col.col-created { width: 100px; }
   col.col-due     { width: 100px; }
@@ -220,6 +221,16 @@
   .company-input::placeholder { color: var(--line); }
   .company-input:focus { background: #fffef9; }
   .company-input.personal-disabled { color: var(--muted); opacity: 0.5; cursor: default; }
+  .ticket-input {
+    background: none; border: none;
+    font-family: 'DM Mono', monospace; font-size: 12px; font-weight: 500;
+    color: var(--ink); outline: none;
+    width: 100%; padding: 9px 8px 9px 0;
+    cursor: text;
+  }
+  .ticket-input::placeholder { color: var(--line); }
+  .ticket-input:focus { background: #fffef9; }
+  .ticket-input.personal-disabled { color: var(--muted); opacity: 0.5; cursor: default; }
 
   /* URL cell */
   .cell-url { padding: 9px 8px 9px 0; }
@@ -254,6 +265,7 @@
   .task-row.overdue:hover { background: #ffe8e8; }
   .task-row.overdue td { color: var(--today-c); }
   .task-row.overdue .company-input,
+  .task-row.overdue .ticket-input,
   .task-row.overdue .cell-editable,
   .task-row.overdue .date-input,
   .task-row.overdue .url-link { color: var(--today-c); }
@@ -848,10 +860,10 @@
   <div class="section today" id="sec-today">
     <div class="section-title"><div class="dot"></div><span class="section-label">Today</span><span class="count" id="count-today">0 / 3</span></div>
     <table class="task-table">
-      <colgroup><col class="col-drag"><col class="col-check"><col class="col-company"><col class="col-desc"><col class="col-url"><col class="col-notes"><col class="col-due"><col class="col-created"><col class="col-del"></colgroup>
-      <thead id="thead-today"><tr class="col-headers"><th></th><th></th><th>Company</th><th>Description</th><th>URL</th><th class="center">Notes</th><th class="center">Due</th><th class="center">Created</th><th></th></tr></thead>
+      <colgroup><col class="col-drag"><col class="col-check"><col class="col-company"><col class="col-ticket"><col class="col-desc"><col class="col-url"><col class="col-notes"><col class="col-due"><col class="col-created"><col class="col-del"></colgroup>
+      <thead id="thead-today"><tr class="col-headers"><th></th><th></th><th>Company</th><th>Ticket</th><th>Description</th><th>URL</th><th class="center">Notes</th><th class="center">Due</th><th class="center">Created</th><th></th></tr></thead>
       <tbody id="list-today"></tbody>
-      <tfoot><tr class="add-row"><td colspan="9"><button class="add-btn" onclick="addTask('today')">+ add task</button></td></tr></tfoot>
+      <tfoot><tr class="add-row"><td colspan="10"><button class="add-btn" onclick="addTask('today')">+ add task</button></td></tr></tfoot>
     </table>
     <div class="mobile-list" id="mobile-today"></div>
     <div class="mobile-add"><button class="mobile-add-btn" onclick="addTask('today')">+ add task</button></div>
@@ -860,10 +872,10 @@
   <div class="section tomorrow" id="sec-tomorrow">
     <div class="section-title"><div class="dot"></div><span class="section-label">Tomorrow</span><span class="count" id="count-tomorrow">0</span></div>
     <table class="task-table">
-      <colgroup><col class="col-drag"><col class="col-check"><col class="col-company"><col class="col-desc"><col class="col-url"><col class="col-notes"><col class="col-due"><col class="col-created"><col class="col-del"></colgroup>
-      <thead id="thead-tomorrow"><tr class="col-headers"><th></th><th></th><th>Company</th><th>Description</th><th>URL</th><th class="center">Notes</th><th class="center">Due</th><th class="center">Created</th><th></th></tr></thead>
+      <colgroup><col class="col-drag"><col class="col-check"><col class="col-company"><col class="col-ticket"><col class="col-desc"><col class="col-url"><col class="col-notes"><col class="col-due"><col class="col-created"><col class="col-del"></colgroup>
+      <thead id="thead-tomorrow"><tr class="col-headers"><th></th><th></th><th>Company</th><th>Ticket</th><th>Description</th><th>URL</th><th class="center">Notes</th><th class="center">Due</th><th class="center">Created</th><th></th></tr></thead>
       <tbody id="list-tomorrow"></tbody>
-      <tfoot><tr class="add-row"><td colspan="9"><button class="add-btn" onclick="addTask('tomorrow')">+ add task</button></td></tr></tfoot>
+      <tfoot><tr class="add-row"><td colspan="10"><button class="add-btn" onclick="addTask('tomorrow')">+ add task</button></td></tr></tfoot>
     </table>
     <div class="mobile-list" id="mobile-tomorrow"></div>
     <div class="mobile-add"><button class="mobile-add-btn" onclick="addTask('tomorrow')">+ add task</button></div>
@@ -872,10 +884,10 @@
   <div class="section sevenday" id="sec-sevenday">
     <div class="section-title"><div class="dot"></div><span class="section-label">7 Days</span><span class="count" id="count-sevenday">0</span></div>
     <table class="task-table">
-      <colgroup><col class="col-drag"><col class="col-check"><col class="col-company"><col class="col-desc"><col class="col-url"><col class="col-notes"><col class="col-due"><col class="col-created"><col class="col-del"></colgroup>
-      <thead id="thead-sevenday"><tr class="col-headers"><th></th><th></th><th>Company</th><th>Description</th><th>URL</th><th class="center">Notes</th><th class="center">Due</th><th class="center">Created</th><th></th></tr></thead>
+      <colgroup><col class="col-drag"><col class="col-check"><col class="col-company"><col class="col-ticket"><col class="col-desc"><col class="col-url"><col class="col-notes"><col class="col-due"><col class="col-created"><col class="col-del"></colgroup>
+      <thead id="thead-sevenday"><tr class="col-headers"><th></th><th></th><th>Company</th><th>Ticket</th><th>Description</th><th>URL</th><th class="center">Notes</th><th class="center">Due</th><th class="center">Created</th><th></th></tr></thead>
       <tbody id="list-sevenday"></tbody>
-      <tfoot><tr class="add-row"><td colspan="9"><button class="add-btn" onclick="addTask('sevenday')">+ add task</button></td></tr></tfoot>
+      <tfoot><tr class="add-row"><td colspan="10"><button class="add-btn" onclick="addTask('sevenday')">+ add task</button></td></tr></tfoot>
     </table>
     <div class="mobile-list" id="mobile-sevenday"></div>
     <div class="mobile-add"><button class="mobile-add-btn" onclick="addTask('sevenday')">+ add task</button></div>
@@ -884,10 +896,10 @@
   <div class="section fourteenday" id="sec-fourteenday">
     <div class="section-title"><div class="dot"></div><span class="section-label">14 Days</span><span class="count" id="count-fourteenday">0</span></div>
     <table class="task-table">
-      <colgroup><col class="col-drag"><col class="col-check"><col class="col-company"><col class="col-desc"><col class="col-url"><col class="col-notes"><col class="col-due"><col class="col-created"><col class="col-del"></colgroup>
-      <thead id="thead-fourteenday"><tr class="col-headers"><th></th><th></th><th>Company</th><th>Description</th><th>URL</th><th class="center">Notes</th><th class="center">Due</th><th class="center">Created</th><th></th></tr></thead>
+      <colgroup><col class="col-drag"><col class="col-check"><col class="col-company"><col class="col-ticket"><col class="col-desc"><col class="col-url"><col class="col-notes"><col class="col-due"><col class="col-created"><col class="col-del"></colgroup>
+      <thead id="thead-fourteenday"><tr class="col-headers"><th></th><th></th><th>Company</th><th>Ticket</th><th>Description</th><th>URL</th><th class="center">Notes</th><th class="center">Due</th><th class="center">Created</th><th></th></tr></thead>
       <tbody id="list-fourteenday"></tbody>
-      <tfoot><tr class="add-row"><td colspan="9"><button class="add-btn" onclick="addTask('fourteenday')">+ add task</button></td></tr></tfoot>
+      <tfoot><tr class="add-row"><td colspan="10"><button class="add-btn" onclick="addTask('fourteenday')">+ add task</button></td></tr></tfoot>
     </table>
     <div class="mobile-list" id="mobile-fourteenday"></div>
     <div class="mobile-add"><button class="mobile-add-btn" onclick="addTask('fourteenday')">+ add task</button></div>
@@ -896,10 +908,10 @@
   <div class="section back" id="sec-back">
     <div class="section-title"><div class="dot"></div><span class="section-label">Backlog</span><span class="count" id="count-back">0</span></div>
     <table class="task-table">
-      <colgroup><col class="col-drag"><col class="col-check"><col class="col-company"><col class="col-desc"><col class="col-url"><col class="col-notes"><col class="col-due"><col class="col-created"><col class="col-del"></colgroup>
-      <thead id="thead-back"><tr class="col-headers"><th></th><th></th><th>Company</th><th>Description</th><th>URL</th><th class="center">Notes</th><th class="center">Due</th><th class="center">Created</th><th></th></tr></thead>
+      <colgroup><col class="col-drag"><col class="col-check"><col class="col-company"><col class="col-ticket"><col class="col-desc"><col class="col-url"><col class="col-notes"><col class="col-due"><col class="col-created"><col class="col-del"></colgroup>
+      <thead id="thead-back"><tr class="col-headers"><th></th><th></th><th>Company</th><th>Ticket</th><th>Description</th><th>URL</th><th class="center">Notes</th><th class="center">Due</th><th class="center">Created</th><th></th></tr></thead>
       <tbody id="list-back"></tbody>
-      <tfoot><tr class="add-row"><td colspan="9"><button class="add-btn" onclick="addTask('back')">+ add task</button></td></tr></tfoot>
+      <tfoot><tr class="add-row"><td colspan="10"><button class="add-btn" onclick="addTask('back')">+ add task</button></td></tr></tfoot>
     </table>
     <div class="mobile-list" id="mobile-back"></div>
     <div class="mobile-add"><button class="mobile-add-btn" onclick="addTask('back')">+ add task</button></div>
@@ -909,8 +921,8 @@
   <div class="section completed-section" id="sec-completed">
     <div class="section-title"><div class="dot"></div><span class="section-label">Completed</span><span class="count" id="count-completed">0</span></div>
     <table class="task-table">
-      <colgroup><col class="col-drag"><col class="col-check"><col class="col-company"><col class="col-desc"><col class="col-url"><col class="col-notes"><col class="col-due"><col class="col-created"><col class="col-del"></colgroup>
-      <thead><tr class="col-headers"><th></th><th></th><th>Company</th><th>Description</th><th>URL</th><th class="center">Notes</th><th class="center">Due</th><th class="center">Created</th><th></th></tr></thead>
+      <colgroup><col class="col-drag"><col class="col-check"><col class="col-company"><col class="col-ticket"><col class="col-desc"><col class="col-url"><col class="col-notes"><col class="col-due"><col class="col-created"><col class="col-del"></colgroup>
+      <thead><tr class="col-headers"><th></th><th></th><th>Company</th><th>Ticket</th><th>Description</th><th>URL</th><th class="center">Notes</th><th class="center">Due</th><th class="center">Created</th><th></th></tr></thead>
       <tbody id="list-completed"></tbody>
     </table>
     <div class="mobile-list" id="mobile-completed"></div>
@@ -924,7 +936,7 @@
 
 </div>
 
-<p class="hint">drag rows between sections &nbsp;·&nbsp; click any cell to edit &nbsp;·&nbsp; overdue dates appear in red &nbsp;·&nbsp; syncs to GitHub<br>v1.49</p>
+<p class="hint">drag rows between sections &nbsp;·&nbsp; click any cell to edit &nbsp;·&nbsp; overdue dates appear in red &nbsp;·&nbsp; syncs to GitHub<br>v1.50</p>
 
 <!-- WEATHER TOOLTIP -->
 <div id="weather-tooltip">
@@ -1345,6 +1357,7 @@
       { key: null,      label: '',            cls: '' },
       { key: null,      label: '',            cls: '' },
       { key: 'company', label: 'Company',     cls: '' },
+      { key: null,      label: 'Ticket',      cls: '' },
       { key: null,      label: 'Description', cls: '' },
       { key: null,      label: 'URL',         cls: '' },
       { key: null,      label: 'Notes',       cls: 'center' },
@@ -1496,6 +1509,7 @@
           <td class="cell-drag" title="drag to move">⠿</td>
           <td class="cell-check"><input type="checkbox"></td>
           <td class="cell-company"><input class="company-input${(task.type||'work')==='personal' ? ' personal-disabled' : ''}" type="text" list="company-list" value="${escHtml(task.company||'')}" placeholder="—" ${(task.type||'work')==='personal' ? 'disabled' : ''}></td>
+          <td class="cell-company"><input class="ticket-input${(task.type||'work')==='personal' ? ' personal-disabled' : ''}" type="text" value="${escHtml(task.ticket||'')}" placeholder="—" ${(task.type||'work')==='personal' ? 'disabled' : ''}></td>
           <td class="cell-text"><span class="type-dot ${(task.type||'work')}" title="Click to toggle work/personal"></span><span class="cell-editable" contenteditable="true" data-id="${task.id}" data-ph="description" title="${escHtml(task.description||'')}">${highlightText(task.description, searchQuery)}</span></td>
           <td class="cell-url">
             <div class="url-display${hasUrl ? '' : ' hidden'}">
@@ -1516,6 +1530,10 @@
         const companyInput = tr.querySelector('.company-input');
         companyInput.addEventListener('change', () => { updateField(sec, task.id, 'company', companyInput.value); updateDatalist(); });
         companyInput.addEventListener('input',  () => updateField(sec, task.id, 'company', companyInput.value));
+
+        const ticketInput = tr.querySelector('.ticket-input');
+        ticketInput.addEventListener('change', () => updateField(sec, task.id, 'ticket', ticketInput.value));
+        ticketInput.addEventListener('input',  () => updateField(sec, task.id, 'ticket', ticketInput.value));
         const descSpan = tr.querySelector('[contenteditable]');
         descSpan.addEventListener('input',   () => { updateField(sec, task.id, 'description', descSpan.textContent); descSpan.title = descSpan.textContent; });
         descSpan.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addTask(sec); } });
@@ -1531,6 +1549,8 @@
           const isPersonal = t.type === 'personal';
           companyInput.disabled = isPersonal;
           companyInput.classList.toggle('personal-disabled', isPersonal);
+          ticketInput.disabled = isPersonal;
+          ticketInput.classList.toggle('personal-disabled', isPersonal);
           scheduleSave();
         });
         wireUrl(tr, sec, task);
@@ -1562,6 +1582,7 @@
         <td class="cell-drag"></td>
         <td class="cell-check"><input type="checkbox" checked></td>
         <td class="cell-company-ro">${escHtml(task.company||'')}</td>
+        <td class="cell-company-ro">${escHtml(task.ticket||'')}</td>
         <td class="cell-text-ro">${escHtml(task.description||'')}</td>
         <td class="cell-url-ro">${hasUrl ? `<a class="url-link" href="${escHtml(task.url)}" target="_blank" rel="noopener">${escHtml(task.url)}</a>` : ''}</td>
         <td class="cell-notes"><button class="notes-btn${task.notes ? ' has-note' : ''}" title="${task.notes ? 'Has notes' : 'Notes'}">✎</button></td>
@@ -1786,6 +1807,7 @@
     if (activeFilter !== 'all' && (task.type || 'work') !== activeFilter) return false;
     if (!q) return true;
     return (task.company     || '').toLowerCase().includes(q)
+        || (task.ticket      || '').toLowerCase().includes(q)
         || (task.description || '').toLowerCase().includes(q)
         || (task.notes       || '').toLowerCase().includes(q)
         || (task.url         || '').toLowerCase().includes(q);
