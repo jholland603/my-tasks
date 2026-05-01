@@ -49,7 +49,7 @@
       "due": "2026-05-03",
       "done": false,
       "notes": "Testing a longer note",
-      "ticket": "97635"
+      "ticket": ""
     },
     {
       "id": "1777656970261-4425",
@@ -59,7 +59,8 @@
       "created": "2026-05-01",
       "due": "2026-05-08",
       "done": false,
-      "type": "work"
+      "type": "work",
+      "ticket": "97635"
     },
     {
       "id": "1777657088126-274",
