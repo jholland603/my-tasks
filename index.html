@@ -655,7 +655,7 @@
 
 </div>
 
-<p class="hint">drag rows between sections &nbsp;·&nbsp; click any cell to edit &nbsp;·&nbsp; overdue dates appear in red &nbsp;·&nbsp; syncs to GitHub<br>v1.30</p>
+<p class="hint">drag rows between sections &nbsp;·&nbsp; click any cell to edit &nbsp;·&nbsp; overdue dates appear in red &nbsp;·&nbsp; syncs to GitHub<br>v1.31</p>
 
 <!-- NOTES MODAL -->
 <div id="notes-modal" class="hidden">
@@ -1414,10 +1414,17 @@
     // auto-place only when user finishes editing (blur)
     dateInputs[0].addEventListener('blur', () => {
       const newDue = dateInputs[0].value;
-      const t = ['today','week','nextweek','back']
-        .flatMap(s => state[s])
-        .find(t => t.id === task.id);
-      if (t) { t.due = newDue; autoPlaceTask(t); render(); }
+      const curSec = ['today','week','nextweek','back'].find(s => state[s].some(t => t.id === task.id));
+      if (!curSec) return;
+      const t = state[curSec].find(t => t.id === task.id);
+      if (!t) return;
+      t.due = newDue;
+      const dest = sectionForDue(newDue);
+      if (dest && dest !== curSec) {
+        // task needs to move — do it and re-render after a tick
+        autoPlaceTask(t);
+        setTimeout(() => render(), 0);
+      }
     });
     dateInputs[1].addEventListener('change', () => {
       const curSec = ['today','week','nextweek','back'].find(s => state[s].some(t => t.id === task.id)) || sec;
