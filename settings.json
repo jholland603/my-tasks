@@ -9,7 +9,7 @@
       "dir": "asc"
     },
     "sevenday": {
-      "col": "due",
+      "col": "company",
       "dir": "asc"
     },
     "fourteenday": {
