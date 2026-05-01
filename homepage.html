@@ -364,7 +364,10 @@
         </div>
         <p id="client-id-status" style="font-size:11px;color:#5b9cf6;margin-top:8px;"></p>
         <p style="color:#565a63;font-size:11px;margin-top:12px;">
-          Get a free Client ID at <a href="https://console.cloud.google.com/apis/credentials" target="_blank" style="color:#5b9cf6;">console.cloud.google.com</a> → Create OAuth 2.0 Client → Web Application.<br>Add <code>file:///</code> as an authorized JavaScript origin.
+          Get a free Client ID at <a href="https://console.cloud.google.com/apis/credentials" target="_blank" style="color:#5b9cf6;">console.cloud.google.com</a><br>
+          → Create Credentials → OAuth 2.0 Client ID → <strong style="color:#8a8d96;">Web application</strong><br>
+          → Under <strong style="color:#8a8d96;">Authorized JavaScript origins</strong> add: <code>null</code><br>
+          No redirect URI needed — sign-in uses a secure popup.
         </p>
       </div>
     </div>
@@ -551,9 +554,10 @@ function saveNewLink() {
 
 renderLinks();
 
-// ─── GMAIL ───────────────────────────────────────────────
+// ─── GMAIL (Google Identity Services popup flow) ──────────
 let gmailClientId = localStorage.getItem('hp_gmail_client_id') || '';
 let gmailToken = null;
+let tokenClient = null;
 
 if (gmailClientId) {
   document.getElementById('client-id-input').value = gmailClientId;
@@ -565,25 +569,40 @@ function saveClientId() {
   if (!val) return;
   gmailClientId = val;
   localStorage.setItem('hp_gmail_client_id', val);
-  document.getElementById('client-id-status').textContent = '✓ Client ID saved. Click Connect Gmail to sign in.';
+  document.getElementById('client-id-status').textContent = '✓ Saved. Click Connect Gmail to sign in.';
+}
+
+function initTokenClient() {
+  if (!window.google || !gmailClientId) return;
+  tokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: gmailClientId,
+    scope: 'https://www.googleapis.com/auth/gmail.readonly',
+    callback: (resp) => {
+      if (resp.error) {
+        document.getElementById('gmail-body').innerHTML =
+          `<div class="gmail-setup"><p style="color:#e05c5c;">Sign-in error: ${resp.error}</p></div>`;
+        return;
+      }
+      gmailToken = resp.access_token;
+      const exp = Date.now() + (resp.expires_in || 3600) * 1000;
+      localStorage.setItem('hp_gmail_token', gmailToken);
+      localStorage.setItem('hp_gmail_token_exp', exp);
+      loadGmail(gmailToken);
+    }
+  });
 }
 
 function gmailSignIn() {
-  if (!gmailClientId) {
-    alert('Please enter your Google OAuth Client ID first.');
-    return;
-  }
-  const params = new URLSearchParams({
-    client_id: gmailClientId,
-    redirect_uri: window.location.href.split('?')[0].split('#')[0],
-    response_type: 'token',
-    scope: 'https://www.googleapis.com/auth/gmail.readonly',
-    prompt: 'select_account'
-  });
-  window.location.href = 'https://accounts.google.com/o/oauth2/v2/auth?' + params;
+  if (!gmailClientId) { alert('Please enter and save your Google OAuth Client ID first.'); return; }
+  if (!window.google) { alert('Google Identity Services not loaded. Check your internet connection.'); return; }
+  if (!tokenClient) initTokenClient();
+  // If we have a saved (possibly expired) token, ask for consent again; otherwise prompt normally
+  const saved = localStorage.getItem('hp_gmail_token');
+  tokenClient.requestAccessToken({ prompt: saved ? '' : 'consent' });
 }
 
 function gmailSignOut() {
+  if (gmailToken) google.accounts.oauth2.revoke(gmailToken, () => {});
   gmailToken = null;
   localStorage.removeItem('hp_gmail_token');
   localStorage.removeItem('hp_gmail_token_exp');
@@ -593,7 +612,7 @@ function gmailSignOut() {
 }
 
 async function loadGmail(token) {
-  document.getElementById('gmail-body').innerHTML = '<div id="gmail-loading">Loading inbox...</div>';
+  document.getElementById('gmail-body').innerHTML = '<div id="gmail-loading" style="color:#8a8d96;font-size:13px;padding:16px 0;text-align:center;">Loading inbox...</div>';
   try {
     const listRes = await fetch(
       'https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=10&labelIds=INBOX',
@@ -616,19 +635,19 @@ async function loadGmail(token) {
       const fromHdr = hdrs.find(h => h.name === 'From')?.value || '';
       const subject = hdrs.find(h => h.name === 'Subject')?.value || '(no subject)';
       const isUnread = (msg.labelIds || []).includes('UNREAD');
-      const snippet = msg.snippet || '';
+      const snippet = (msg.snippet || '').replace(/&/g,'&amp;').replace(/</g,'&lt;');
 
-      let from = fromHdr.replace(/"([^"]+)".*/, '$1').replace(/<[^>]+>/, '').trim();
-      if (!from) from = fromHdr.replace(/<([^>]+)>/, '$1').trim();
+      let from = fromHdr.replace(/"([^"]+)".*/, '$1').replace(/<[^>]+>/,'').trim();
+      if (!from) from = fromHdr.replace(/.*<([^>]+)>.*/, '$1').trim() || fromHdr;
 
       const d = new Date(parseInt(msg.internalDate));
       const now = new Date();
       let timeStr;
       if (d.toDateString() === now.toDateString()) {
-        let h = d.getHours(), m = String(d.getMinutes()).padStart(2,'0');
+        let h = d.getHours(), min = String(d.getMinutes()).padStart(2,'0');
         const ap = h >= 12 ? 'PM' : 'AM';
         h = h % 12 || 12;
-        timeStr = `${h}:${m} ${ap}`;
+        timeStr = `${h}:${min} ${ap}`;
       } else {
         const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
         timeStr = `${months[d.getMonth()]} ${d.getDate()}`;
@@ -651,33 +670,25 @@ async function loadGmail(token) {
 
   } catch(err) {
     document.getElementById('gmail-body').innerHTML =
-      `<div class="gmail-setup"><p style="color:#e05c5c;">Error loading Gmail: ${err.message}</p>
-       <p>Your token may have expired. <a onclick="gmailSignIn()" style="color:#5b9cf6;cursor:pointer;">Sign in again</a>.</p></div>`;
+      `<div class="gmail-setup"><p style="color:#e05c5c;">Error: ${err.message}</p>
+       <p style="color:#8a8d96;font-size:12px;margin-top:8px;">Token may have expired. <a onclick="gmailSignIn()" style="color:#5b9cf6;cursor:pointer;">Sign in again</a>.</p></div>`;
   }
 }
 
-// Handle OAuth redirect token
+// Load GSI library, then auto-restore token if still valid
 (function() {
-  const hash = window.location.hash;
-  if (hash.includes('access_token')) {
-    const params = new URLSearchParams(hash.slice(1));
-    const token = params.get('access_token');
-    const expiresIn = parseInt(params.get('expires_in') || '3600');
-    if (token) {
-      gmailToken = token;
-      localStorage.setItem('hp_gmail_token', token);
-      localStorage.setItem('hp_gmail_token_exp', Date.now() + expiresIn * 1000);
-      history.replaceState(null, '', window.location.pathname);
-    }
-  }
-
-  if (!gmailToken) {
+  const script = document.createElement('script');
+  script.src = 'https://accounts.google.com/gsi/client';
+  script.onload = () => {
+    if (gmailClientId) initTokenClient();
     const saved = localStorage.getItem('hp_gmail_token');
     const exp = parseInt(localStorage.getItem('hp_gmail_token_exp') || '0');
-    if (saved && Date.now() < exp) gmailToken = saved;
-  }
-
-  if (gmailToken) loadGmail(gmailToken);
+    if (saved && Date.now() < exp) {
+      gmailToken = saved;
+      loadGmail(gmailToken);
+    }
+  };
+  document.head.appendChild(script);
 })();
 </script>
 </body>
