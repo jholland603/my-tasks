@@ -1,6 +1,6 @@
-# My Tasks
+# My Day
 
-A lightweight, personal task tracker that lives in your browser and syncs to GitHub. No accounts, no subscriptions, no servers — just a single HTML file and your own GitHub repo.
+A personal dashboard and task tracker that lives in your browser and syncs to GitHub. Features a live clock, real-time weather, live stock quotes, favorite links, and a full task management system — all in a single HTML file with no accounts, no subscriptions, and no servers.
 
 ---
 
@@ -18,7 +18,7 @@ Go to **Settings → Pages → Source**, select the `main` branch, and click Sav
 https://jholland603.github.io/my-tasks
 ```
 
-### 4. Create a Personal Access Token
+### 4. Create a GitHub Personal Access Token
 Go to [github.com/settings/personal-access-tokens/new](https://github.com/settings/personal-access-tokens/new) and create a fine-grained token with:
 - **Repository access:** Only `my-tasks`
 - **Permissions → Contents:** Read and write
@@ -26,13 +26,55 @@ Go to [github.com/settings/personal-access-tokens/new](https://github.com/settin
 Copy the token immediately — you won't be able to see it again.
 
 ### 5. Connect the app
-Open your live URL, enter your repo name and token in the setup screen, and click **Save & Connect**. Your tasks will sync automatically from that point on.
+Open your live URL, click **⚙** in the top right, enter your repo name and token, and click **Save & Connect**.
 
-> **Tip:** Save your token in a password manager so you can easily paste it on new devices.
+> **Tip:** Save your token in a password manager. On mobile, tap 👁 to reveal the field as plain text before pasting.
+
+### 6. (Optional) Enable live stock quotes
+Sign up for a free API key at [finnhub.io](https://finnhub.io/register), then click **⚙** and paste your key in the **Finnhub API Key** field.
 
 ---
 
-## Sections
+## Dashboard
+
+The top of the page shows three widgets:
+
+### 🕐 Clock
+Live clock with seconds and full date, updates every second.
+
+### 🌤 Weather
+Live 5-day forecast for Rochester, NH powered by **Open-Meteo** (free, no API key required). Refreshes every 30 minutes. Click any forecast day for a detail popup showing:
+- Condition
+- High / Low temperature
+- Precipitation chance
+- Rainfall amount (inches)
+- Wind speed
+- Humidity
+
+### 📈 Markets
+Live stock and crypto quotes powered by **Finnhub**. Refreshes every 5 minutes. Default tickers: S&P 500 (SPY), Dow (DIA), Nasdaq (QQQ), TSLA, Bitcoin, Gold (GLD).
+
+**To add a ticker:** type a symbol in the field below the grid and click **+ Add** (or press Enter). Use standard stock symbols for equities (e.g. `AAPL`) and Finnhub format for crypto (e.g. `BINANCE:BTCUSDT`).
+
+**To remove a ticker:** hover over it and click ×.
+
+Your custom ticker list syncs across all devices via `settings.json`.
+
+---
+
+## Favorite Links
+
+A collapsible panel below the dashboard. Click **⭐ Favorite Links** to expand it.
+
+**To add a link:** paste a URL and optional label, then click **+ Add** or press Enter. If no label is provided, the domain name is used automatically.
+
+**To remove a link:** hover the chip and click ×.
+
+Links sync across all devices via `settings.json`.
+
+---
+
+## Task Sections
 
 Tasks are automatically placed into sections based on their due date:
 
@@ -45,7 +87,7 @@ Tasks are automatically placed into sections based on their due date:
 | **Backlog** | Beyond 14 days, or no due date |
 | **Completed** | Checked off tasks |
 
-Tasks move between sections automatically when you change their due date. You can also drag and drop to move them manually — manual placement is always respected.
+Tasks move between sections automatically when you change their due date. Drag and drop to move manually — manual placement is always respected. On load, tasks are rebalanced to their correct section based on current due dates.
 
 ---
 
@@ -54,9 +96,9 @@ Tasks move between sections automatically when you change their due date. You ca
 | Field | Description |
 |-------|-------------|
 | **Company** | Company or client ID (disabled for personal tasks) |
-| **Description** | The task name — click to edit |
-| **URL** | A link related to the task — click to open, hover to edit |
-| **Notes** | Free-form notes — click ✎ to open editor |
+| **Description** | The task name — hover to see full text, click to edit |
+| **URL** | A related link — click to open, hover to edit |
+| **Notes** | Free-form notes — click ✎ to open editor (Ctrl+Enter to save) |
 | **Due** | Due date — click to open date picker |
 | **Created** | Creation date — defaults to today |
 
@@ -65,57 +107,47 @@ Tasks move between sections automatically when you change their due date. You ca
 ## Features
 
 **Work / Personal**
-Each task has a type dot next to the description — burgundy for Work, green for Personal. Click the dot to toggle. Use the **All / Work / Personal** filter buttons to show only what you need.
+A colored dot next to each description indicates type — burgundy for Work, green for Personal. Click the dot to toggle. Use **All / Work / Personal** filter buttons to show only what you need. New tasks default to the active filter type.
 
 **Search**
-Type in the search bar to filter all sections at once. Matches company, description, notes, and URL. Matched text highlights in yellow.
+Type in the search bar to filter all sections at once. Matches company, description, notes, and URL. Matched text highlights in yellow with a result count shown.
 
 **Sorting**
-Click the **Company**, **Due**, or **Created** column headers to sort. Click again to reverse. Click a third time to return to manual order. Sort preferences sync across devices.
+Click **Company**, **Due**, or **Created** column headers to sort. Click again to reverse, click a third time to return to manual order. Sort preferences sync across devices.
 
 **Drag to reorder**
-Grab the ⠿ handle on the left of any row to drag it to a new position within a section, or drop it onto a different section entirely.
+Grab the ⠿ handle to drag a row to a new position within a section, or drop it onto a different section.
 
 **Overdue tasks**
-Rows with a past due date are highlighted in red so they stand out immediately.
+Rows past their due date are highlighted with a red background so they stand out immediately.
 
 **Clean up completed**
 At the bottom of the Completed section, enter a number of days and click **Clean up** to delete completed tasks older than that threshold.
 
 ---
 
-## Data & Sync
-
-Your tasks are saved to `tasks.json` in your GitHub repo. Every save creates a commit, giving you a full history you can restore from at any time.
-
-Settings (sort preferences) are saved to `settings.json` in the same repo.
-
-Both files are created automatically the first time you use the app — you don't need to create them manually.
-
-**Your GitHub token** is stored only in your browser's localStorage. It is never written to any file in your repo.
-
----
-
 ## Using on Multiple Devices
 
-Open the live GitHub Pages URL on any device, enter your token once in the setup screen (click ⚙ in the top right), and your tasks will sync automatically. The token is stored locally per device.
-
-> **Mobile tip:** If pasting the token is difficult, tap the 👁 button to reveal the field as plain text first.
+Open the live GitHub Pages URL on any device, click ⚙, and enter your token once. Your tasks, sort preferences, tickers, and favorite links all sync automatically via GitHub.
 
 ---
 
-## Files in the Repo
+## Data & Sync
 
 | File | Purpose |
 |------|---------|
 | `index.html` | The entire app — one file |
 | `tasks.json` | Your task data |
-| `settings.json` | Your sort preferences |
+| `settings.json` | Sort preferences, favorite links, and ticker list |
 | `CHANGELOG.md` | Version history |
 | `README.md` | This file |
+
+Every save creates a GitHub commit, giving you a full history you can restore from at any time.
+
+Your GitHub token and Finnhub key are stored only in your browser's localStorage — never written to any file in your repo.
 
 ---
 
 ## Current Version
 
-**v1.35** — see `CHANGELOG.md` for full version history.
+**v1.47** — see `CHANGELOG.md` for full version history.
