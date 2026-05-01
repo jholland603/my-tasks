@@ -15,7 +15,7 @@
     --accent: #00e5ff;
     --accent2: #ff3d71;
     --green: #39ff14;
-    --dim: #3a4455;
+    --dim: #7a8fa8;
     --text: #c8d4e0;
     --mono: 'Share Tech Mono', monospace;
     --sans: 'Barlow Condensed', sans-serif;
@@ -234,8 +234,10 @@
   @keyframes slideIn { from { opacity:0; transform:translateX(-8px); } to { opacity:1; transform:none; } }
   .history-item:last-child { border-bottom: none; }
   .history-num  { color: var(--dim); font-size: 10px; min-width: 28px; }
-  .history-dist { color: var(--green); }
-  .history-time { color: var(--dim); font-size: 10px; }
+  .history-name { color: var(--text); flex: 1; cursor: pointer; margin: 0 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .history-name:hover { color: var(--accent); text-decoration: underline; }
+  .history-dist { color: var(--green); white-space: nowrap; }
+  .history-time { color: var(--dim); font-size: 10px; white-space: nowrap; margin-left: 8px; }
 
   .empty-history {
     font-family: var(--mono); font-size: 11px; color: var(--dim);
@@ -283,12 +285,15 @@
 
   <div class="btn-row">
     <button class="btn btn-start"   id="btnA" onclick="setPointA()">SET POINT A</button>
-    <button class="btn btn-measure" id="btnB" onclick="setPointB()" disabled>MEASURE</button>
+    <button class="btn btn-measure" id="btnB" onclick="setPointB()" disabled>SET POINT B</button>
     <button class="btn btn-reset"   id="btnReset" onclick="reset()">↺</button>
   </div>
 
   <div class="panel" style="margin-top:14px;">
-    <div class="panel-label">Measurement Log</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <div class="panel-label" style="margin-bottom:0;">Measurement Log</div>
+      <button onclick="exportJSON()" style="font-family:var(--mono);font-size:10px;letter-spacing:1px;padding:4px 10px;background:transparent;border:1px solid var(--dim);border-radius:2px;color:var(--dim);cursor:pointer;" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--dim)';this.style.color='var(--dim)'">EXPORT JSON ↓</button>
+    </div>
     <ul class="history-list" id="historyList">
       <li class="empty-history">NO MEASUREMENTS YET</li>
     </ul>
@@ -366,7 +371,7 @@
         btn.className = 'btn btn-start set-done';
         btn.disabled = false;
         document.getElementById('btnB').disabled = false;
-        setStatus('POINT A SET ✓  MOVE TO DESTINATION, THEN TAP MEASURE', 'ok');
+        setStatus('POINT A SET ✓  MOVE TO DESTINATION, THEN TAP SET POINT B', 'ok');
       },
       err => {
         btn.textContent = 'SET POINT A';
@@ -409,16 +414,18 @@
 
         measureCount++;
         const time = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'});
-        measurements.push({ meters, time });
-        addHistory(measureCount, meters, time);
+        const date = new Date().toLocaleDateString();
+        const name = 'Measurement ' + measureCount;
+        measurements.push({ id: measureCount, name, meters, pointA: {...pointA}, pointB: {lat, lon}, time, date });
+        addHistory(measureCount, meters, time, name);
 
-        btn.textContent = 'MEASURE';
+        btn.textContent = 'SET POINT B';
         btn.className = 'btn btn-measure';
         btn.disabled = false;
         setStatus('MEASURED ✓  ' + fmt(meters) + ' ' + unitLabels[unit] + ' FROM POINT A', 'ok');
       },
       err => {
-        btn.textContent = 'MEASURE';
+        btn.textContent = 'SET POINT B';
         btn.className = 'btn btn-measure';
         btn.disabled = false;
         const msgs = { 1:'PERMISSION DENIED', 2:'POSITION UNAVAILABLE — TRY AGAIN', 3:'GPS TIMED OUT — TAP AGAIN' };
@@ -428,17 +435,52 @@
     );
   }
 
-  function addHistory(n, meters, time) {
+  function addHistory(n, meters, time, name) {
     const list = document.getElementById('historyList');
     const empty = list.querySelector('.empty-history');
     if (empty) empty.remove();
     const li = document.createElement('li');
     li.className = 'history-item';
+    li.dataset.id = n;
     li.innerHTML =
       '<span class="history-num">#' + String(n).padStart(2,'0') + '</span>' +
+      '<span class="history-name" onclick="startRename(' + n + ')" title="Click to rename">' + name + '</span>' +
       '<span class="history-dist">' + fmt(meters) + ' ' + unit.toUpperCase() + '</span>' +
       '<span class="history-time">' + time + '</span>';
     list.insertBefore(li, list.firstChild);
+  }
+
+  function startRename(id) {
+    const m = measurements.find(x => x.id === id);
+    if (!m) return;
+    const newName = prompt('Rename measurement:', m.name);
+    if (newName && newName.trim()) {
+      m.name = newName.trim();
+      const li = document.querySelector('.history-item[data-id="' + id + '"]');
+      if (li) li.querySelector('.history-name').textContent = m.name;
+    }
+  }
+
+  function exportJSON() {
+    if (measurements.length === 0) { setStatus('NO MEASUREMENTS TO EXPORT', 'error'); return; }
+    const data = measurements.map(m => ({
+      id: m.id,
+      name: m.name,
+      date: m.date,
+      time: m.time,
+      distance_meters: +m.meters.toFixed(4),
+      distance_yards:  +metersTo(m.meters,'yd').toFixed(1),
+      distance_feet:   +metersTo(m.meters,'ft').toFixed(0),
+      distance_miles:  +metersTo(m.meters,'mi').toFixed(4),
+      point_a: m.pointA,
+      point_b: m.pointB
+    }));
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'measurements.json';
+    a.click();
+    setStatus('EXPORTED ' + data.length + ' MEASUREMENT(S) TO JSON', 'ok');
   }
 
   function reset() {
