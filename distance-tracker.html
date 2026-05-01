@@ -334,7 +334,7 @@
   </div>
 
   <div style="text-align:center;margin-top:18px;padding-bottom:8px;">
-    <div style="font-family:var(--mono);font-size:10px;color:var(--dim);letter-spacing:2px;">DIST TRKR · v1.1.0</div>
+    <div style="font-family:var(--mono);font-size:10px;color:var(--dim);letter-spacing:2px;">DIST TRKR · v1.2.0</div>
     <div style="font-family:var(--mono);font-size:9px;color:var(--border);letter-spacing:1px;margin-top:4px;">GPS · HAVERSINE · WGS84 · AVERAGED POSITIONING</div>
   </div>
 </div>
@@ -532,6 +532,7 @@
         const name = 'Measurement ' + measureCount;
         measurements.push({ id: measureCount, name, meters, pointA: {...pointA}, pointB: {lat: pos.lat, lon: pos.lon, alt: pos.alt}, time, date });
         addHistory(measureCount, meters, time, name);
+        saveToStorage();
 
         btn.textContent = 'SET POINT B';
         btn.className = 'btn btn-measure';
@@ -563,6 +564,28 @@
     list.insertBefore(li, list.firstChild);
   }
 
+  // ── PERSISTENCE ───────────────────────────────────────────
+  function saveToStorage() {
+    try {
+      localStorage.setItem('disttrkr_measurements', JSON.stringify(measurements));
+      localStorage.setItem('disttrkr_count', measureCount);
+    } catch(e) { console.warn('Save failed', e); }
+  }
+
+  function loadFromStorage() {
+    try {
+      const raw = localStorage.getItem('disttrkr_measurements');
+      if (!raw) return;
+      const saved = JSON.parse(raw);
+      if (!Array.isArray(saved) || saved.length === 0) return;
+      measurements = saved;
+      measureCount = parseInt(localStorage.getItem('disttrkr_count') || saved.length);
+      // Rebuild log UI (oldest first so newest ends up on top)
+      saved.forEach(m => addHistory(m.id, m.meters, m.time, m.name));
+      setStatus('LOADED ' + saved.length + ' SAVED MEASUREMENT(S)', 'ok');
+    } catch(e) { console.warn('Load failed', e); }
+  }
+
   function startRename(id) {
     const m = measurements.find(x => x.id === id);
     if (!m) return;
@@ -571,6 +594,7 @@
       m.name = newName.trim();
       const li = document.querySelector('.history-item[data-id="' + id + '"]');
       if (li) li.querySelector('.history-name').textContent = m.name;
+      saveToStorage();
     }
   }
 
@@ -597,7 +621,9 @@
   }
 
   function reset() {
+    if (measurements.length > 0 && !confirm('Clear all measurements and reset?')) return;
     pointA = null; measurements = []; measureCount = 0;
+    saveToStorage();
     ['aLat','aLon','aAlt','bLat','bLon','bAlt'].forEach(id => {
       const el = document.getElementById(id);
       el.textContent = '—'; el.classList.add('empty');
@@ -623,6 +649,9 @@
     setStatus('GPS NOT SUPPORTED IN THIS BROWSER', 'error');
     document.getElementById('btnA').disabled = true;
   }
+
+  // Load saved data on startup
+  loadFromStorage();
 </script>
 </body>
 </html>
