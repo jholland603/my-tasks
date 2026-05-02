@@ -29,17 +29,7 @@
       "type": "work"
     }
   ],
-  "tomorrow": [],
-  "sevenday": [
-    {
-      "id": "1777582365196-8839",
-      "company": "ZLMACH",
-      "description": "Test upgrade",
-      "url": "",
-      "created": "2026-04-30",
-      "due": "2026-05-04",
-      "done": false
-    },
+  "tomorrow": [
     {
       "id": "1777556191564-6673",
       "company": "AERINC",
@@ -50,6 +40,17 @@
       "done": false,
       "notes": "Testing a longer note",
       "ticket": ""
+    }
+  ],
+  "sevenday": [
+    {
+      "id": "1777582365196-8839",
+      "company": "ZLMACH",
+      "description": "Test upgrade",
+      "url": "",
+      "created": "2026-04-30",
+      "due": "2026-05-04",
+      "done": false
     },
     {
       "id": "1777656970261-4425",
