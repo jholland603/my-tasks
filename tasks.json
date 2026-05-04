@@ -19,16 +19,6 @@
       "done": false
     },
     {
-      "id": "1777658220350-2790",
-      "company": "PREPRE",
-      "description": "Extract SQL scripts.",
-      "url": "",
-      "created": "2026-05-01",
-      "due": "2026-05-01",
-      "done": false,
-      "type": "work"
-    },
-    {
       "id": "1777582365196-8839",
       "company": "ZLMACH",
       "description": "Test upgrade",
@@ -198,6 +188,18 @@
   "fourteenday": [],
   "back": [],
   "completed": [
+    {
+      "id": "1777658220350-2790",
+      "company": "PREPRE",
+      "description": "Extract SQL scripts.",
+      "url": "",
+      "created": "2026-05-01",
+      "due": "2026-05-01",
+      "done": true,
+      "type": "work",
+      "completedFrom": "today",
+      "completedAt": "2026-05-04"
+    },
     {
       "id": "1777594973418-4129",
       "company": "",
