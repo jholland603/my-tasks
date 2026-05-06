@@ -3,9 +3,28 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>DIST TRKR</title>
+<title>DIST TRKR – GPS Distance Meter | Measure Yards, Miles & Feet</title>
+<meta name="description" content="Free GPS distance tool. Walk from Point A to Point B and instantly measure yards, feet or miles. Perfect for golf yardages, property lines, fences and more.">
+<meta name="keywords" content="GPS distance, measure yards, golf yardage, distance meter, point A to point B, fence measurement, property distance">
+<meta property="og:title" content="DIST TRKR – GPS Distance Meter">
+<meta property="og:description" content="Walk from Point A to Point B. Measure in yards, feet or miles. Free GPS distance tool — perfect for golf, property and field work.">
+<meta property="og:url" content="https://disttracker.com/">
+<meta property="og:type" content="website">
+<link rel="canonical" href="https://disttracker.com/">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%23141416'/><circle cx='8' cy='24' r='4' fill='%2300e5ff'/><circle cx='24' cy='8' r='4' fill='%2339ff14'/><line x1='8' y1='24' x2='24' y2='8' stroke='%23444' stroke-width='1.5' stroke-dasharray='3,2'/><circle cx='8' cy='24' r='2' fill='%23141416'/><circle cx='24' cy='8' r='2' fill='%23141416'/></svg>">
+
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-T4DWCLGW1X"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-T4DWCLGW1X');
+</script>
+
+<!-- Google AdSense: ca-pub-7581999835206831 -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7581999835206831" crossorigin="anonymous"></script>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -29,17 +48,40 @@ html, body {
   background: var(--bg);
   color: var(--text);
   font-family: var(--sans);
+  overflow-x: hidden;
+}
+
+.page-wrap {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  height: 100vh;
   overflow: hidden;
+  background: var(--bg);
 }
 
 /* ── APP SHELL ── */
 .app {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  flex: 1;
+  width: 100%;
   max-width: 430px;
+  min-width: 320px;
   margin: 0 auto;
   position: relative;
+  overflow: hidden;
+  padding: 0 12px;
+  box-sizing: border-box;
+}
+
+/* On desktop, show a subtle border to frame the app */
+@media (min-width: 500px) {
+  .app {
+    border-left: 1px solid rgba(255,255,255,0.04);
+    border-right: 1px solid rgba(255,255,255,0.04);
+    padding: 0 16px;
+  }
 }
 
 /* ── SCREENS ── */
@@ -48,6 +90,7 @@ html, body {
   flex-direction: column;
   flex: 1;
   overflow: hidden;
+  width: 100%;
 }
 .screen.active { display: flex; }
 
@@ -100,6 +143,7 @@ html, body {
   position: relative;
   padding: 0 20px;
   min-height: 0;
+  max-height: 220px;
 }
 
 .hero-ring {
@@ -111,10 +155,10 @@ html, body {
 
 .distance-number {
   font-family: var(--display);
-  font-size: 88px;
+  font-size: 64px;
   font-weight: 800;
   line-height: 1;
-  letter-spacing: -4px;
+  letter-spacing: -3px;
   color: var(--text);
   transition: color 0.4s, text-shadow 0.4s;
   position: relative;
@@ -122,7 +166,7 @@ html, body {
 }
 .distance-number.live {
   color: var(--green);
-  text-shadow: 0 0 60px rgba(57,255,20,0.2);
+  text-shadow: 0 0 40px rgba(57,255,20,0.2);
 }
 .distance-number.zero { color: #2a2a2e; }
 
@@ -244,6 +288,195 @@ html, body {
 }
 .point-acc.visible { color: var(--dim); }
 
+/* ── HELP SCREEN ── */
+.help-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 12px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.help-scroll::-webkit-scrollbar { width: 3px; }
+.help-scroll::-webkit-scrollbar-thumb { background: #2a2a2e; border-radius: 2px; }
+
+.help-section {
+  padding: 16px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.help-section:last-child { border-bottom: none; }
+
+.help-section-title {
+  font-family: var(--display);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 12px;
+}
+
+.help-item {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+.help-item:last-child { margin-bottom: 0; }
+
+.help-step {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(0,229,255,0.15);
+  border: 1px solid rgba(0,229,255,0.3);
+  color: var(--accent);
+  font-family: var(--mono);
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.help-body {
+  font-family: var(--sans);
+  font-size: 13px;
+  color: var(--mid);
+  line-height: 1.6;
+}
+.help-body strong { color: var(--text); font-weight: 600; }
+.help-body em { color: var(--accent); font-style: normal; }
+
+.help-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-top: 8px;
+}
+.help-card-title {
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 5px;
+}
+.help-card-body {
+  font-family: var(--sans);
+  font-size: 12px;
+  color: var(--mid);
+  line-height: 1.6;
+}
+
+.help-tip {
+  background: rgba(57,255,20,0.05);
+  border: 1px solid rgba(57,255,20,0.15);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-family: var(--sans);
+  font-size: 12px;
+  color: var(--mid);
+  line-height: 1.5;
+  margin-top: 8px;
+}
+/* ── WELCOME SCREEN ── */
+.welcome-screen {
+  position: absolute;
+  inset: 0;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 28px 32px;
+  z-index: 200;
+  text-align: center;
+  overflow-y: auto;
+}
+.welcome-screen.hidden { display: none; }
+.welcome-headline {
+  font-family: var(--display);
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--text);
+  margin-bottom: 20px;
+  line-height: 1.15;
+  letter-spacing: 0.5px;
+}
+.welcome-body {
+  font-family: var(--sans);
+  font-size: 14px;
+  color: var(--mid);
+  line-height: 1.7;
+  margin-bottom: 32px;
+  max-width: 340px;
+}
+.welcome-body p { margin-bottom: 14px; }
+.welcome-body p:last-child { margin-bottom: 0; }
+.welcome-go-btn {
+  font-family: var(--display);
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 4px;
+  color: #000;
+  background: var(--accent);
+  border: none;
+  border-radius: 14px;
+  padding: 18px 60px;
+  cursor: pointer;
+  transition: all 0.15s;
+  -webkit-tap-highlight-color: transparent;
+  box-shadow: 0 0 30px rgba(0,229,255,0.3);
+}
+.welcome-go-btn:hover { background: #33eaff; box-shadow: 0 0 40px rgba(0,229,255,0.5); }
+.welcome-go-btn:active { transform: scale(0.97); }
+.welcome-privacy {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: #2a2a2e;
+  margin-top: 16px;
+  letter-spacing: 0.5px;
+  line-height: 1.5;
+}
+.welcome-privacy a { color: #333; text-decoration: underline; }
+
+.speed-toggle-row {
+  padding: 0 12px 8px;
+  flex-shrink: 0;
+}
+.speed-toggle-btn {
+  width: 100%;
+  padding: 9px 16px;
+  border-radius: 10px;
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 500;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  color: var(--mid);
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.speed-toggle-btn.speed-fast   { border-color: rgba(255,61,113,0.4);  color: var(--red);   background: rgba(255,61,113,0.06); }
+.speed-toggle-btn.speed-medium { border-color: rgba(255,190,0,0.4);   color: #ffbe00;      background: rgba(255,190,0,0.06); }
+.speed-toggle-btn.speed-slow   { border-color: rgba(57,255,20,0.4);   color: var(--green); background: rgba(57,255,20,0.06); }
+.speed-toggle-msg {
+  font-family: var(--sans);
+  font-size: 11px;
+  color: var(--mid);
+  line-height: 1.5;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.25s ease, padding 0.25s ease;
+  padding: 0 4px;
+}
+.speed-toggle-msg.visible {
+  max-height: 60px;
+  padding: 6px 4px 0;
+}
+
 /* ── RESET ── */
 .reset-row {
   display: flex;
@@ -268,9 +501,18 @@ html, body {
 /* ── TAB BAR ── */
 .tab-bar {
   display: flex;
-  border-top: 1px solid rgba(255,255,255,0.07);
+  justify-content: center;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  border-top: none;
   background: rgba(20,20,22,0.98);
   flex-shrink: 0;
+  position: relative;
+  margin: 0 -12px;
+  padding: 0 12px;
+}
+
+@media (min-width: 500px) {
+  .tab-bar { margin: 0 -16px; padding: 0 16px; }
 }
 .tab {
   flex: 1;
@@ -295,31 +537,77 @@ html, body {
 }
 .tab-label.active { color: var(--text); }
 
-/* ── AD BANNER ── */
+/* ── AD SLOTS ── */
+.ad-top-wrap {
+  width: 100%;
+  background: #0e0e10;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 0;
+  flex-shrink: 0;
+  min-height: 62px;
+  position: relative;
+}
+
+.ad-label-top {
+  font-family: var(--mono);
+  font-size: 8px;
+  color: #2a2a2e;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  position: absolute;
+  top: 2px;
+  left: 6px;
+}
+
 .ad-banner {
-  height: 40px;
-  background: #111113;
+  width: 100%;
+  height: 60px;
+  background: #0e0e10;
   border-top: 1px solid rgba(255,255,255,0.04);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
   flex-shrink: 0;
+  position: relative;
+  padding: 4px 0;
 }
-.ad-tag {
-  font-family: var(--sans);
-  font-size: 9px;
+
+.ad-banner-label {
+  font-family: var(--mono);
+  font-size: 8px;
   color: #2a2a2e;
   letter-spacing: 1px;
   text-transform: uppercase;
-  border: 1px solid #222;
-  border-radius: 3px;
-  padding: 1px 4px;
+  position: absolute;
+  top: 2px;
+  left: 6px;
 }
-.ad-text {
-  font-family: var(--sans);
-  font-size: 11px;
-  color: #333;
+
+.ad-in-log {
+  background: #111113;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.04);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100px;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.ad-in-log-label {
+  font-family: var(--mono);
+  font-size: 8px;
+  color: #2a2a2e;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  position: absolute;
+  top: 4px;
+  left: 8px;
 }
 
 /* ── LOG SCREEN ── */
@@ -458,7 +746,7 @@ html, body {
   text-align: center;
   font-family: var(--sans);
   font-size: 10px;
-  color: #222;
+  color: #666;
   padding: 6px 0 4px;
   letter-spacing: 1px;
 }
@@ -530,14 +818,53 @@ html, body {
   margin-top: 6px;
 }
 
-.detail-cards {
-  flex: 1;
-  overflow-y: auto;
-  padding: 0 12px 12px;
+/* ── SPEED SELECTOR ── */
+.speed-row {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
+  gap: 6px;
+  padding: 0 12px 10px;
+  flex-shrink: 0;
 }
+.speed-chip {
+  flex: 1;
+  padding: 8px 4px;
+  border-radius: 10px;
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 500;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  color: var(--dim);
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.15s;
+  -webkit-tap-highlight-color: transparent;
+  position: relative;
+}
+.speed-chip.active-fast  { border-color: rgba(255,61,113,0.5); color: var(--red); background: rgba(255,61,113,0.07); }
+.speed-chip.active-medium { border-color: rgba(255,190,0,0.5); color: #ffbe00; background: rgba(255,190,0,0.07); }
+.speed-chip.active-slow  { border-color: rgba(57,255,20,0.5); color: var(--green); background: rgba(57,255,20,0.07); }
+.speed-chip-label { font-size: 11px; font-weight: 600; display: block; }
+.speed-chip-sub   { font-size: 9px; color: inherit; opacity: 0.7; display: block; margin-top: 2px; }
+
+/* ── SPEED TOOLTIP ── */
+.speed-tooltip {
+  margin: 0 12px 10px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-family: var(--sans);
+  font-size: 11px;
+  color: var(--mid);
+  line-height: 1.5;
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+.speed-tooltip strong { font-weight: 600; }
+.speed-tooltip.fast-tip   { border-color: rgba(255,61,113,0.25); }
+.speed-tooltip.medium-tip { border-color: rgba(255,190,0,0.25); }
+.speed-tooltip.slow-tip   { border-color: rgba(57,255,20,0.25); }
 .detail-card {
   background: var(--panel);
   border-radius: 14px;
@@ -579,29 +906,86 @@ html, body {
 </style>
 </head>
 <body>
+<div class="page-wrap">
+
+<!-- ══ TOP AD — Leaderboard 320x50 (mobile) ══ -->
+<!-- Replace data-ad-client and data-ad-slot with your values from AdSense -->
+<div class="ad-top-wrap" style="position:relative;">
+  <span class="ad-label-top">advertisement</span>
+  <ins class="adsbygoogle"
+       style="display:inline-block;width:320px;height:50px"
+       data-ad-client="ca-pub-7581999835206831"
+       data-ad-slot="2829720222"></ins>
+  <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+</div>
+
 <div class="app">
+
+  <div style="text-align:center; background: rgba(20,20,22,0.98); border-bottom: none; flex-shrink:0; margin: 0 -12px; padding: 0 12px;">
+    <svg xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="0 0 680 320" style="max-height:260px;">
+      <defs>
+        <style>@import url('https://fonts.googleapis.com/css2?family=Syne:wght@800&amp;display=swap');</style>
+      </defs>
+      <circle cx="340" cy="160" r="148" fill="none" stroke="#252e3a" stroke-width="1.5"/>
+      <circle cx="340" cy="160" r="108" fill="none" stroke="#1e2730" stroke-width="1"/>
+      <text x="340" y="136" text-anchor="middle" font-family="'Syne', sans-serif" font-weight="800" font-size="54" letter-spacing="8" fill="#e8e8e8">DIST</text>
+      <g transform="translate(88, 133)">
+        <path d="M36 0 C16.118 0 0 16.118 0 36 C0 63 36 92 36 92 C36 92 72 63 72 36 C72 16.118 55.882 0 36 0Z" fill="#00e5ff"/>
+        <circle cx="36" cy="34" r="13" fill="#0a0c0f"/>
+      </g>
+      <text x="340" y="168" text-anchor="middle" font-family="'Courier New', monospace" font-size="16" letter-spacing="5" fill="#6a7a8a">GPS · DISTANCE · TRACKER</text>
+      <g transform="translate(520, 133)">
+        <path d="M36 0 C16.118 0 0 16.118 0 36 C0 63 36 92 36 92 C36 92 72 63 72 36 C72 16.118 55.882 0 36 0Z" fill="#39ff14"/>
+        <circle cx="36" cy="34" r="13" fill="#0a0c0f"/>
+      </g>
+      <text x="340" y="236" text-anchor="middle" font-family="'Syne', sans-serif" font-weight="800" font-size="54" letter-spacing="8" fill="#e8e8e8">TRKR</text>
+    </svg>
+  </div>
+  <div class="tab-bar">
+    <div class="tab" id="tabMeasure" onclick="switchTab('measure')">
+      <div class="tab-icon active" id="iconMeasure">⊙</div>
+      <div class="tab-label active" id="labelMeasure">Measure</div>
+    </div>
+    <div class="tab" id="tabLog" onclick="switchTab('log')">
+      <div class="tab-icon" id="iconLog">≡</div>
+      <div class="tab-label" id="labelLog">Log</div>
+    </div>
+    <div class="tab" id="tabHelp" onclick="switchTab('help')">
+      <div class="tab-icon" id="iconHelp">?</div>
+      <div class="tab-label" id="labelHelp">Help</div>
+    </div>
+    <div class="live-pill" id="livePill" style="position:absolute; right:12px;">
+      <div class="live-dot"></div>LIVE
+    </div>
+  </div>
 
   <!-- ══ MEASURE SCREEN ══ -->
   <div class="screen active" id="screenMeasure">
-    <div class="top-bar">
-      <div class="app-title">DIST TRKR</div>
-      <div class="live-pill" id="livePill">
-        <div class="live-dot"></div>LIVE
+
+    <!-- ══ WELCOME OVERLAY (first visit only) ══ -->
+    <div class="welcome-screen" id="welcomeScreen">
+      <!-- Logo inside welcome screen -->
+      <svg xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="0 0 680 320" style="max-height:180px; margin-bottom:16px; flex-shrink:0;">
+        <defs><style>@import url('https://fonts.googleapis.com/css2?family=Syne:wght@800&amp;display=swap');</style></defs>
+        <circle cx="340" cy="160" r="148" fill="none" stroke="#252e3a" stroke-width="1.5"/>
+        <circle cx="340" cy="160" r="108" fill="none" stroke="#1e2730" stroke-width="1"/>
+        <text x="340" y="136" text-anchor="middle" font-family="'Syne', sans-serif" font-weight="800" font-size="54" letter-spacing="8" fill="#e8e8e8">DIST</text>
+        <g transform="translate(88, 133)"><path d="M36 0 C16.118 0 0 16.118 0 36 C0 63 36 92 36 92 C36 92 72 63 72 36 C72 16.118 55.882 0 36 0Z" fill="#00e5ff"/><circle cx="36" cy="34" r="13" fill="#0a0c0f"/></g>
+        <text x="340" y="168" text-anchor="middle" font-family="'Courier New', monospace" font-size="16" letter-spacing="5" fill="#6a7a8a">GPS · DISTANCE · TRACKER</text>
+        <g transform="translate(520, 133)"><path d="M36 0 C16.118 0 0 16.118 0 36 C0 63 36 92 36 92 C36 92 72 63 72 36 C72 16.118 55.882 0 36 0Z" fill="#39ff14"/><circle cx="36" cy="34" r="13" fill="#0a0c0f"/></g>
+        <text x="340" y="236" text-anchor="middle" font-family="'Syne', sans-serif" font-weight="800" font-size="54" letter-spacing="8" fill="#e8e8e8">TRKR</text>
+      </svg>
+      <div class="welcome-headline">Let's Measure Something.</div>
+      <div class="welcome-body">
+        <p>DIST TRKR uses your phone's GPS to measure the straight-line distance between two points. Walk from Point A to Point B — that's really all there is to it.</p>
+        <p>In a moment your phone will ask for location permission. This is just so the app can access your device's GPS to give you the measurements you want. Your GPS data never leaves your device. We don't care where you went to breakfast or where you're going later.</p>
       </div>
+      <button class="welcome-go-btn" onclick="dismissWelcome()">GO</button>
+      <div class="welcome-privacy">By continuing you agree to our <a href="/privacy" target="_blank">privacy policy</a></div>
     </div>
 
-    <div class="hero">
-      <div class="hero-ring" style="width:220px;height:220px;"></div>
-      <div class="hero-ring" style="width:160px;height:160px;"></div>
-      <div class="distance-number zero" id="distNum">0</div>
-      <div class="unit-row">
-        <button class="unit-chip active" id="chipYd" onclick="setUnit('yd')">YD</button>
-        <button class="unit-chip"        id="chipMi" onclick="setUnit('mi')">MI</button>
-      </div>
-      <div class="hero-status" id="heroStatus">Tap Set Point A to begin</div>
-    </div>
-
-    <div class="points-section">
+    <!-- Point A at top -->
+    <div class="points-section" style="padding-bottom:8px;">
       <div class="point-card" id="cardA">
         <button class="point-btn btn-a" id="btnA" onclick="setPointA()">Set Point A</button>
         <div class="point-info">
@@ -610,6 +994,25 @@ html, body {
           <div class="point-acc" id="aAcc"></div>
         </div>
       </div>
+    </div>
+
+    <!-- Distance hero in the middle -->
+    <div class="hero">
+      <div class="hero-ring" style="width:160px;height:160px;"></div>
+      <div class="hero-ring" style="width:110px;height:110px;"></div>
+      <div class="distance-number zero" id="distNum">0</div>
+      <div class="unit-row">
+        <button class="unit-chip active" id="chipYd" onclick="setUnit('yd')">YD</button>
+        <button class="unit-chip"        id="chipFt" onclick="setUnit('ft')">FT</button>
+        <button class="unit-chip"        id="chipMi" onclick="setUnit('mi')">MI</button>
+        <button class="unit-chip"        id="chipM"  onclick="setUnit('m')">M</button>
+        <button class="unit-chip"        id="chipKm" onclick="setUnit('km')">KM</button>
+      </div>
+      <div class="hero-status" id="heroStatus">Tap Set Point A to begin</div>
+    </div>
+
+    <!-- Point B at bottom -->
+    <div class="points-section" style="padding-top:8px;">
       <div class="point-card" id="cardB">
         <button class="point-btn btn-b" id="btnB" onclick="setPointB()" disabled>Set Point B</button>
         <div class="point-info">
@@ -620,21 +1023,31 @@ html, body {
       </div>
     </div>
 
+    <!-- Speed toggle -->
+    <div class="speed-toggle-row">
+      <button class="speed-toggle-btn" id="speedToggleBtn" onclick="cycleSpeed()">⚡ Fast Lock</button>
+      <div class="speed-toggle-msg" id="speedToggleMsg"></div>
+    </div>
+
     <div class="reset-row">
       <button class="reset-btn" onclick="resetAll()">↺ Reset</button>
     </div>
+
   </div>
 
   <!-- ══ LOG SCREEN ══ -->
   <div class="screen" id="screenLog">
     <div class="log-top-bar">
       <div class="log-title">Log</div>
-      <button class="export-btn" onclick="exportJSON()">Export JSON ↓</button>
+      <div style="display:flex; gap:8px;">
+        <button class="export-btn" onclick="exportJSON()">Export JSON ↓</button>
+        <button class="export-btn" onclick="clearLog()" style="color:var(--red); border-color:rgba(255,61,113,0.3);">Clear</button>
+      </div>
     </div>
+    <div class="swipe-hint" style="padding: 6px 0 8px;">👈 Swipe LEFT on a measurement to delete &nbsp;·&nbsp; Tap to view</div>
     <div class="log-list" id="logList">
       <div class="log-empty" id="logEmpty">No measurements yet</div>
     </div>
-    <div class="swipe-hint">← Swipe to delete &nbsp;·&nbsp; Tap to view</div>
   </div>
 
   <!-- ══ DETAIL SCREEN ══ -->
@@ -653,23 +1066,117 @@ html, body {
   </div>
 
   <!-- ══ TAB BAR ══ -->
-  <div class="tab-bar">
-    <div class="tab" id="tabMeasure" onclick="switchTab('measure')">
-      <div class="tab-icon active" id="iconMeasure">⊙</div>
-      <div class="tab-label active" id="labelMeasure">Measure</div>
+  <!-- ══ HELP SCREEN ══ -->
+  <div class="screen" id="screenHelp">
+    <div class="log-top-bar">
+      <div class="log-title">Help</div>
     </div>
-    <div class="tab" id="tabLog" onclick="switchTab('log')">
-      <div class="tab-icon" id="iconLog">≡</div>
-      <div class="tab-label" id="labelLog">Log</div>
+    <div class="help-scroll">
+
+      <div class="help-section">
+        <div class="help-section-title">📍 How to Use</div>
+        <div class="help-item">
+          <div class="help-step">1</div>
+          <div class="help-body"><strong>Stand at your starting point</strong> and tap <em>Set Point A</em>. Stay still while it collects a GPS fix. The display turns green when it's locked.</div>
+        </div>
+        <div class="help-item">
+          <div class="help-step">2</div>
+          <div class="help-body"><strong>Walk to your destination.</strong> The distance updates live as you move. The number shows how far you are from Point A right now.</div>
+        </div>
+        <div class="help-item">
+          <div class="help-step">3</div>
+          <div class="help-body"><strong>Tap Set Point B</strong> to lock in the final measurement. It collects another GPS fix and saves the result to your log.</div>
+        </div>
+        <div class="help-item">
+          <div class="help-step">4</div>
+          <div class="help-body"><strong>Tap ↺ Reset</strong> to start a new measurement. Your log stays intact — only the points clear.</div>
+        </div>
+      </div>
+
+      <div class="help-section">
+        <div class="help-section-title">⚡ Lock Speed</div>
+        <div class="help-body" style="padding:0 0 10px;">Toggle between Fast, Medium, and Accurate when locking a point. Faster means fewer GPS samples. More accurate means it waits longer for a stronger, steadier signal.</div>
+        <div class="help-tip">🏌️ Golf yardages? Use Accurate — but please don't slow down play. Property lines and fence runs deserve Accurate too. Measuring your driveway? Medium works great. Checking how far it is to Grandma's house as the crow flies? Fast — she's been waiting long enough.</div>
+      </div>
+
+      <div class="help-section">
+        <div class="help-section-title">📡 GPS Accuracy — The Honest Truth</div>
+        <div class="help-body">Your phone's GPS is genuinely impressive technology. It talks to satellites thousands of miles away and figures out where you are within a few meters. That said, it has opinions about where you are — and sometimes those opinions are wrong.</div>
+
+        <div class="help-card">
+          <div class="help-card-title">🏠 Indoors</div>
+          <div class="help-card-body">GPS signals pass through walls the way your motivation passes through a Monday morning — weakened and unreliable. Expect 30–100 feet of drift even standing still. The app works indoors but results may be creative.</div>
+        </div>
+
+        <div class="help-card">
+          <div class="help-card-title">🌳 Near Trees & Buildings</div>
+          <div class="help-card-body">Tall objects block and reflect satellite signals, causing "multipath error." Your phone might think it's 15 feet away from where it actually is. Urban canyons are particularly bad for this.</div>
+        </div>
+
+        <div class="help-card">
+          <div class="help-card-title">☁️ Cloudy vs. Clear Sky</div>
+          <div class="help-card-body">Clouds don't actually affect GPS much — radio waves pass right through. What matters is how many satellites your phone can see. Clear sky = more satellites = better accuracy. Simple as that.</div>
+        </div>
+
+        <div class="help-card">
+          <div class="help-card-title">📶 Warm-Up Time</div>
+          <div class="help-card-body">GPS chips need a moment to settle. If you just stepped outside, the first reading is a rough guess. Stand still for 30–60 seconds before tapping Set Point A and you'll get a noticeably better fix. Think of it as letting the GPS have its morning coffee.</div>
+        </div>
+
+        <div class="help-card">
+          <div class="help-card-title">🏔️ Elevation</div>
+          <div class="help-card-body">Horizontal GPS (your position on a map) is reasonably accurate. Vertical GPS (elevation) is notoriously worse — typically 2–3x less accurate. Treat elevation readings as a useful estimate, not a surveyor's measurement.</div>
+        </div>
+
+        <div class="help-card">
+          <div class="help-card-title">📏 Why No Feet?</div>
+          <div class="help-card-body">We intentionally left feet out. Phone GPS is typically accurate to ±10–30 feet outdoors — so displaying a result in feet would just be a more confident-looking wrong number. Yards are already at the edge of what GPS can reliably deliver. If you need foot-level precision, you need a tape measure.</div>
+        </div>
+
+        <div class="help-card">
+          <div class="help-card-title">📏 Realistic Accuracy Outdoors</div>
+          <div class="help-card-body">In good conditions with a clear sky, modern smartphones are typically accurate to 10–20 feet. Our GPS averaging helps tighten that up. For most uses — golf yardages, fence lines, property distances — that's more than good enough.</div>
+        </div>
+      </div>
+
+      <div class="help-section">
+        <div class="help-section-title">🗑️ Deleting Measurements</div>
+        <div class="help-body">To delete a single measurement, go to the <em>Log</em> tab and <strong>swipe left</strong> on it — a red Delete button appears. Tap it to confirm. If swiping feels unnatural, think of it like brushing something off the screen to the left.</div>
+        <div class="help-tip" style="margin-top:8px;">To delete everything at once, tap the red <em>Clear</em> button in the top right of the Log tab. You'll get a confirmation prompt first so nothing disappears by accident.</div>
+      </div>
+
+      <div class="help-section">
+        <div class="help-section-title">💾 Your Data</div>
+        <div class="help-body">Measurements are saved to your browser's local storage — they survive page refreshes and closing the tab. They are stored only on your device and never sent anywhere. Use <em>Export JSON</em> in the Log tab to back them up or use them elsewhere.</div>
+      </div>
+
+      <div class="help-section">
+        <div class="help-section-title">🐛 Something Wrong?</div>
+        <div class="help-body">If the app won't access your location, check that your browser has location permission enabled for this site. On most phones: Settings → Browser → Location → Allow.</div>
+        <div class="help-tip" style="margin-top:8px;">If the distance display seems wildly off, you're probably indoors or near a large building. Step outside, wait a minute, and try again. GPS is not magic — it just looks like it most of the time.</div>
+      </div>
+
+      <div style="text-align:center; padding: 16px 0 8px; font-family:'DM Mono',monospace; font-size:9px; color:#444; letter-spacing:2px;">
+        DIST TRKR · GPS · DISTANCE · TRACKER<br>
+        <span style="color:#555; font-size:11px; letter-spacing:1px;">v1.5</span>
+      </div>
+
     </div>
   </div>
 
+</div><!-- end .app -->
+
+  <!-- ══ BOTTOM AD ══ -->
   <div class="ad-banner">
-    <span class="ad-tag">Ad</span>
-    <span class="ad-text">Your ad here — unobtrusive, always</span>
+    <span class="ad-banner-label">advertisement</span>
+    <ins class="adsbygoogle"
+         style="display:inline-block;width:320px;height:50px"
+         data-ad-client="ca-pub-7581999835206831"
+         data-ad-slot="9231477043"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
   </div>
 
-</div>
+</div><!-- end .page-wrap -->
 
 <script>
 // ── STATE ──────────────────────────────────────────────────
@@ -682,17 +1189,83 @@ let currentDetailId = null;
 let prevTab     = 'measure';
 let touchStartX = 0;
 let touchStartY = 0;
+let acquiringPoint = false; // suppress live display while locking a point
 
-const unitLabels   = { yd: 'Yards', mi: 'Miles' };
-const unitDecimals = { yd: 1, mi: 3 };
+const unitLabels   = { yd: 'Yards', ft: 'Feet', mi: 'Miles', m: 'Meters', km: 'Kilometers' };
+const unitDecimals = { yd: 1, ft: 0, mi: 3, m: 0, km: 3 };
+const unitDecimalsLive = { yd: 0, ft: 0, mi: 3, m: 0, km: 3 };
+
+function fmt(m, live = false) {
+  const dec = live ? unitDecimalsLive[unit] : unitDecimals[unit];
+  return metersTo(m, unit).toFixed(dec);
+}
+
+// ── SPEED PROFILES ─────────────────────────────────────────
+const SPEED_PROFILES = {
+  fast:   { minSamples: 3,  maxAccuracy: 25, window: 4000  },
+  medium: { minSamples: 5,  maxAccuracy: 15, window: 8000  },
+  slow:   { minSamples: 10, maxAccuracy: 8,  window: 15000 },
+};
+
+const SPEED_ORDER = ['fast', 'medium', 'slow'];
+const SPEED_LABELS = {
+  fast:   '⚡ Fast Lock',
+  medium: '⏱ Medium Lock',
+  slow:   '🎯 Accurate Lock',
+};
+const SPEED_MSGS = {
+  fast:   'Locks in quickly. Best when you already have a strong outdoor signal. Less accurate on weak signals.',
+  medium: 'Balanced. Takes a bit longer but filters out poor readings for a more reliable result.',
+  slow:   'Most accurate. Takes longer — worth it for golf yardages, property lines, or any precision measurement.',
+};
+let currentSpeed = 'fast';
+let msgTimer = null;
+
+function cycleSpeed() {
+  const idx = SPEED_ORDER.indexOf(currentSpeed);
+  currentSpeed = SPEED_ORDER[(idx + 1) % SPEED_ORDER.length];
+
+  const btn = document.getElementById('speedToggleBtn');
+  const msg = document.getElementById('speedToggleMsg');
+
+  btn.textContent = SPEED_LABELS[currentSpeed];
+  btn.className = 'speed-toggle-btn speed-' + currentSpeed;
+
+  // show message briefly then hide
+  msg.textContent = SPEED_MSGS[currentSpeed];
+  msg.classList.add('visible');
+  clearTimeout(msgTimer);
+  msgTimer = setTimeout(() => msg.classList.remove('visible'), 3500);
+  localStorage.setItem('disttrkr_speed', currentSpeed);
+}
+
+function initSpeed() {
+  const btn = document.getElementById('speedToggleBtn');
+  btn.textContent = SPEED_LABELS[currentSpeed];
+  btn.className = 'speed-toggle-btn speed-' + currentSpeed;
+  // Apply saved unit chip
+  ['yd','ft','mi','m','km'].forEach(x => {
+    const el = document.getElementById('chip' + x.charAt(0).toUpperCase() + x.slice(1));
+    if (el) el.classList.toggle('active', x === unit);
+  });
+}
 
 // ── UTILS ──────────────────────────────────────────────────
 function metersTo(m, u) {
-  return u === 'mi' ? m / 1609.344 : m / 0.9144;
+  if (u === 'mi') return m / 1609.344;
+  if (u === 'yd') return m / 0.9144;
+  if (u === 'ft') return m * 3.28084;
+  if (u === 'km') return m / 1000;
+  return m; // meters
 }
-function fmt(m) {
-  return metersTo(m, unit).toFixed(unitDecimals[unit]);
+function setDistDisplay(meters, isLive) {
+  if (acquiringPoint) return;
+  const el = document.getElementById('distNum');
+  el.textContent = fmt(meters, isLive);
+  el.classList.remove('zero','live');
+  if (isLive) el.classList.add('live');
 }
+
 function haversine(la1, lo1, la2, lo2) {
   const R = 6371000, r = x => x * Math.PI / 180;
   const dLa = r(la2-la1), dLo = r(lo2-lo1);
@@ -703,19 +1276,15 @@ function haversine(la1, lo1, la2, lo2) {
 // ── UNIT TOGGLE ────────────────────────────────────────────
 function setUnit(u) {
   unit = u;
-  document.getElementById('chipYd').classList.toggle('active', u === 'yd');
-  document.getElementById('chipMi').classList.toggle('active', u === 'mi');
+  ['yd','ft','mi','m','km'].forEach(x => {
+    const el = document.getElementById('chip' + x.charAt(0).toUpperCase() + x.slice(1));
+    if (el) el.classList.toggle('active', x === u);
+  });
+  localStorage.setItem('disttrkr_unit', u);
   if (measurements.length > 0) {
     const last = measurements[measurements.length-1].meters;
     setDistDisplay(last, liveWatchId !== null);
   }
-}
-
-function setDistDisplay(meters, isLive) {
-  const el = document.getElementById('distNum');
-  el.textContent = fmt(meters);
-  el.classList.remove('zero','live');
-  if (isLive) el.classList.add('live');
 }
 
 // ── STATUS ─────────────────────────────────────────────────
@@ -726,12 +1295,96 @@ function setStatus(msg, state) {
   if (state) el.classList.add(state + '-state');
 }
 
-// ── GPS AVERAGING ──────────────────────────────────────────
-const MIN_SAMPLES  = 5;
-const MAX_ACCURACY = 15;
-const SAMPLE_WINDOW = 8000;
+// ── GPS WARM-UP BUFFER ─────────────────────────────────────
+// Silently collects GPS samples in the background from page load
+// so Set Point A/B can lock in near-instantly
+let warmupWatchId  = null;
+let warmupBuffer   = [];     // rolling buffer of recent good readings
+const WARMUP_MAX   = 20;     // keep last N good readings
 
+function getWarmupMaxAcc() {
+  // Use the current speed profile's accuracy threshold for warmup collection
+  return SPEED_PROFILES[currentSpeed].maxAccuracy;
+}
+
+function startWarmup() {
+  if (!navigator.geolocation) return;
+  if (warmupWatchId !== null) return; // already running
+  setStatus('GPS warming up…', null);
+  warmupWatchId = navigator.geolocation.watchPosition(
+    pos => {
+      if (pos.coords.accuracy <= WARMUP_MAX_ACC) {
+        warmupBuffer.push({
+          lat: pos.coords.latitude,
+          lon: pos.coords.longitude,
+          alt: pos.coords.altitude,
+          acc: pos.coords.accuracy,
+          ts:  Date.now()
+        });
+        if (warmupBuffer.length > WARMUP_MAX) warmupBuffer.shift();
+        // Update status and button while warming up
+        if (!pointA && !acquiringPoint) {
+          const profile = SPEED_PROFILES[currentSpeed];
+          const good = warmupBuffer.filter(p => p.acc <= profile.maxAccuracy).length;
+          const btn = document.getElementById('btnA');
+          if (good >= profile.minSamples) {
+            setStatus('GPS ready — tap Set Point A', 'ok');
+            if (btn && btn.textContent !== 'Point A ✓') {
+              btn.textContent = 'Set Point A ✓';
+              btn.style.borderColor = 'rgba(57,255,20,0.4)';
+            }
+          } else {
+            setStatus('GPS warming up… ' + good + '/' + profile.minSamples + ' samples', null);
+            if (btn && btn.textContent !== 'Point A ✓') {
+              btn.textContent = 'Set Point A (' + good + '/' + profile.minSamples + ')';
+            }
+          }
+        }
+      } else if (!pointA && !acquiringPoint && warmupBuffer.length === 0) {
+        setStatus('Waiting for GPS signal…', null);
+      }
+    },
+    () => {},
+    { enableHighAccuracy: true, maximumAge: 0 }
+  );
+}
+
+function stopWarmup() {
+  if (warmupWatchId !== null) {
+    navigator.geolocation.clearWatch(warmupWatchId);
+    warmupWatchId = null;
+  }
+}
+
+// Get averaged position from warmup buffer if enough samples exist
+// Returns averaged position or null if buffer is insufficient
+function getWarmupPosition(minSamples, maxAccuracy) {
+  const good = warmupBuffer.filter(p => p.acc <= maxAccuracy);
+  if (good.length < minSamples) return null;
+  // Use the most recent minSamples readings
+  const recent = good.slice(-minSamples);
+  const lat = recent.reduce((s,p)=>s+p.lat,0)/recent.length;
+  const lon = recent.reduce((s,p)=>s+p.lon,0)/recent.length;
+  const alts = recent.filter(p=>p.alt!==null).map(p=>p.alt);
+  const alt = alts.length ? alts.reduce((s,a)=>s+a,0)/alts.length : null;
+  const acc = recent.reduce((s,p)=>s+p.acc,0)/recent.length;
+  return { lat, lon, alt, acc, n: recent.length };
+}
+
+// ── GPS AVERAGING ──────────────────────────────────────────
 function acquirePosition(onSuccess, onError) {
+  const profile = SPEED_PROFILES[currentSpeed];
+  const { minSamples, maxAccuracy, window: windowMs } = profile;
+
+  // Check warmup buffer first — if we have enough good samples, use them instantly
+  const warmupPos = getWarmupPosition(minSamples, maxAccuracy);
+  if (warmupPos) {
+    setStatus('GPS ready (' + warmupPos.n + ' samples buffered)', 'live');
+    setTimeout(() => onSuccess(warmupPos), 100); // tiny delay for UX feedback
+    return { cancel: () => {} };
+  }
+
+  // Otherwise fall back to live collection
   const samples = [];
   let watchId = null, timer = null, done = false;
 
@@ -752,18 +1405,18 @@ function acquirePosition(onSuccess, onError) {
   watchId = navigator.geolocation.watchPosition(
     pos => {
       const acc = pos.coords.accuracy;
-      if (acc <= MAX_ACCURACY) {
+      if (acc <= maxAccuracy) {
         samples.push({lat:pos.coords.latitude,lon:pos.coords.longitude,alt:pos.coords.altitude,acc});
-        setStatus('Collecting… ' + samples.length + '/' + MIN_SAMPLES + ' (±' + Math.round(acc*3.28084) + ' ft)', 'live');
+        setStatus('Collecting… ' + samples.length + '/' + minSamples + ' (±' + Math.round(acc*3.28084) + ' ft)', 'live');
       } else {
-        setStatus('Waiting for signal… ±' + Math.round(acc*3.28084) + ' ft', null);
+        setStatus('Waiting for signal… ±' + Math.round(acc*3.28084) + ' ft — try outdoors', null);
       }
-      if (samples.length >= MIN_SAMPLES) finish();
+      if (samples.length >= minSamples) finish();
     },
     err => { if (!done) { done=true; clearTimeout(timer); onError(err); } },
     {enableHighAccuracy:true, timeout:30000, maximumAge:0}
   );
-  timer = setTimeout(() => { if (!done) finish(); }, SAMPLE_WINDOW);
+  timer = setTimeout(() => { if (!done) finish(); }, windowMs);
 }
 
 // ── LIVE TRACKING ──────────────────────────────────────────
@@ -771,9 +1424,18 @@ function startLive() {
   if (!navigator.geolocation) return;
   stopLive();
   document.getElementById('livePill').classList.add('visible');
+
+  // Light up green immediately at 0
+  const el = document.getElementById('distNum');
+  el.textContent = '0';
+  el.classList.remove('zero');
+  el.classList.add('live');
+
+  const liveStart = Date.now();
   liveWatchId = navigator.geolocation.watchPosition(
     pos => {
       if (!pointA) return;
+      if (Date.now() - liveStart < 3000) return; // hold at 0 for 3 seconds
       const d = haversine(pointA.lat, pointA.lon, pos.coords.latitude, pos.coords.longitude);
       setDistDisplay(d, true);
       setStatus('Updating live — tap Set Point B to lock', 'live');
@@ -793,10 +1455,18 @@ function stopLive() {
 function setPointA() {
   if (!navigator.geolocation) { setStatus('GPS not supported in this browser', 'error'); return; }
   stopLive();
+  acquiringPoint = true;
+  // NOTE: do NOT clear warmupBuffer here — we want to use it!
+
+  // Reset display to zero immediately on tap
+  const el = document.getElementById('distNum');
+  el.textContent = '0';
+  el.className = 'distance-number zero';
 
   const btn = document.getElementById('btnA');
   btn.textContent = 'Locating…';
   btn.className = 'point-btn btn-a-loading';
+  btn.style.borderColor = '';
   btn.disabled = true;
   document.getElementById('btnB').disabled = true;
   setStatus('Waiting for GPS signal…', null);
@@ -814,10 +1484,14 @@ function setPointA() {
       btn.className = 'point-btn btn-a-done';
       btn.disabled = false;
       document.getElementById('btnB').disabled = false;
+      acquiringPoint = false;
       setStatus('Point A set — move to Point B', 'ok');
+      warmupBuffer = []; // now clear — start fresh for Point B
+      startWarmup();     // start collecting for Point B immediately
       startLive();
     },
     err => {
+      acquiringPoint = false;
       btn.textContent = 'Set Point A';
       btn.className = 'point-btn btn-a';
       btn.disabled = false;
@@ -831,6 +1505,7 @@ function setPointA() {
 function setPointB() {
   if (!pointA || !navigator.geolocation) return;
   stopLive();
+  acquiringPoint = true;
 
   const btn = document.getElementById('btnB');
   btn.textContent = 'Locating…';
@@ -870,6 +1545,7 @@ function setPointB() {
       btn.textContent = 'Set Point B';
       btn.className = 'point-btn btn-b';
       btn.disabled = false;
+      acquiringPoint = false;
       setStatus(fmt(meters) + ' ' + unitLabels[unit].toLowerCase() + elevNote, 'ok');
 
       // restart live from same Point A
@@ -879,6 +1555,7 @@ function setPointB() {
       btn.textContent = 'Set Point B';
       btn.className = 'point-btn btn-b';
       btn.disabled = false;
+      acquiringPoint = false;
       const msgs = {1:'Permission denied',2:'Position unavailable',3:'Timed out — tap retry'};
       setStatus(msgs[err.code]||'GPS error', 'error');
       startLive();
@@ -886,12 +1563,11 @@ function setPointB() {
   );
 }
 
-// ── RESET ──────────────────────────────────────────────────
+// ── RESET POINTS ONLY ──────────────────────────────────────
 function resetAll() {
-  if (measurements.length > 0 && !confirm('Clear all measurements and reset?')) return;
   stopLive();
-  pointA = null; measurements = []; measureCount = 0;
-  saveToStorage();
+  acquiringPoint = false;
+  pointA = null;
 
   const el = document.getElementById('distNum');
   el.textContent = '0'; el.className = 'distance-number zero';
@@ -914,8 +1590,16 @@ function resetAll() {
   document.getElementById('cardA').className = 'point-card';
   document.getElementById('cardB').className = 'point-card';
 
-  rebuildLog();
   setStatus('Tap Set Point A to begin', null);
+}
+
+// ── CLEAR LOG ──────────────────────────────────────────────
+function clearLog() {
+  if (!measurements.length) return;
+  if (!confirm('Clear all saved measurements? This cannot be undone.')) return;
+  measurements = []; measureCount = 0;
+  saveToStorage();
+  rebuildLog();
 }
 
 // ── LOG ────────────────────────────────────────────────────
@@ -974,6 +1658,23 @@ function addLogRow(entry) {
   wrap.appendChild(item);
   const list = document.getElementById('logList');
   list.insertBefore(wrap, list.firstChild);
+
+  // ── IN-LOG AD after every 3rd measurement ──────────────
+  // Replace ca-pub-7581999835206831 and 3536297233 with your AdSense values
+  if (entry.id % 3 === 0) {
+    const adWrap = document.createElement('div');
+    adWrap.className = 'ad-in-log';
+    adWrap.dataset.adFor = entry.id;
+    adWrap.innerHTML = `
+      <span class="ad-in-log-label">advertisement</span>
+      <ins class="adsbygoogle"
+           style="display:block;width:300px;height:100px;"
+           data-ad-client="ca-pub-7581999835206831"
+           data-ad-slot="3536297233"
+           data-ad-format="rectangle"></ins>`;
+    list.insertBefore(adWrap, list.firstChild);
+    try { (adsbygoogle = window.adsbygoogle || []).push({}); } catch(e) {}
+  }
 }
 
 function rebuildLog() {
@@ -1036,6 +1737,7 @@ function openDetail(id) {
     <div class="detail-card">
       <div class="detail-card-label">Distance</div>
       <div class="detail-row"><span class="detail-key">Yards</span><span class="detail-val">${metersTo(m.meters,'yd').toFixed(1)}</span></div>
+      <div class="detail-row"><span class="detail-key">Feet</span><span class="detail-val">${metersTo(m.meters,'ft').toFixed(0)}</span></div>
       <div class="detail-row"><span class="detail-key">Miles</span><span class="detail-val">${metersTo(m.meters,'mi').toFixed(4)}</span></div>
       <div class="detail-row"><span class="detail-key">Feet</span><span class="detail-val">${(m.meters*3.28084).toFixed(0)}</span></div>
       <div class="detail-row"><span class="detail-key">Meters</span><span class="detail-val">${m.meters.toFixed(1)}</span></div>
@@ -1082,8 +1784,8 @@ function renameCurrent() {
 
 // ── TABS ───────────────────────────────────────────────────
 function switchTab(tab, silent) {
-  showScreen(tab === 'measure' ? 'measure' : 'log');
-  ['measure','log'].forEach(t => {
+  showScreen(tab === 'measure' ? 'measure' : tab === 'log' ? 'log' : 'help');
+  ['measure','log','help'].forEach(t => {
     const active = t === tab;
     document.getElementById('icon'+capitalize(t)).classList.toggle('active', active);
     document.getElementById('label'+capitalize(t)).classList.toggle('active', active);
@@ -1091,7 +1793,7 @@ function switchTab(tab, silent) {
 }
 
 function showScreen(name) {
-  const map = {measure:'screenMeasure', log:'screenLog', detail:'screenDetail'};
+  const map = {measure:'screenMeasure', log:'screenLog', detail:'screenDetail', help:'screenHelp'};
   Object.values(map).forEach(id => document.getElementById(id).classList.remove('active'));
   document.getElementById(map[name]).classList.add('active');
 }
@@ -1104,6 +1806,7 @@ function exportJSON() {
   const data = measurements.map(m => ({
     id: m.id, name: m.name, date: m.date, time: m.time,
     distance_yards:  +metersTo(m.meters,'yd').toFixed(1),
+    distance_feet:   +metersTo(m.meters,'ft').toFixed(0),
     distance_miles:  +metersTo(m.meters,'mi').toFixed(4),
     distance_feet:   +(m.meters*3.28084).toFixed(0),
     distance_meters: +m.meters.toFixed(4),
@@ -1123,11 +1826,22 @@ function exportJSON() {
 function saveToStorage() {
   try {
     localStorage.setItem('disttrkr_v2', JSON.stringify({measurements, measureCount}));
+    localStorage.setItem('disttrkr_speed', currentSpeed);
   } catch(e) {}
 }
 
 function loadFromStorage() {
   try {
+    // Load speed setting first
+    const savedSpeed = localStorage.getItem('disttrkr_speed');
+    if (savedSpeed && SPEED_PROFILES[savedSpeed]) {
+      currentSpeed = savedSpeed;
+    }
+    // Load unit preference (default to yd for new users)
+    const savedUnit = localStorage.getItem('disttrkr_unit');
+    if (savedUnit && unitLabels[savedUnit]) {
+      unit = savedUnit;
+    }
     const raw = localStorage.getItem('disttrkr_v2');
     if (!raw) return;
     const {measurements:m, measureCount:c} = JSON.parse(raw);
@@ -1144,7 +1858,30 @@ if (!navigator.geolocation) {
   setStatus('GPS not supported in this browser', 'error');
   document.getElementById('btnA').disabled = true;
 }
+
+// ── WELCOME SCREEN ─────────────────────────────────────────
+function dismissWelcome() {
+  localStorage.setItem('disttrkr_welcomed', '1');
+  document.getElementById('welcomeScreen').classList.add('hidden');
+  // Start GPS warmup immediately so it's ready when they tap Set Point A
+  startWarmup();
+  // Also trigger permission prompt
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(() => {}, () => {}, { enableHighAccuracy: true });
+  }
+}
+
+function checkWelcome() {
+  if (localStorage.getItem('disttrkr_welcomed')) {
+    document.getElementById('welcomeScreen').classList.add('hidden');
+    // Returning user — start warmup immediately on page load
+    startWarmup();
+  }
+}
+
+initSpeed();
 loadFromStorage();
+checkWelcome();
 </script>
 </body>
 </html>
