@@ -6,7 +6,7 @@
 <title>DIST TRKR – GPS Distance Meter | Measure Yards, Miles & Feet</title>
 <meta name="description" content="Free GPS distance tool. Walk from Point A to Point B and instantly measure yards, feet or miles. Perfect for golf yardages, property lines, fences and more.">
 <meta name="keywords" content="GPS distance, measure yards, golf yardage, distance meter, point A to point B, fence measurement, property distance">
-<meta property="og:title" content="DIST TRKR – GPS Distance Meter">
+<meta property="og:title" content="DIST TRKR – GPS Distance Tracker">
 <meta property="og:description" content="Walk from Point A to Point B. Measure in yards, feet or miles. Free GPS distance tool — perfect for golf, property and field work.">
 <meta property="og:url" content="https://disttracker.com/">
 <meta property="og:type" content="website">
@@ -1091,6 +1091,21 @@ html, body {
     <div class="detail-top-bar">
       <div class="back-btn" onclick="closeMap()">‹</div>
       <div class="detail-name" id="mapTitle">Map</div>
+      <!-- Layer toggle -->
+      <div style="display:flex; gap:6px;">
+        <button id="btnLayerStreet" onclick="setMapLayer('street')" style="
+          font-family:var(--mono); font-size:10px; padding:5px 10px;
+          border-radius:8px; border:1px solid var(--accent);
+          background:rgba(0,229,255,0.15); color:var(--accent); cursor:pointer;">
+          🗺 Map
+        </button>
+        <button id="btnLayerSat" onclick="setMapLayer('satellite')" style="
+          font-family:var(--mono); font-size:10px; padding:5px 10px;
+          border-radius:8px; border:1px solid var(--border);
+          background:transparent; color:var(--mid); cursor:pointer;">
+          🛰 Sat
+        </button>
+      </div>
     </div>
     <div id="mapContainer" style="flex:1; width:100%; position:relative; min-height:0;"></div>
     <div style="padding:10px 16px; flex-shrink:0; background:var(--panel); border-top:1px solid var(--border);">
@@ -1984,6 +1999,49 @@ function checkWelcome() {
 
 // ── MAP ────────────────────────────────────────────────────
 let leafletMap = null;
+let currentTileLayer = null;
+let currentMapLayer = 'street';
+
+const tileLayers = {
+  street: {
+    url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    options: { maxZoom: 19, attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' }
+  },
+  satellite: {
+    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    options: { maxZoom: 19, attribution: '© <a href="https://www.esri.com">Esri</a> World Imagery' }
+  }
+};
+
+function setMapLayer(type) {
+  if (!leafletMap) return;
+  currentMapLayer = type;
+
+  // Update tile layer
+  if (currentTileLayer) leafletMap.removeLayer(currentTileLayer);
+  const layer = tileLayers[type];
+  currentTileLayer = L.tileLayer(layer.url, layer.options).addTo(leafletMap);
+  currentTileLayer.bringToBack();
+
+  // Update button styles
+  const streetBtn = document.getElementById('btnLayerStreet');
+  const satBtn = document.getElementById('btnLayerSat');
+  if (type === 'street') {
+    streetBtn.style.borderColor = 'var(--accent)';
+    streetBtn.style.background = 'rgba(0,229,255,0.15)';
+    streetBtn.style.color = 'var(--accent)';
+    satBtn.style.borderColor = 'var(--border)';
+    satBtn.style.background = 'transparent';
+    satBtn.style.color = 'var(--mid)';
+  } else {
+    satBtn.style.borderColor = 'var(--accent)';
+    satBtn.style.background = 'rgba(0,229,255,0.15)';
+    satBtn.style.color = 'var(--accent)';
+    streetBtn.style.borderColor = 'var(--border)';
+    streetBtn.style.background = 'transparent';
+    streetBtn.style.color = 'var(--mid)';
+  }
+}
 
 function openMap() {
   const m = measurements.find(x => x.id === currentDetailId);
@@ -1995,69 +2053,44 @@ function openMap() {
 
   showScreen('map');
 
-  // Small delay to let the screen render before init
   setTimeout(() => {
     const container = document.getElementById('mapContainer');
+    if (leafletMap) { leafletMap.remove(); leafletMap = null; currentTileLayer = null; }
 
-    // Destroy existing map instance if any
-    if (leafletMap) { leafletMap.remove(); leafletMap = null; }
-
-    // Init Leaflet map
     leafletMap = L.map(container, { zoomControl: true, attributionControl: true });
 
-    // OpenStreetMap tiles
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-    }).addTo(leafletMap);
+    // Apply saved layer preference
+    const layer = tileLayers[currentMapLayer];
+    currentTileLayer = L.tileLayer(layer.url, layer.options).addTo(leafletMap);
+
+    // Reset button styles to match current layer
+    setMapLayer(currentMapLayer);
 
     const latA = m.pointA.lat, lonA = m.pointA.lon;
     const latB = m.pointB.lat, lonB = m.pointB.lon;
 
-    // Custom cyan pin for Point A
     const iconA = L.divIcon({
       className: '',
-      html: `<div style="
-        width:14px; height:14px; border-radius:50%;
-        background:#00e5ff; border:3px solid #fff;
-        box-shadow:0 0 8px rgba(0,229,255,0.8);">
-      </div>`,
-      iconSize: [14, 14],
-      iconAnchor: [7, 7],
+      html: `<div style="width:14px;height:14px;border-radius:50%;background:#00e5ff;border:3px solid #fff;box-shadow:0 0 8px rgba(0,229,255,0.8);"></div>`,
+      iconSize: [14,14], iconAnchor: [7,7],
     });
-
-    // Custom green pin for Point B
     const iconB = L.divIcon({
       className: '',
-      html: `<div style="
-        width:14px; height:14px; border-radius:50%;
-        background:#39ff14; border:3px solid #fff;
-        box-shadow:0 0 8px rgba(57,255,20,0.8);">
-      </div>`,
-      iconSize: [14, 14],
-      iconAnchor: [7, 7],
+      html: `<div style="width:14px;height:14px;border-radius:50%;background:#39ff14;border:3px solid #fff;box-shadow:0 0 8px rgba(57,255,20,0.8);"></div>`,
+      iconSize: [14,14], iconAnchor: [7,7],
     });
 
-    // Add markers
-    L.marker([latA, lonA], {icon: iconA})
-      .addTo(leafletMap)
-      .bindTooltip('Point A', {permanent: true, direction: 'top', offset: [0, -10]});
+    L.marker([latA, lonA], {icon: iconA}).addTo(leafletMap)
+      .bindTooltip('Point A', {permanent:true, direction:'top', offset:[0,-10]});
+    L.marker([latB, lonB], {icon: iconB}).addTo(leafletMap)
+      .bindTooltip('Point B', {permanent:true, direction:'top', offset:[0,-10]});
 
-    L.marker([latB, lonB], {icon: iconB})
-      .addTo(leafletMap)
-      .bindTooltip('Point B', {permanent: true, direction: 'top', offset: [0, -10]});
-
-    // Line between points
-    L.polyline([[latA, lonA], [latB, lonB]], {
-      color: '#00e5ff',
-      weight: 2.5,
-      opacity: 0.7,
-      dashArray: '6, 6'
+    L.polyline([[latA,lonA],[latB,lonB]], {
+      color:'#00e5ff', weight:2.5, opacity:0.7, dashArray:'6,6'
     }).addTo(leafletMap);
 
-    // Fit map to show both points with padding
-    const bounds = L.latLngBounds([[latA, lonA], [latB, lonB]]);
-    leafletMap.fitBounds(bounds, { padding: [60, 60] });
+    const bounds = L.latLngBounds([[latA,lonA],[latB,lonB]]);
+    leafletMap.fitBounds(bounds, {padding:[60,60]});
 
   }, 150);
 }
