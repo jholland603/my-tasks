@@ -30,14 +30,14 @@
 
 :root {
   --bg:      #141416;
-  --panel:   #1c1c1f;
-  --border:  rgba(255,255,255,0.07);
+  --panel:   #1e2024;
+  --border:  rgba(255,255,255,0.14);
   --accent:  #00e5ff;
   --red:     #ff3d71;
   --green:   #39ff14;
-  --dim:     #555;
-  --mid:     #888;
-  --text:    #e8e8e8;
+  --dim:     #aaa;
+  --mid:     #bbb;
+  --text:    #f0f0f0;
   --sans:    'DM Sans', sans-serif;
   --mono:    'DM Mono', monospace;
   --display: 'Syne', sans-serif;
@@ -131,6 +131,16 @@ html, body {
   background: var(--green);
   animation: blink 1s infinite;
 }
+.live-pill.paused {
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.15);
+  color: var(--mid);
+}
+.live-pill.paused .live-dot {
+  background: var(--mid);
+  box-shadow: none;
+  animation: none;
+}
 @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.25} }
 
 /* ── HERO ── */
@@ -168,7 +178,7 @@ html, body {
   color: var(--green);
   text-shadow: 0 0 40px rgba(57,255,20,0.2);
 }
-.distance-number.zero { color: #2a2a2e; }
+.distance-number.zero { color: #444; }
 
 .unit-row {
   display: flex;
@@ -283,7 +293,7 @@ html, body {
 .point-acc {
   font-family: var(--mono);
   font-size: 10px;
-  color: #3a3a3e;
+  color: #999;
   margin-top: 2px;
 }
 .point-acc.visible { color: var(--dim); }
@@ -438,7 +448,7 @@ html, body {
   letter-spacing: 0.5px;
   line-height: 1.5;
 }
-.welcome-privacy a { color: #333; text-decoration: underline; }
+.welcome-privacy a { color: #aaa; text-decoration: underline; }
 
 .speed-toggle-row {
   padding: 0 12px 8px;
@@ -526,16 +536,17 @@ html, body {
   transition: opacity 0.15s;
 }
 .tab:active { opacity: 0.7; }
-.tab-icon { font-size: 22px; opacity: 0.3; transition: opacity 0.2s; }
+.tab-icon { font-size: 22px; opacity: 0.7; transition: opacity 0.2s; }
 .tab-icon.active { opacity: 1; }
 .tab-label {
   font-family: var(--sans);
   font-size: 10px;
   font-weight: 500;
-  color: var(--dim);
-  transition: color 0.2s;
+  color: var(--text);
+  opacity: 0.6;
+  transition: color 0.2s, opacity 0.2s;
 }
-.tab-label.active { color: var(--text); }
+.tab-label.active { color: var(--text); opacity: 1; }
 
 /* ── AD SLOTS ── */
 .ad-top-wrap {
@@ -740,13 +751,13 @@ html, body {
   color: var(--dim);
   text-align: right;
 }
-.log-chevron { color: #333; font-size: 16px; margin-left: 2px; }
+.log-chevron { color: #999; font-size: 16px; margin-left: 2px; }
 
 .swipe-hint {
   text-align: center;
   font-family: var(--sans);
   font-size: 10px;
-  color: #666;
+  color: #999;
   padding: 6px 0 4px;
   letter-spacing: 1px;
 }
@@ -954,7 +965,7 @@ html, body {
       <div class="tab-icon" id="iconHelp">?</div>
       <div class="tab-label" id="labelHelp">Help</div>
     </div>
-    <div class="live-pill" id="livePill" style="position:absolute; right:12px;">
+    <div class="live-pill" id="livePill" onclick="toggleLive()" title="Tap to pause live tracking" style="cursor:pointer;">
       <div class="live-dot"></div>LIVE
     </div>
   </div>
@@ -1156,9 +1167,9 @@ html, body {
         <div class="help-tip" style="margin-top:8px;">If the distance display seems wildly off, you're probably indoors or near a large building. Step outside, wait a minute, and try again. GPS is not magic — it just looks like it most of the time.</div>
       </div>
 
-      <div style="text-align:center; padding: 16px 0 8px; font-family:'DM Mono',monospace; font-size:9px; color:#444; letter-spacing:2px;">
+      <div style="text-align:center; padding: 16px 0 8px; font-family:'DM Mono',monospace; font-size:9px; color:#666; letter-spacing:2px;">
         DIST TRKR · GPS · DISTANCE · TRACKER<br>
-        <span style="color:#555; font-size:11px; letter-spacing:1px;">v1.5</span>
+        <span style="color:#777; font-size:11px; letter-spacing:1px;">v1.6</span>
       </div>
 
     </div>
@@ -1237,6 +1248,8 @@ function cycleSpeed() {
   clearTimeout(msgTimer);
   msgTimer = setTimeout(() => msg.classList.remove('visible'), 3500);
   localStorage.setItem('disttrkr_speed', currentSpeed);
+  // Clear buffer — refill at new accuracy threshold
+  warmupBuffer = [];
 }
 
 function initSpeed() {
@@ -1313,7 +1326,8 @@ function startWarmup() {
   setStatus('GPS warming up…', null);
   warmupWatchId = navigator.geolocation.watchPosition(
     pos => {
-      if (pos.coords.accuracy <= WARMUP_MAX_ACC) {
+      const maxAcc = getWarmupMaxAcc();
+      if (pos.coords.accuracy <= maxAcc) {
         warmupBuffer.push({
           lat: pos.coords.latitude,
           lon: pos.coords.longitude,
@@ -1445,6 +1459,24 @@ function startLive() {
   );
 }
 
+let livePaused = false;
+
+function toggleLive() {
+  if (!pointA) return; // nothing to toggle without Point A
+  if (livePaused) {
+    livePaused = false;
+    document.getElementById('livePill').classList.remove('paused');
+    startLive();
+    setStatus('Live tracking resumed', 'live');
+  } else {
+    livePaused = true;
+    stopLive();
+    document.getElementById('livePill').classList.add('visible');
+    document.getElementById('livePill').classList.add('paused');
+    setStatus('Live paused — tap LIVE to resume', 'ok');
+  }
+}
+
 function stopLive() {
   if (liveWatchId !== null) { navigator.geolocation.clearWatch(liveWatchId); liveWatchId = null; }
   document.getElementById('livePill').classList.remove('visible');
@@ -1566,6 +1598,7 @@ function setPointB() {
 // ── RESET POINTS ONLY ──────────────────────────────────────
 function resetAll() {
   stopLive();
+  livePaused = false;
   acquiringPoint = false;
   pointA = null;
 
