@@ -37,10 +37,7 @@
       "done": false,
       "notes": "Testing a longer note",
       "ticket": ""
-    }
-  ],
-  "tomorrow": [],
-  "sevenday": [
+    },
     {
       "id": "1777656970261-4425",
       "company": "DATCAB",
@@ -185,6 +182,8 @@
       "ticket": "89049"
     }
   ],
+  "tomorrow": [],
+  "sevenday": [],
   "fourteenday": [],
   "back": [],
   "completed": [
